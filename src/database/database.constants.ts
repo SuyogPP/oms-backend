@@ -1,0 +1,1 @@
+export const MSSQL_CONNECTION = 'MSSQL_CONNECTION';
