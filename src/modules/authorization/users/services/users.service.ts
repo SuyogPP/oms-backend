@@ -15,4 +15,7 @@ export class UsersService {
     ) {
         return this.usersRepository.create(dto);
     }
+    async remove(id: string) {
+    return this.usersRepository.remove(id);
+}
 }

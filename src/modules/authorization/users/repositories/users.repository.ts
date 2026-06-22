@@ -6,7 +6,7 @@ import { CreateUserDto } from '../dto/create-user.dto';
 export class UsersRepository {
     constructor(
         private readonly dataSource: DataSource,
-    ) {}
+    ) { }
 
     async findAll() {
         return [];
@@ -58,7 +58,7 @@ export class UsersRepository {
                     IsDeleted,
                     FailedLoginCount
                 )
-                OUTPUT INSERTED.UserID
+                OUTPUT INSERTED.UserID AS userId
                 VALUES
                 (
                     NEWID(),
@@ -80,7 +80,7 @@ export class UsersRepository {
                 ],
             );
 
-            const userId = userResult[0].UserID;
+            const userId = userResult[0].userId;
 
             await queryRunner.query(
                 `
@@ -89,20 +89,35 @@ export class UsersRepository {
                     UserProfileID,
                     UserID,
                     FirstName,
-                    LastName
+                    LastName,
+                    MobileNo,
+                    JobTitle,
+                    DepartmentID,
+                    BusinessUnitID,
+                    SectionID
                 )
                 VALUES
                 (
                     NEWID(),
                     @0,
                     @1,
-                    @2
+                    @2,
+                    @3,
+                    @4,
+                    @5,
+                    @6,
+                    @7
                 )
                 `,
                 [
                     userId,
                     dto.firstName,
                     dto.lastName,
+                    dto.mobileNo ?? null,
+                    dto.jobTitle ?? null,
+                    dto.departmentId ?? null,
+                    dto.businessUnitId ?? null,
+                    dto.sectionId ?? null,
                 ],
             );
 
@@ -122,4 +137,54 @@ export class UsersRepository {
             await queryRunner.release();
         }
     }
+
+    async remove(id: string) {
+        const existingUser = await this.dataSource.query(
+            `
+        SELECT
+            UserID,
+            IsDeleted
+        FROM auth.Users
+        WHERE UserID = @0
+        `,
+            [
+                id,
+            ],
+        );
+
+        if (existingUser.length === 0) {
+            return {
+                success: false,
+                message: 'User not found',
+            };
+        }
+
+        if (existingUser[0].IsDeleted === true || existingUser[0].IsDeleted === 1) {
+            return {
+                success: false,
+                message: 'User is already deleted',
+            };
+        }
+
+        await this.dataSource.query(
+            `
+        UPDATE auth.Users
+        SET
+            IsDeleted = 1,
+            DeletedAt = SYSUTCDATETIME(),
+            IsActive = 0
+        WHERE UserID = @0
+        `,
+            [
+                id,
+            ],
+        );
+
+        return {
+            success: true,
+            message: 'User deleted successfully',
+        };
+    }
+
+
 }
