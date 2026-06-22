@@ -1,6 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { CreateUserDto } from '../dto/create-user.dto';
+import { UpdateUserDto } from '../dto/update-user.dto';
+import {
+    BadRequestException,
+    NotFoundException,
+} from '@nestjs/common';
 
 @Injectable()
 export class UsersRepository {
@@ -121,5 +126,160 @@ export class UsersRepository {
         } finally {
             await queryRunner.release();
         }
+    }
+
+    async update(
+    userId: string,
+    dto: UpdateUserDto,
+    ) {
+
+        const queryRunner = this.dataSource.createQueryRunner();
+
+        await queryRunner.connect();
+
+        await queryRunner.startTransaction();
+
+        try {
+
+            const existingUser = await queryRunner.query(
+                `
+                SELECT
+                    UserID
+                FROM auth.Users
+                WHERE UserID = @0
+                `,
+                [
+                    userId,
+                ],
+            );
+
+            if (existingUser.length === 0) {
+
+                throw new NotFoundException(
+                    'User not found',
+                );
+
+            }
+
+            if (Object.keys(dto).length === 0) {
+
+                throw new BadRequestException(
+                    'No fields provided for update',
+                );
+
+            }
+
+            const updateFields: string[] = [];
+
+            const parameters: any[] = [];
+
+            if (dto.firstName !== undefined) {
+
+                updateFields.push(
+                    `FirstName=@${parameters.length}`,
+                );
+
+                parameters.push(
+                    dto.firstName,
+                );
+
+            }
+
+            if (dto.lastName !== undefined) {
+
+                updateFields.push(
+                    `LastName=@${parameters.length}`,
+                );
+
+                parameters.push(
+                    dto.lastName,
+                );
+
+            }
+
+            if (dto.mobileNo !== undefined) {
+
+                updateFields.push(
+                    `MobileNo=@${parameters.length}`,
+                );
+
+                parameters.push(
+                    dto.mobileNo,
+                );
+
+            }
+
+            if (dto.jobTitle !== undefined) {
+
+                updateFields.push(
+                    `JobTitle=@${parameters.length}`,
+                );
+
+                parameters.push(
+                    dto.jobTitle,
+                );
+
+            }
+
+            if (updateFields.length === 0) {
+
+                throw new BadRequestException(
+                    'No fields provided for update',
+                );
+
+            }
+
+
+            // Add userId as the last parameter
+            parameters.push(
+                userId,
+            );
+
+            await queryRunner.query(
+                `
+                UPDATE auth.UserProfiles
+                SET
+                    ${updateFields.join(',')}
+                WHERE UserID=@${parameters.length - 1}
+                `,
+                parameters,
+            );
+
+            await queryRunner.query(
+                `
+                UPDATE auth.Users
+                SET
+                    UpdatedAt = SYSUTCDATETIME()
+                WHERE UserID = @0
+                `,
+                [
+                    userId,
+                ],
+            );
+
+            await queryRunner.commitTransaction();
+
+            return {
+
+                success: true,
+
+                message: 'User updated successfully',
+
+            };
+
+        }
+        catch (error) {
+
+            await queryRunner.rollbackTransaction();
+
+            throw error;
+
+        }
+        finally {
+
+            await queryRunner.release();
+
+        }
+
     }
 }
