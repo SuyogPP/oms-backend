@@ -3,7 +3,10 @@ import { ConfigModule } from '@nestjs/config';
 import configuration from './config/configuration';
 import { DatabaseModule } from './database/database.module';
 import { HealthModule } from './modules/health/health.module';
-import { UsersModule } from './modules/authorization/users/users.module';
+import { UsersModule } from './modules/users/users.module';
+import { AuthModule } from './modules/authorization/authorization.module';
+import { APP_GUARD } from '@nestjs/core';
+import { JwtAuthGuard } from './modules/authorization/guards/jwt-auth.guard';
 
 @Module({
   imports: [
@@ -16,7 +19,14 @@ import { UsersModule } from './modules/authorization/users/users.module';
     DatabaseModule,
     HealthModule,
     UsersModule,
+    AuthModule,
   ],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
+    },
+  ]
 
 
 })
