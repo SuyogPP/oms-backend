@@ -6,11 +6,37 @@ import { CreateUserDto } from '../dto/create-user.dto';
 export class UsersRepository {
     constructor(
         private readonly dataSource: DataSource,
-    ) { }
+    ) {}
 
     async findAll() {
-        return [];
-    }
+    const users = await this.dataSource.query(
+        `
+        SELECT
+            u.UserID AS userId,
+            u.EmployeeID AS employeeId,
+            CONCAT(p.FirstName, ' ', p.LastName) AS employeeName,
+            u.Email AS email,
+            p.DepartmentID AS department,
+            p.JobTitle AS role,
+            u.UserType AS userType,
+            CASE
+                WHEN u.IsActive = 1 THEN 'Active'
+                ELSE 'Inactive'
+            END AS status,
+            u.LastLoginAt AS lastLogin
+        FROM auth.Users u
+        LEFT JOIN auth.UserProfiles p
+            ON u.UserID = p.UserID
+        WHERE u.IsDeleted = 0
+        ORDER BY u.CreatedAt DESC
+        `
+    );
+
+    return {
+        success: true,
+        data: users,
+    };
+}
 
     async create(dto: CreateUserDto) {
         const queryRunner = this.dataSource.createQueryRunner();
@@ -132,6 +158,7 @@ export class UsersRepository {
             };
         } catch (error) {
             await queryRunner.rollbackTransaction();
+
             throw error;
         } finally {
             await queryRunner.release();
@@ -141,12 +168,12 @@ export class UsersRepository {
     async remove(id: string) {
         const existingUser = await this.dataSource.query(
             `
-        SELECT
-            UserID,
-            IsDeleted
-        FROM auth.Users
-        WHERE UserID = @0
-        `,
+            SELECT
+                UserID,
+                IsDeleted
+            FROM auth.Users
+            WHERE UserID = @0
+            `,
             [
                 id,
             ],
@@ -168,13 +195,13 @@ export class UsersRepository {
 
         await this.dataSource.query(
             `
-        UPDATE auth.Users
-        SET
-            IsDeleted = 1,
-            DeletedAt = SYSUTCDATETIME(),
-            IsActive = 0
-        WHERE UserID = @0
-        `,
+            UPDATE auth.Users
+            SET
+                IsDeleted = 1,
+                DeletedAt = SYSUTCDATETIME(),
+                IsActive = 0
+            WHERE UserID = @0
+            `,
             [
                 id,
             ],
@@ -185,6 +212,4 @@ export class UsersRepository {
             message: 'User deleted successfully',
         };
     }
-
-
 }
