@@ -9,6 +9,7 @@ import { Scopes } from '../decorators/scopes.decorator';
 import { RolesGuard } from '../guards/roles.guard';
 import { PermissionGuard } from '../guards/permissions.guard';
 import { ScopesGuard } from '../guards/scopes.guard';
+import { PERMISSIONS } from 'src/common/constants/permissions';
 
 @ApiTags('Authentication Test')
 @ApiBearerAuth('JWT')
@@ -44,7 +45,7 @@ export class AuthTestController {
     }
 
     @Get('permissions')
-    @RequirePermissions('USER:READ')
+    @RequirePermissions(PERMISSIONS.USER_MANAGE)
     @UseGuards(PermissionGuard)
     getPermissionsRoute(@CurrentUser() user: ICurrentUser) {
         return {
