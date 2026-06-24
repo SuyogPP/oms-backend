@@ -10,17 +10,31 @@ import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 
 @Module({
   imports: [
+
+    // this is to provide env variables to the application
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: `.env`,
       load: [configuration],
     }),
 
+
+    // this is to connect to the database
     DatabaseModule,
+
+    // this is to provide health module
     HealthModule,
+
+    // this is to provide users module
     UsersModule,
+
+    // this is to provide auth module
     AuthModule,
+
+
   ],
+
+  // this is to apply jwt guard to all routes globally
   providers: [
     {
       provide: APP_GUARD,
