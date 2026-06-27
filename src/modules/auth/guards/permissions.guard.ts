@@ -25,6 +25,8 @@ export class PermissionGuard implements CanActivate {
                 ],
             );
 
+        console.log("🚀 ~ PermissionGuard ~ canActivate ~ requiredPermissions:", requiredPermissions)
+
         // Route has no permissions
         if (
             !requiredPermissions ||
@@ -37,6 +39,7 @@ export class PermissionGuard implements CanActivate {
             context.switchToHttp().getRequest();
 
         const user = request.user;
+        console.log("🚀 ~ PermissionGuard ~ canActivate ~ user:", user)
 
         if (!user) {
             throw new ForbiddenException(
@@ -46,6 +49,8 @@ export class PermissionGuard implements CanActivate {
 
         const permissions: string[] =
             user.permissions ?? [];
+
+        console.log("🚀 ~ PermissionGuard ~ canActivate ~ permissions:", permissions)
 
         // SECURITY.ADMIN bypass
         if (

@@ -5,6 +5,7 @@ import { IS_PUBLIC_KEY } from '../constants/auth.constants';
 
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {
+
     constructor(private readonly reflector: Reflector) {
         super();
     }
@@ -29,4 +30,5 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
         }
         return user;
     }
+
 }

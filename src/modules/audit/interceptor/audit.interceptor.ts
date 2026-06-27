@@ -11,7 +11,7 @@ import { AuditRepository } from '../repositories/audit.repository';
 export class AuditInterceptor implements NestInterceptor {
     constructor(
         private readonly auditRepository: AuditRepository,
-    ) {}
+    ) { }
 
     intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
         const startedAt = Date.now();
