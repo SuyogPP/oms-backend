@@ -57,7 +57,6 @@ export class AuditRepository {
             `
             INSERT INTO [OMS_Audit_DB].[audit].[Devices]
             (
-                DeviceID,
                 DeviceFingerprint,
                 IPAddress,
                 LastKnownIP,
@@ -69,7 +68,6 @@ export class AuditRepository {
             OUTPUT INSERTED.DeviceID
             VALUES
             (
-                NEWSEQUENTIALID(),
                 @0,
                 @1,
                 @1,
@@ -117,7 +115,6 @@ export class AuditRepository {
             `
             INSERT INTO [OMS_Audit_DB].[audit].[ApiCallLog_Auth]
             (
-                ApiCallID,
                 SessionID,
                 DeviceID,
                 IPAddress,
@@ -141,7 +138,6 @@ export class AuditRepository {
             OUTPUT INSERTED.ApiCallID
             VALUES
             (
-                NEWSEQUENTIALID(),
                 @0,
                 @1,
                 @2,
@@ -219,7 +215,6 @@ export class AuditRepository {
             `
             INSERT INTO [OMS_Audit_DB].[audit].[ChangeLog_Auth]
             (
-                ChangeID,
                 SessionID,
                 DeviceID,
                 IPAddress,
@@ -247,7 +242,6 @@ export class AuditRepository {
             )
             VALUES
             (
-                NEWSEQUENTIALID(),
                 @0,
                 @1,
                 @2,
