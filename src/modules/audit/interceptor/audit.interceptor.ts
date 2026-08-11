@@ -10,7 +10,7 @@ import { AuditService } from '../service/audit.services';
 @Injectable()
 export class AuditInterceptor implements NestInterceptor {
     constructor(
-        private readonly auditService: AuditService,
+        private readonly auditRepository: AuditRepository,
     ) { }
 
     intercept(context: ExecutionContext, next: CallHandler): Observable<any> {

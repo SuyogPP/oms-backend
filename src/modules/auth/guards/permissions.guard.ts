@@ -4,18 +4,24 @@ import {
     ForbiddenException,
     Injectable,
 } from '@nestjs/common';
+
 import { Reflector } from '@nestjs/core';
+
 import { PERMISSIONS_KEY } from '../decorators/permissions.decorator';
+import { AuthorizationService } from '../services/authorization.service';
 
 @Injectable()
 export class PermissionGuard implements CanActivate {
+
     constructor(
         private readonly reflector: Reflector,
+        private readonly authorizationService: AuthorizationService,
     ) { }
 
     canActivate(
         context: ExecutionContext,
     ): boolean {
+
         const requiredPermissions =
             this.reflector.getAllAndOverride<string[]>(
                 PERMISSIONS_KEY,
@@ -25,7 +31,12 @@ export class PermissionGuard implements CanActivate {
                 ],
             );
 
-        // Route has no permissions
+        console.log(
+            '🚀 Required Permissions:',
+            requiredPermissions,
+        );
+
+        // No permission required
         if (
             !requiredPermissions ||
             requiredPermissions.length === 0
@@ -38,33 +49,39 @@ export class PermissionGuard implements CanActivate {
 
         const user = request.user;
 
+        console.log(
+            '🚀 Current User:',
+            user,
+        );
+
         if (!user) {
             throw new ForbiddenException(
                 'Unauthenticated.',
             );
         }
 
-        const permissions: string[] =
-            user.permissions ?? [];
+        try {
 
-        // SECURITY.ADMIN bypass
-        if (
-            permissions.includes('SECURITY.ADMIN')
-        ) {
+            this.authorizationService.authorize(
+                user,
+                requiredPermissions,
+            );
+
             return true;
-        }
 
-        const allowed =
-            requiredPermissions.every((permission) =>
-                permissions.includes(permission),
+        } catch (error) {
+
+            console.error(
+                'Authorization Failed:',
+                error,
             );
 
-        if (!allowed) {
             throw new ForbiddenException(
-                'Insufficient permissions.',
+                error instanceof Error
+                    ? error.message
+                    : 'Insufficient permissions.',
             );
-        }
 
-        return true;
+        }
     }
 }

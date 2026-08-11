@@ -1,21 +1,27 @@
 import { INestApplication } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
+/**
+ * Initializes and configures Swagger UI for API documentation.
+ * @param app The NestJS application instance
+ */
 export function setupSwagger(app: INestApplication): void {
+  // Disable Swagger in production environments
   if (process.env.NODE_ENV === 'production') {
     return;
   }
 
+  // Configure Swagger DocumentBuilder
   const config = new DocumentBuilder()
     .setTitle('Enterprise API')
-    .setDescription('Enterprise Management System API')
+    .setDescription('Enterprise Management System API Documentation')
     .setVersion('1.0')
     .addBearerAuth(
       {
         type: 'http',
         scheme: 'bearer',
         bearerFormat: 'JWT',
-        description: 'Enter JWT Access Token',
+        description: 'Enter JWT Access Token to authenticate requests',
       },
       'JWT',
     )
@@ -24,7 +30,8 @@ export function setupSwagger(app: INestApplication): void {
 
   const document = SwaggerModule.createDocument(app, config);
 
-  // Inject proxy simulation headers globally into Swagger
+  // Inject proxy simulation headers globally into all Swagger paths
+  // This allows testers to simulate being a user with specific roles/permissions
   for (const path in document.paths) {
     for (const method in document.paths[path]) {
       const operation = document.paths[path][method];
@@ -35,15 +42,15 @@ export function setupSwagger(app: INestApplication): void {
         in: 'header',
         description: 'Proxy Simulation: User Roles (e.g. ["Admin", "Manager"])',
         required: false,
-        schema: { type: 'string' }
+        schema: { type: 'string' },
       });
 
       operation.parameters.push({
         name: 'x-permissions',
         in: 'header',
-        description: 'Proxy Simulation: User Permissions (e.g. ["user.read", "user.write"])',
+        description: 'Proxy Simulation: User Permissions (e.g. ["USER.MANAGE"])',
         required: false,
-        schema: { type: 'string' }
+        schema: { type: 'string' },
       });
 
       operation.parameters.push({
@@ -51,7 +58,7 @@ export function setupSwagger(app: INestApplication): void {
         in: 'header',
         description: 'Proxy Simulation: User Scopes (e.g. ["internal"])',
         required: false,
-        schema: { type: 'string' }
+        schema: { type: 'string' },
       });
 
       operation.parameters.push({
@@ -59,14 +66,15 @@ export function setupSwagger(app: INestApplication): void {
         in: 'header',
         description: 'Proxy Simulation: User ID',
         required: false,
-        schema: { type: 'string' }
+        schema: { type: 'string' },
       });
     }
   }
 
+  // Setup the Swagger UI endpoint at /api/docs
   SwaggerModule.setup('api/docs', app, document, {
     swaggerOptions: {
-      persistAuthorization: true,
+      persistAuthorization: true, // Keeps the JWT token even after page refresh
     },
   });
 }
