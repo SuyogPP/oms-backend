@@ -1,17 +1,18 @@
 import { Controller, Get, UseGuards } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
-import { Public } from '../decorators/public.decorator';
 import { CurrentUser } from '../decorators/current-user.decorator';
-import type { CurrentUser as ICurrentUser } from '../interfaces/current-user.interface';
-import { Roles } from '../decorators/roles.decorator';
 import { RequirePermissions } from '../decorators/permissions.decorator';
+import { Public } from '../decorators/public.decorator';
+import { Roles } from '../decorators/roles.decorator';
 import { Scopes } from '../decorators/scopes.decorator';
+import type { CurrentUser as ICurrentUser } from '../interfaces/current-user.interface';
 
-import { RolesGuard } from '../guards/roles.guard';
-import { PermissionGuard } from '../guards/permissions.guard';
-import { ScopesGuard } from '../guards/scopes.guard';
 import { PERMISSIONS } from 'src/common/constants/permissions';
+import { PermissionGuard } from '../guards/permissions.guard';
+import { RolesGuard } from '../guards/roles.guard';
+import { ScopesGuard } from '../guards/scopes.guard';
+import { AuthorizationService } from '../services/authorization.service';
 
 /**
  * AuthTestController provides a set of endpoints to test various authentication
@@ -21,6 +22,13 @@ import { PERMISSIONS } from 'src/common/constants/permissions';
 @ApiBearerAuth('JWT')
 @Controller('auth-test')
 export class AuthTestController {
+
+    constructor(
+
+        private readonly authorizationService: AuthorizationService,
+
+    ) { }
+
     /**
      * Public endpoint that bypasses all guards.
      */

@@ -12,6 +12,7 @@ import { ScopesGuard } from './guards/scopes.guard';
 
 // Controllers
 import { AuthTestController } from './controllers/auth-test.controller';
+import { AuthorizationService } from './services/authorization.service';
 
 /**
  * AuthModule configures Passport and JWT strategies for authentication and authorization.
@@ -40,6 +41,7 @@ import { AuthTestController } from './controllers/auth-test.controller';
         RolesGuard,
         PermissionGuard,
         ScopesGuard,
+        AuthorizationService
     ],
     exports: [
         PassportModule,
@@ -49,6 +51,7 @@ import { AuthTestController } from './controllers/auth-test.controller';
         RolesGuard,
         PermissionGuard,
         ScopesGuard,
+        AuthorizationService
     ],
 })
-export class AuthModule {}
+export class AuthModule { }
