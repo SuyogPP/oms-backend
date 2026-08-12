@@ -12,7 +12,7 @@ export class UsersService {
     constructor(
         private readonly usersRepository: UsersRepository,
         private readonly auditService: AuditService,
-    ) {}
+    ) { }
 
     /**
      * Fetches all users from the database.
@@ -54,6 +54,12 @@ export class UsersService {
         //     });
         // }
 
-        return result;
+    if (result.success) {
+        await this.auditService.logUserDeletedChange({
+            userId: id,
+        });
     }
+
+    return result;
+}
 }

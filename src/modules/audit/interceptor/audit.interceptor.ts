@@ -5,7 +5,7 @@ import {
     CallHandler,
 } from '@nestjs/common';
 import { Observable, catchError, tap, throwError } from 'rxjs';
-import { AuditRepository } from '../repositories/audit.repository';
+import { AuditService } from '../service/audit.services';
 
 @Injectable()
 export class AuditInterceptor implements NestInterceptor {
@@ -36,7 +36,13 @@ export class AuditInterceptor implements NestInterceptor {
         startedAt: number,
         isSuccess: boolean,
         error?: any,
+
     ) {
+        console.log('========================');
+console.log('AUDIT INTERCEPTOR HIT');
+console.log(request.method);
+console.log(request.originalUrl);
+console.log('========================');
         try {
             const method = request.method;
             const endpoint = request.originalUrl || request.url;
@@ -51,20 +57,11 @@ export class AuditInterceptor implements NestInterceptor {
             const deviceFingerprint =
                 userAgentRaw || `${ipAddress}-${request.headers['accept-language'] || 'unknown'}`;
 
-            const deviceId = await this.auditRepository.ensureDevice({
-                deviceFingerprint,
-                ipAddress,
-                deviceType: 'UNKNOWN',
-                browserName: null,
-                osName: null,
-                userAgentRaw,
-            });
-
             const statusCode = response.statusCode || (isSuccess ? 200 : 500);
+            console.log("🚀 ~ AuditInterceptor ~ writeAuditLog ~ statusCode:", statusCode)
 
-            await this.auditRepository.logAuthApiCall({
+            await this.auditService.logApiCall({
                 sessionId: null,
-                deviceId,
                 deviceFingerprint,
                 ipAddress,
                 deviceType: 'UNKNOWN',
