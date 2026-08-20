@@ -1,5 +1,5 @@
 import { ConnectionPool } from 'mssql';
 
 export interface DatabaseConnection {
-    pool: ConnectionPool;
+  pool: ConnectionPool;
 }

@@ -6,6 +6,6 @@ import { HealthController } from './health.controller';
  * Exposes the HealthController to handle readiness and liveness probes.
  */
 @Module({
-    controllers: [HealthController],
+  controllers: [HealthController],
 })
 export class HealthModule {}

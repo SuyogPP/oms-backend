@@ -4,13 +4,11 @@ import { CreateUserDto } from '../dto/create-user.dto';
 
 @Injectable()
 export class UsersRepository {
-    constructor(
-        private readonly dataSource: DataSource,
-    ) {}
+  constructor(private readonly dataSource: DataSource) {}
 
-    async findAll() {
+  async findAll() {
     const users = await this.dataSource.query(
-        `
+      `
         SELECT
             u.UserID AS userId,
             u.EmployeeID AS employeeId,
@@ -29,24 +27,24 @@ export class UsersRepository {
             ON u.UserID = p.UserID
         WHERE u.IsDeleted = 0
         ORDER BY u.CreatedAt DESC
-        `
+        `,
     );
 
     return {
-        success: true,
-        data: users,
+      success: true,
+      data: users,
     };
-}
+  }
 
-    async create(dto: CreateUserDto) {
-        const queryRunner = this.dataSource.createQueryRunner();
+  async create(dto: CreateUserDto) {
+    const queryRunner = this.dataSource.createQueryRunner();
 
-        await queryRunner.connect();
-        await queryRunner.startTransaction();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
 
-        try {
-            const existingUsers = await queryRunner.query(
-                `
+    try {
+      const existingUsers = await queryRunner.query(
+        `
                 SELECT
                     UserID,
                     Username,
@@ -55,23 +53,20 @@ export class UsersRepository {
                 WHERE Username = @0
                    OR Email = @1
                 `,
-                [
-                    dto.username,
-                    dto.email,
-                ],
-            );
+        [dto.username, dto.email],
+      );
 
-            if (existingUsers.length > 0) {
-                await queryRunner.rollbackTransaction();
+      if (existingUsers.length > 0) {
+        await queryRunner.rollbackTransaction();
 
-                return {
-                    success: false,
-                    message: 'Username or email already exists',
-                };
-            }
+        return {
+          success: false,
+          message: 'Username or email already exists',
+        };
+      }
 
-            const userResult = await queryRunner.query(
-                `
+      const userResult = await queryRunner.query(
+        `
                 INSERT INTO auth.Users
                 (
                     UserID,
@@ -98,18 +93,13 @@ export class UsersRepository {
                     0
                 )
                 `,
-                [
-                    dto.employeeId ?? null,
-                    dto.username,
-                    dto.email,
-                    dto.userType,
-                ],
-            );
+        [dto.employeeId ?? null, dto.username, dto.email, dto.userType],
+      );
 
-            const userId = userResult[0].userId;
+      const userId = userResult[0].userId;
 
-            await queryRunner.query(
-                `
+      await queryRunner.query(
+        `
                 INSERT INTO auth.UserProfiles
                 (
                     UserProfileID,
@@ -135,66 +125,64 @@ export class UsersRepository {
                     @7
                 )
                 `,
-                [
-                    userId,
-                    dto.firstName,
-                    dto.lastName,
-                    dto.mobileNo ?? null,
-                    dto.jobTitle ?? null,
-                    dto.departmentId ?? null,
-                    dto.businessUnitId ?? null,
-                    dto.sectionId ?? null,
-                ],
-            );
+        [
+          userId,
+          dto.firstName,
+          dto.lastName,
+          dto.mobileNo ?? null,
+          dto.jobTitle ?? null,
+          dto.departmentId ?? null,
+          dto.businessUnitId ?? null,
+          dto.sectionId ?? null,
+        ],
+      );
 
-            await queryRunner.commitTransaction();
+      await queryRunner.commitTransaction();
 
-            return {
-                success: true,
-                message: 'User created successfully',
-                data: {
-                    userId,
-                },
-            };
-        } catch (error) {
-            await queryRunner.rollbackTransaction();
+      return {
+        success: true,
+        message: 'User created successfully',
+        data: {
+          userId,
+        },
+      };
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
 
-            throw error;
-        } finally {
-            await queryRunner.release();
-        }
+      throw error;
+    } finally {
+      await queryRunner.release();
     }
+  }
 
-    async remove(id: string) {
-        const existingUser = await this.dataSource.query(
-            `
+  async remove(id: string) {
+    const existingUser = await this.dataSource.query(
+      `
             SELECT
                 UserID,
                 IsDeleted
             FROM auth.Users
             WHERE UserID = @0
             `,
-            [
-                id,
-            ],
-        );
+      [id],
+    );
 
-        if (existingUser.length === 0) {
-            return {
-                success: false,
-                message: 'User not found',
-            };
-        }
+    if (existingUser.length === 0) {
+      return {
+        success: false,
+        message: 'User not found',
+      };
+    }
 
-        if (existingUser[0].IsDeleted === true || existingUser[0].IsDeleted === 1) {
-            return {
-                success: false,
-                message: 'User is already deleted',
-            };
-        }
+    if (existingUser[0].IsDeleted === true || existingUser[0].IsDeleted === 1) {
+      return {
+        success: false,
+        message: 'User is already deleted',
+      };
+    }
 
-        await this.dataSource.query(
-            `
+    await this.dataSource.query(
+      `
             UPDATE auth.Users
             SET
                 IsDeleted = 1,
@@ -202,14 +190,12 @@ export class UsersRepository {
                 IsActive = 0
             WHERE UserID = @0
             `,
-            [
-                id,
-            ],
-        );
+      [id],
+    );
 
-        return {
-            success: true,
-            message: 'User deleted successfully',
-        };
-    }
+    return {
+      success: true,
+      message: 'User deleted successfully',
+    };
+  }
 }

@@ -6,35 +6,30 @@ import { setupSwagger } from './common/swagger/swagger.setup';
 
 /**
  * Bootstraps the NestJS application.
- * This is the main entry point where the Nest application instance is created,
- * global middleware (like pipes and CORS) are configured, and the server is started.
+ * All API routes are prefixed under /api/v1.
  */
 async function bootstrap() {
-  // Create the Nest application instance using the root AppModule
   const app = await NestFactory.create(AppModule);
 
-  // Retrieve the ConfigService to access environment variables
-  const configService = app.get(ConfigService);
+  // Set global prefix to /api/v1
+  app.setGlobalPrefix('api/v1');
 
-  // Set a global prefix for all API routes (e.g., http://localhost:4000/api)
-  app.setGlobalPrefix('api');
-
-  // Initialize Swagger UI for API documentation
+  // Initialize Swagger UI documentation
   setupSwagger(app);
 
-  // Enable global validation pipe to enforce DTO validation rules.
-  // whitelist: true strips properties that do not have any decorators
-  // transform: true automatically transforms payloads to be objects typed according to their DTO classes
-  // forbidNonWhitelisted: true throws an error if non-whitelisted properties are present
+  // Global DTO Validation Pipe
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
       transform: true,
       forbidNonWhitelisted: true,
+      transformOptions: {
+        enableImplicitConversion: true,
+      },
     }),
   );
 
-  // Configure Cross-Origin Resource Sharing (CORS)
+  // CORS Configuration
   app.enableCors({
     origin: [
       'http://localhost:3000',
@@ -43,13 +38,22 @@ async function bootstrap() {
       'http://127.0.0.1:4000',
     ],
     credentials: true,
+    exposedHeaders: [
+      'x-correlation-id',
+      'x-response-time',
+      'x-ratelimit-limit',
+      'x-ratelimit-remaining',
+      'x-ratelimit-reset',
+    ],
   });
 
-  // Start the server, listening on the configured PORT or falling back to 4000
   const port = process.env.PORT || 4000;
   await app.listen(port);
 
-  console.log(`Server running on port ${port}`);
+  console.log(`OMS Backend running on http://localhost:${port}/api/v1`);
+  console.log(
+    `Swagger documentation available at http://localhost:${port}/api/docs`,
+  );
 }
 
 bootstrap();

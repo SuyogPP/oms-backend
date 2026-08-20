@@ -1,49 +1,97 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { ScheduleModule } from '@nestjs/schedule';
 
 // Configuration & Database
 import configuration from './config/configuration';
 import { DatabaseModule } from './database/database.module';
 
+// Common Infrastructure
+import { CommonModule } from './common/common.module';
+import { CorrelationIdMiddleware } from './common/middleware/correlation-id.middleware';
+import { GlobalHttpExceptionFilter } from './common/filters/http-exception.filter';
+import { TransformInterceptor } from './common/interceptors/transform.interceptor';
+import { RequestMetadataInterceptor } from './common/interceptors/request-metadata.interceptor';
+import { RateLimitGuard } from './common/rate-limit/rate-limit.guard';
+
 // Application Modules
+import { SecurityEventsModule } from './modules/security-events/security-events.module';
+import { AuditModule } from './modules/audit/audit.module';
+import { SecurityModule } from './modules/security/security.module';
 import { HealthModule } from './modules/health/health.module';
 import { UsersModule } from './modules/users/users.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { RetentionModule } from './modules/retention/retention.module';
+import { OrganizationModule } from './modules/organization/organization.module';
 
 // Guards
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 
 /**
- * The root module of the application.
- * This module aggregates all other modules, configurations, and global providers
- * required to bootstrap the NestJS application.
+ * Root Application Module.
+ * Aggregates core infrastructure, scheduler, security guards, filters, interceptors, and business modules.
  */
 @Module({
   imports: [
-    // Initializes the ConfigModule globally so that environment variables
-    // can be accessed anywhere in the application.
+    // Global environment config
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',
       load: [configuration],
     }),
 
-    // Establishes the connection to the database.
+    // Automated Scheduler for Cron Jobs
+    ScheduleModule.forRoot(),
+
+    // Common Infrastructure
+    CommonModule,
+
+    // Database connection
     DatabaseModule,
 
-    // Core business modules
-    HealthModule, // Handles health checks and monitoring
-    UsersModule,  // Manages user-related operations (CRUD, profiles)
-    AuthModule,   // Handles authentication and authorization
+    // Security & Audit
+    SecurityEventsModule,
+    AuditModule,
+    SecurityModule,
+
+    // Domain Modules
+    HealthModule,
+    UsersModule,
+    AuthModule,
+    RetentionModule,
+    OrganizationModule,
   ],
   providers: [
-    // Applies the JwtAuthGuard globally.
-    // This ensures all endpoints require a valid JWT token by default unless explicitly decorated with @Public().
+    // 1. Rate Limiting Guard (Applies before JWT auth)
+    {
+      provide: APP_GUARD,
+      useClass: RateLimitGuard,
+    },
+    // 2. Global JWT Auth Guard (Public routes bypass via @Public())
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,
     },
+    // 3. Global Exception Filter (Unified Error Envelope)
+    {
+      provide: APP_FILTER,
+      useClass: GlobalHttpExceptionFilter,
+    },
+    // 4. Request Metadata Interceptor (Response timing & headers)
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: RequestMetadataInterceptor,
+    },
+    // 5. Global Response Envelope Interceptor
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: TransformInterceptor,
+    },
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(CorrelationIdMiddleware).forRoutes('*');
+  }
+}

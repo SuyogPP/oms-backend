@@ -3,32 +3,30 @@ import { DataSource } from 'typeorm';
 
 @Injectable()
 export class AuditRepository {
-    constructor(
-        private readonly dataSource: DataSource,
-    ) {}
+  constructor(private readonly dataSource: DataSource) {}
 
-    async ensureDevice(data: {
-        deviceFingerprint: string;
-        ipAddress: string;
-        deviceType?: string | null;
-        browserName?: string | null;
-        osName?: string | null;
-        userAgentRaw?: string | null;
-    }) {
-        const existingDevice = await this.dataSource.query(
-            `
+  async ensureDevice(data: {
+    deviceFingerprint: string;
+    ipAddress: string;
+    deviceType?: string | null;
+    browserName?: string | null;
+    osName?: string | null;
+    userAgentRaw?: string | null;
+  }) {
+    const existingDevice = await this.dataSource.query(
+      `
             SELECT DeviceID
             FROM [OMS_Audit_DB].[audit].[Devices]
             WHERE DeviceFingerprint = @0
             `,
-            [data.deviceFingerprint],
-        );
+      [data.deviceFingerprint],
+    );
 
-        if (existingDevice.length > 0) {
-            const deviceId = existingDevice[0].DeviceID;
+    if (existingDevice.length > 0) {
+      const deviceId = existingDevice[0].DeviceID;
 
-            await this.dataSource.query(
-                `
+      await this.dataSource.query(
+        `
                 UPDATE [OMS_Audit_DB].[audit].[Devices]
                 SET
                     LastSeenAt = SYSUTCDATETIME(),
@@ -40,21 +38,21 @@ export class AuditRepository {
                     UserAgentRaw = @5
                 WHERE DeviceID = @0
                 `,
-                [
-                    deviceId,
-                    data.ipAddress,
-                    data.deviceType ?? 'UNKNOWN',
-                    data.browserName ?? null,
-                    data.osName ?? null,
-                    data.userAgentRaw ?? null,
-                ],
-            );
+        [
+          deviceId,
+          data.ipAddress,
+          data.deviceType ?? 'UNKNOWN',
+          data.browserName ?? null,
+          data.osName ?? null,
+          data.userAgentRaw ?? null,
+        ],
+      );
 
-            return deviceId;
-        }
+      return deviceId;
+    }
 
-        const result = await this.dataSource.query(
-            `
+    const result = await this.dataSource.query(
+      `
             INSERT INTO [OMS_Audit_DB].[audit].[Devices]
             (
                 DeviceFingerprint,
@@ -77,42 +75,42 @@ export class AuditRepository {
                 @5
             )
             `,
-            [
-                data.deviceFingerprint,
-                data.ipAddress,
-                data.deviceType ?? 'UNKNOWN',
-                data.browserName ?? null,
-                data.osName ?? null,
-                data.userAgentRaw ?? null,
-            ],
-        );
+      [
+        data.deviceFingerprint,
+        data.ipAddress,
+        data.deviceType ?? 'UNKNOWN',
+        data.browserName ?? null,
+        data.osName ?? null,
+        data.userAgentRaw ?? null,
+      ],
+    );
 
-        return result[0].DeviceID;
-    }
+    return result[0].DeviceID;
+  }
 
-    async logAuthApiCall(data: {
-        sessionId?: string | null;
-        deviceId: string;
-        deviceFingerprint: string;
-        ipAddress: string;
-        deviceType?: string | null;
-        browserName?: string | null;
-        osName?: string | null;
-        userAgentRaw?: string | null;
-        userId?: string | null;
-        username?: string | null;
-        httpMethod: string;
-        endpoint: string;
-        controllerName?: string | null;
-        actionName?: string | null;
-        authEventType?: string | null;
-        targetUserId?: string | null;
-        httpStatusCode: number;
-        isSuccess: boolean;
-        failureReason?: string | null;
-    }) {
-        const result = await this.dataSource.query(
-            `
+  async logAuthApiCall(data: {
+    sessionId?: string | null;
+    deviceId: string;
+    deviceFingerprint: string;
+    ipAddress: string;
+    deviceType?: string | null;
+    browserName?: string | null;
+    osName?: string | null;
+    userAgentRaw?: string | null;
+    userId?: string | null;
+    username?: string | null;
+    httpMethod: string;
+    endpoint: string;
+    controllerName?: string | null;
+    actionName?: string | null;
+    authEventType?: string | null;
+    targetUserId?: string | null;
+    httpStatusCode: number;
+    isSuccess: boolean;
+    failureReason?: string | null;
+  }) {
+    const result = await this.dataSource.query(
+      `
             INSERT INTO [OMS_Audit_DB].[audit].[ApiCallLog_Auth]
             (
                 SessionID,
@@ -159,60 +157,60 @@ export class AuditRepository {
                 @18
             )
             `,
-            [
-                data.sessionId ?? null,
-                data.deviceId,
-                data.ipAddress,
-                data.deviceFingerprint,
-                data.deviceType ?? null,
-                data.browserName ?? null,
-                data.osName ?? null,
-                data.userAgentRaw ?? null,
-                data.userId ?? null,
-                data.username ?? null,
-                data.httpMethod,
-                data.endpoint,
-                data.controllerName ?? null,
-                data.actionName ?? null,
-                data.authEventType ?? null,
-                data.targetUserId ?? null,
-                data.httpStatusCode,
-                data.isSuccess ? 1 : 0,
-                data.failureReason ?? null,
-            ],
-        );
+      [
+        data.sessionId ?? null,
+        data.deviceId,
+        data.ipAddress,
+        data.deviceFingerprint,
+        data.deviceType ?? null,
+        data.browserName ?? null,
+        data.osName ?? null,
+        data.userAgentRaw ?? null,
+        data.userId ?? null,
+        data.username ?? null,
+        data.httpMethod,
+        data.endpoint,
+        data.controllerName ?? null,
+        data.actionName ?? null,
+        data.authEventType ?? null,
+        data.targetUserId ?? null,
+        data.httpStatusCode,
+        data.isSuccess ? 1 : 0,
+        data.failureReason ?? null,
+      ],
+    );
 
-        return result[0].ApiCallID;
-    }
+    return result[0].ApiCallID;
+  }
 
-    async logAuthChange(data: {
-        sessionId?: string | null;
-        deviceId: string;
-        deviceFingerprint: string;
-        ipAddress: string;
-        deviceType?: string | null;
-        browserName?: string | null;
-        osName?: string | null;
-        userAgentRaw?: string | null;
-        apiCallId?: string | null;
-        changedByUserId?: string | null;
-        changedByUsername?: string | null;
-        tableName: string;
-        entityType: string;
-        entityId: string;
-        affectedUserId?: string | null;
-        operationType: string;
-        fieldName?: string | null;
-        oldValue?: string | null;
-        newValue?: string | null;
-        rowSnapshotBefore?: string | null;
-        rowSnapshotAfter?: string | null;
-        changeCategory?: string | null;
-        changeReason?: string | null;
-        isSystemChange?: boolean;
-    }) {
-        await this.dataSource.query(
-            `
+  async logAuthChange(data: {
+    sessionId?: string | null;
+    deviceId: string;
+    deviceFingerprint: string;
+    ipAddress: string;
+    deviceType?: string | null;
+    browserName?: string | null;
+    osName?: string | null;
+    userAgentRaw?: string | null;
+    apiCallId?: string | null;
+    changedByUserId?: string | null;
+    changedByUsername?: string | null;
+    tableName: string;
+    entityType: string;
+    entityId: string;
+    affectedUserId?: string | null;
+    operationType: string;
+    fieldName?: string | null;
+    oldValue?: string | null;
+    newValue?: string | null;
+    rowSnapshotBefore?: string | null;
+    rowSnapshotAfter?: string | null;
+    changeCategory?: string | null;
+    changeReason?: string | null;
+    isSystemChange?: boolean;
+  }) {
+    await this.dataSource.query(
+      `
             INSERT INTO [OMS_Audit_DB].[audit].[ChangeLog_Auth]
             (
                 SessionID,
@@ -268,32 +266,32 @@ export class AuditRepository {
                 @23
             )
             `,
-            [
-                data.sessionId ?? null,
-                data.deviceId,
-                data.ipAddress,
-                data.deviceFingerprint,
-                data.deviceType ?? null,
-                data.browserName ?? null,
-                data.osName ?? null,
-                data.userAgentRaw ?? null,
-                data.apiCallId ?? null,
-                data.changedByUserId ?? null,
-                data.changedByUsername ?? null,
-                data.tableName,
-                data.entityType,
-                data.entityId,
-                data.affectedUserId ?? null,
-                data.operationType,
-                data.fieldName ?? null,
-                data.oldValue ?? null,
-                data.newValue ?? null,
-                data.rowSnapshotBefore ?? null,
-                data.rowSnapshotAfter ?? null,
-                data.changeCategory ?? null,
-                data.changeReason ?? null,
-                data.isSystemChange ? 1 : 0,
-            ],
-        );
-    }
+      [
+        data.sessionId ?? null,
+        data.deviceId,
+        data.ipAddress,
+        data.deviceFingerprint,
+        data.deviceType ?? null,
+        data.browserName ?? null,
+        data.osName ?? null,
+        data.userAgentRaw ?? null,
+        data.apiCallId ?? null,
+        data.changedByUserId ?? null,
+        data.changedByUsername ?? null,
+        data.tableName,
+        data.entityType,
+        data.entityId,
+        data.affectedUserId ?? null,
+        data.operationType,
+        data.fieldName ?? null,
+        data.oldValue ?? null,
+        data.newValue ?? null,
+        data.rowSnapshotBefore ?? null,
+        data.rowSnapshotAfter ?? null,
+        data.changeCategory ?? null,
+        data.changeReason ?? null,
+        data.isSystemChange ? 1 : 0,
+      ],
+    );
+  }
 }

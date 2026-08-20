@@ -1,7 +1,5 @@
 export interface AuthorizationResult {
+  authorized: boolean;
 
-    authorized: boolean;
-
-    reason?: string;
-
+  reason?: string;
 }

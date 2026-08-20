@@ -1,17 +1,15 @@
 export interface AuthorizationContext {
+  userId: string;
 
-    userId: string;
+  loginSessionId: string;
 
-    loginSessionId: string;
+  email: string;
 
-    email: string;
+  userType: string;
 
-    userType: string;
+  roles: string[];
 
-    roles: string[];
+  permissions: string[];
 
-    permissions: string[];
-
-    scopes: string[];
-
+  scopes: string[];
 }

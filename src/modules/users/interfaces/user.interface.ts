@@ -1,25 +1,25 @@
 export interface User {
-    id: number;
+  id: number;
 
-    employeeId: string;
+  employeeId: string;
 
-    firstName: string;
+  firstName: string;
 
-    lastName: string;
+  lastName: string;
 
-    email: string;
+  email: string;
 
-    phone?: string;
+  phone?: string;
 
-    roleId: number;
+  roleId: number;
 
-    departmentId?: number;
+  departmentId?: number;
 
-    designationId?: number;
+  designationId?: number;
 
-    status: 'ACTIVE' | 'INACTIVE';
+  status: 'ACTIVE' | 'INACTIVE';
 
-    createdAt: Date;
+  createdAt: Date;
 
-    updatedAt: Date;
+  updatedAt: Date;
 }

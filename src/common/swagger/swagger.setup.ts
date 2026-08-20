@@ -6,15 +6,20 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
  * @param app The NestJS application instance
  */
 export function setupSwagger(app: INestApplication): void {
-  // Disable Swagger in production environments
-  if (process.env.NODE_ENV === 'production') {
+  // Disable Swagger in production environments if needed
+  if (
+    process.env.NODE_ENV === 'production' &&
+    process.env.ENABLE_SWAGGER !== 'true'
+  ) {
     return;
   }
 
   // Configure Swagger DocumentBuilder
   const config = new DocumentBuilder()
-    .setTitle('Enterprise API')
-    .setDescription('Enterprise Management System API Documentation')
+    .setTitle('DIEZ Outsource Management System (OMS) API')
+    .setDescription(
+      'Authoritative REST API for DIEZ OMS. All business logic, SQL access, RBAC enforcement, and workflow decisions live here.',
+    )
     .setVersion('1.0')
     .addBearerAuth(
       {
@@ -25,7 +30,7 @@ export function setupSwagger(app: INestApplication): void {
       },
       'JWT',
     )
-    .addServer('http://localhost:4000/', 'Local environment')
+    .addServer('http://localhost:4000', 'Local development server')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
@@ -38,9 +43,18 @@ export function setupSwagger(app: INestApplication): void {
       operation.parameters = operation.parameters || [];
 
       operation.parameters.push({
+        name: 'x-correlation-id',
+        in: 'header',
+        description: 'Correlation ID for distributed tracing (UUIDv4)',
+        required: false,
+        schema: { type: 'string' },
+      });
+
+      operation.parameters.push({
         name: 'x-roles',
         in: 'header',
-        description: 'Proxy Simulation: User Roles (e.g. ["Admin", "Manager"])',
+        description:
+          'Proxy Simulation: User Roles (e.g. ["SYSTEM_ADMIN", "HR"])',
         required: false,
         schema: { type: 'string' },
       });
@@ -48,7 +62,8 @@ export function setupSwagger(app: INestApplication): void {
       operation.parameters.push({
         name: 'x-permissions',
         in: 'header',
-        description: 'Proxy Simulation: User Permissions (e.g. ["USER.MANAGE"])',
+        description:
+          'Proxy Simulation: User Permissions (e.g. ["USER.MANAGE", "REQUISITION.VIEW"])',
         required: false,
         schema: { type: 'string' },
       });
