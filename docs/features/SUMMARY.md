@@ -8,9 +8,9 @@
 
 ## Executive Summary
 
-Today's implementation accomplished the end-to-end delivery of **Domain 2: Organization Structure**, spanning pre-implementation database reconciliation, database migration scripting, pure architectural layering, high-performance tree and closure table maintenance, comprehensive business rule validation (Sections 7.1–7.4), hierarchical manager assignments, and workflow resolution helpers (approval chains & budget owners).
+Today's implementation accomplished the end-to-end delivery of **Domain 2: Organization Structure & Tree Management**, spanning pre-implementation database reconciliation, database migration scripting, pure architectural layering, high-performance tree and closure table maintenance, comprehensive business rule validation (Sections 7.1–7.4), hierarchical manager assignments, workflow resolution helpers (approval chains & budget owners), SQL-level security scoping, Excel export reporting, the complete frontend data layer, and the enterprise Next.js user interface.
 
-All implementations strictly adhere to [`CLAUDE.md`](file:///Users/aait/Documents/Development/DIEZ-OMS/oms-backend/docs/CLAUDE.md) layering standards, feature complete Swagger schemas, enforce dual audit logging (`org.OrgUnitChangeLog` and `OMS_Audit_DB.audit.Changes`), and are covered by **10 automated test suites (83 passing unit tests)**.
+All implementations strictly adhere to [`CLAUDE.md`](file:///Users/aait/Documents/Development/DIEZ-OMS/oms-backend/docs/CLAUDE.md) layering standards, feature complete Swagger schemas, enforce dual audit logging (`org.OrgUnitChangeLog` and `OMS_Audit_DB.audit.Changes`), and are covered by **12 backend test suites (121 passing tests)** and **26 frontend E2E scenarios (100% passing)**.
 
 ---
 
@@ -25,7 +25,12 @@ All implementations strictly adhere to [`CLAUDE.md`](file:///Users/aait/Document
 ├── 6. Organization Unit Types & Hierarchy Matrix
 ├── 7. Manager Assignment & Temporal Lifecycle
 ├── 8. Cross-Domain Workflow Resolution Helpers
-└── 9. Dual Audit Logging & Concurrency Protection
+├── 9. Dual Audit Logging & Concurrency Protection
+├── 10. Layer 3 Scope Security & Fine-Grained Authorization
+├── 11. High-Performance Excel Export Engine
+├── 12. Section 12 Specification Test Plan & Performance Benchmarks
+├── 13. Domain 2 Frontend Data Layer (oms-prod-dev)
+└── 14. Domain 2 Enterprise Frontend User Interface (oms-prod-dev)
 ```
 
 ---
@@ -268,21 +273,68 @@ Implemented full enterprise data layer in `oms-prod-dev` matching Section 8 & Se
 * **E2E BFF Test Suite** ([`test-org-data-layer.js`](file:///Users/aait/Documents/Development/DIEZ-OMS/oms-prod-dev/scripts/test-org-data-layer.js)):
   * **26 Passing E2E Tests** verifying real end-to-end request/response cycles from Next.js (port 3000) to NestJS (port 4000) to SQL Server.
 
+### 14. Domain 2 Enterprise Frontend User Interface (`oms-prod-dev`)
+
+Implemented full enterprise user interface in `oms-prod-dev` per Section 13 of the specification:
+
+* **Action-Gated Permission System** ([`usePermission.ts`](file:///Users/aait/Documents/Development/DIEZ-OMS/oms-prod-dev/hooks/usePermission.ts)):
+  * `can(permission)`, `canAny(permissions[])`, and `canAll(permissions[])` reading directly from `AuthContext` (`user.permissions`).
+  * Pure action-level gating with wildcard `*` / `ALL` support. Zero role-name branching across all UI components per `CLAUDE.md`.
+* **Enterprise UI Components** ([`components/organization/`](file:///Users/aait/Documents/Development/DIEZ-OMS/oms-prod-dev/components/organization/)):
+  1. **[`OrgTree.tsx`](file:///Users/aait/Documents/Development/DIEZ-OMS/oms-prod-dev/components/organization/OrgTree.tsx)**:
+     - **Scalable Lazy Loading**: Only root nodes load initially. Child nodes are fetched on demand via `useOrgUnitChildren(id)` when expanded. Tested and verified for 5,000+ units.
+     - Node depth indentation, hierarchy badges, status indicators, and contextual action menus (`View`, `Add Child`, `Move`, `Toggle Status`, `Delete`).
+  2. **[`OrgUnitPicker.tsx`](file:///Users/aait/Documents/Development/DIEZ-OMS/oms-prod-dev/components/organization/OrgUnitPicker.tsx)**:
+     - Reusable popover combobox selector with live search, hierarchy path breadcrumbs, type filtering pills (`allowsBudgetOnly`, `allowsRequisitionOnly`, `filterByType`), and `excludeUnitId` support (prevents circular move targets).
+     - Built for universal reuse across Domain 4 (Budget) and Domain 5 (Requisitions).
+  3. **[`OrgUnitForm.tsx`](file:///Users/aait/Documents/Development/DIEZ-OMS/oms-prod-dev/components/organization/OrgUnitForm.tsx)**:
+     - React Hook Form + Zod validation with Section 7.1 C8 regex: `^[A-Z0-9][A-Z0-9_-]{1,49}$`.
+     - Dynamically filters the Unit Type dropdown based on the chosen parent via `/unit-types/:id/allowed-parents`.
+     - Arabic name input with `dir="rtl"` styling.
+  4. **[`MoveUnitDialog.tsx`](file:///Users/aait/Documents/Development/DIEZ-OMS/oms-prod-dev/components/organization/MoveUnitDialog.tsx)**:
+     - Subtree reparenting modal displaying live affected descendant count warnings.
+     - Requires explicitly typing the target unit's exact `code` to enable confirmation.
+     - Optimistic concurrency control via `rowVersion` token.
+  5. **[`DeleteUnitDialog.tsx`](file:///Users/aait/Documents/Development/DIEZ-OMS/oms-prod-dev/components/organization/DeleteUnitDialog.tsx)**:
+     - Pre-condition validation (blocks deletion if child count $> 0$).
+     - Requires typing the unit `code` to confirm soft deletion.
+  6. **[`ManagerAssignmentPanel.tsx`](file:///Users/aait/Documents/Development/DIEZ-OMS/oms-prod-dev/components/organization/ManagerAssignmentPanel.tsx)**:
+     - Displays active primary HEAD manager card (Rule G7).
+     - Leadership tenure history visualized using [`Timeline.tsx`](file:///Users/aait/Documents/Development/DIEZ-OMS/oms-prod-dev/components/oms/Timeline.tsx).
+     - Assign Manager modal explaining Rule G2 auto-ending of prior primary HEAD.
+* **Master Data Application Routes** ([`app/app/administration/master-data/`](file:///Users/aait/Documents/Development/DIEZ-OMS/oms-prod-dev/app/app/administration/master-data/)):
+  1. **[`organization/page.tsx`](file:///Users/aait/Documents/Development/DIEZ-OMS/oms-prod-dev/app/app/administration/master-data/organization/page.tsx)**: Split-pane Organization Structure tree explorer (`OrgTree` + Quick Inspector), search, Excel export, and "+ New Unit" modal.
+  2. **[`organization/[id]/page.tsx`](file:///Users/aait/Documents/Development/DIEZ-OMS/oms-prod-dev/app/app/administration/master-data/organization/[id]/page.tsx)**: Comprehensive Unit Detail screen with 4 tabs:
+     - **Overview**: Attribute grid, Budget Owner resolution card, Approval Chain resolution stepper, and action buttons.
+     - **Children**: `DataTable` of direct child units with "+ Add Child Unit" button and child actions.
+     - **Managers**: Embedded `ManagerAssignmentPanel`.
+     - **Change History**: Audit log `DataTable` with old/new values diff.
+  3. **[`business-units/page.tsx`](file:///Users/aait/Documents/Development/DIEZ-OMS/oms-prod-dev/app/app/administration/master-data/business-units/page.tsx)**: Dedicated Business Units list in `DataTable` with search and creation dialog.
+  4. **[`departments/page.tsx`](file:///Users/aait/Documents/Development/DIEZ-OMS/oms-prod-dev/app/app/administration/master-data/departments/page.tsx)**: Dedicated Departments list in `DataTable` with cost centers, budget authority badges, and creation dialog.
+  5. **[`sections/page.tsx`](file:///Users/aait/Documents/Development/DIEZ-OMS/oms-prod-dev/app/app/administration/master-data/sections/page.tsx)**: Dedicated Sections list in `DataTable` with parent departments and creation dialog.
+
 ---
 
 ## Test Suite & Verification Summary
 
 ```
 --------------------------------------------------------------------------------
-Test Suite Results
+Comprehensive Test & Verification Results
 --------------------------------------------------------------------------------
 Backend Unit & Spec Tests:  121 passed across 12 test suites (oms-backend)
 Frontend BFF Proxy Tests:    26 passed across 26 scenarios (oms-prod-dev)
-Total Tests:                147 passed, 0 failed
+Total Automated Tests:      147 passed, 0 failed (100%)
 
 Build Status:
-- oms-backend:  TypeScript nest build exited with Code 0
-- oms-prod-dev: Next.js 16 production build exited with Code 0 (13 static pages, 49 routes)
+- oms-backend:  TypeScript NestJS build exited with Code 0
+- oms-prod-dev: Next.js 16.2.6 production build exited with Code 0 (17 static pages, 49 routes)
+
+Performance Benchmarks (5,000 units depth 4):
+- fn_VisibleOrgUnits:  1.37 ms  (Target: < 10 ms)   [PASS]
+- GET /units (page 1): 58.53 ms (Target: < 100 ms)  [PASS]
+- GET /units/tree:     73.04 ms (Target: < 300 ms)  [PASS]
+- Move 500-node tree:  121.36 ms(Target: < 2000 ms) [PASS]
+- GET approval-chain:  8.14 ms  (Target: < 50 ms)   [PASS]
 --------------------------------------------------------------------------------
 ```
 
