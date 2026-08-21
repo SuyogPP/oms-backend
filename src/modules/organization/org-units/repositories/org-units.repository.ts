@@ -1126,4 +1126,27 @@ export class OrgUnitsRepository {
       filters.isActive !== undefined ? (filters.isActive ? 1 : 0) : null,
     ]);
   }
+
+  /**
+   * Resolves a user's display name from auth.Users and auth.UserProfiles.
+   */
+  async findUserDisplayName(
+    userId: string,
+    qr?: QueryRunner,
+  ): Promise<{ userId: string; username: string; displayName: string | null } | null> {
+    const sql = `
+      SELECT
+        u.UserID AS userId,
+        u.Username AS username,
+        CASE
+          WHEN p.FirstName IS NOT NULL THEN CONCAT(p.FirstName, ' ', p.LastName)
+          ELSE u.Username
+        END AS displayName
+      FROM auth.Users u
+      LEFT JOIN auth.UserProfiles p ON p.UserID = u.UserID
+      WHERE u.UserID = @0;
+    `;
+    const rows = await this.getExecutor(qr).query(sql, [userId]);
+    return rows.length > 0 ? rows[0] : null;
+  }
 }

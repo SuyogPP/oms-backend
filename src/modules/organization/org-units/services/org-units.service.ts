@@ -36,6 +36,7 @@ import { OrgUnitsMapper } from '../org-units.mapper';
 import { OrgUnitChangeLogRepository } from '../repositories/org-unit-change-log.repository';
 import { OrgUnitTypesRepository } from '../repositories/org-unit-types.repository';
 import { OrgUnitsRepository } from '../repositories/org-units.repository';
+import { OrgManagersRepository } from '../../org-managers/repositories/org-managers.repository';
 import { OrgScopeResolverService } from '../../org-scope/services/org-scope-resolver.service';
 import { OrgUnitTreeService } from './org-unit-tree.service';
 import { OrgUnitValidationService } from './org-unit-validation.service';
@@ -50,6 +51,7 @@ export class OrgUnitsService {
     private readonly orgUnitValidationService: OrgUnitValidationService,
     private readonly typesRepository: OrgUnitTypesRepository,
     private readonly changeLogRepository: OrgUnitChangeLogRepository,
+    private readonly orgManagersRepository: OrgManagersRepository,
     private readonly mapper: OrgUnitsMapper,
     private readonly auditService: AuditService,
     private readonly orgScopeResolverService: OrgScopeResolverService,
@@ -71,15 +73,39 @@ export class OrgUnitsService {
   }
 
   /**
-   * Helper: Resolves head summary if assigned.
+   * Helper: Resolves authoritative head manager or user summary if assigned.
    */
-  private async getHeadSummary(headUserId?: string | null): Promise<OrgHeadSummaryEntity | null> {
+  private async getHeadSummary(
+    orgUnitId: string,
+    headUserId?: string | null,
+  ): Promise<OrgHeadSummaryEntity | null> {
+    const currentHead = await this.orgManagersRepository.findCurrentHead(orgUnitId);
+    if (currentHead) {
+      const displayName =
+        currentHead.userDisplayName?.trim() || currentHead.username || null;
+      return {
+        userId: currentHead.userId,
+        displayName: displayName || 'Unassigned',
+        effectiveFrom: currentHead.effectiveFrom
+          ? String(currentHead.effectiveFrom).split('T')[0]
+          : new Date().toISOString().split('T')[0],
+      };
+    }
+
     if (!headUserId) return null;
-    return {
-      userId: headUserId,
-      displayName: 'Assigned Head',
-      effectiveFrom: new Date().toISOString().split('T')[0],
-    };
+
+    const userRow = await this.orgUnitsRepository.findUserDisplayName(headUserId);
+    if (userRow) {
+      const displayName =
+        userRow.displayName?.trim() || userRow.username || null;
+      return {
+        userId: headUserId,
+        displayName: displayName || 'Unassigned',
+        effectiveFrom: new Date().toISOString().split('T')[0],
+      };
+    }
+
+    return null;
   }
 
   /**
@@ -176,7 +202,7 @@ export class OrgUnitsService {
         this.orgUnitsRepository.countDirectChildren(orgUnitId),
         this.orgUnitsRepository.countSubtreeDescendants(orgUnitId),
         this.getBreadcrumbs(orgUnitId),
-        this.getHeadSummary(unit.headUserId),
+        this.getHeadSummary(orgUnitId, unit.headUserId),
       ]);
 
     return this.mapper.toOrgUnitDetailEntity(
