@@ -88,6 +88,29 @@ export class AuditRepository {
     return result[0].DeviceID;
   }
 
+  async ensureSession(sessionId?: string | null): Promise<string | null> {
+    if (!sessionId) return null;
+
+    try {
+      const rows = await this.dataSource.query(
+        `
+        SELECT TOP 1 SessionID
+        FROM [OMS_Audit_DB].[audit].[Sessions]
+        WHERE SessionID = @0
+        `,
+        [sessionId],
+      );
+
+      if (rows && rows.length > 0) {
+        return sessionId;
+      }
+
+      return null;
+    } catch {
+      return null;
+    }
+  }
+
   async logAuthApiCall(data: {
     sessionId?: string | null;
     deviceId: string;
@@ -109,6 +132,8 @@ export class AuditRepository {
     isSuccess: boolean;
     failureReason?: string | null;
   }) {
+    const validSessionId = await this.ensureSession(data.sessionId);
+
     const result = await this.dataSource.query(
       `
             INSERT INTO [OMS_Audit_DB].[audit].[ApiCallLog_Auth]
@@ -158,7 +183,7 @@ export class AuditRepository {
             )
             `,
       [
-        data.sessionId ?? null,
+        validSessionId,
         data.deviceId,
         data.ipAddress,
         data.deviceFingerprint,
@@ -209,6 +234,8 @@ export class AuditRepository {
     changeReason?: string | null;
     isSystemChange?: boolean;
   }) {
+    const validSessionId = await this.ensureSession(data.sessionId);
+
     await this.dataSource.query(
       `
             INSERT INTO [OMS_Audit_DB].[audit].[ChangeLog_Auth]
@@ -267,7 +294,7 @@ export class AuditRepository {
             )
             `,
       [
-        data.sessionId ?? null,
+        validSessionId,
         data.deviceId,
         data.ipAddress,
         data.deviceFingerprint,
