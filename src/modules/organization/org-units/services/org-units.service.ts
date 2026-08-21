@@ -97,6 +97,7 @@ export class OrgUnitsService {
       currentUserId,
       {
         orgUnitTypeId: query.orgUnitTypeId,
+        depth: query.depth,
         parentOrgUnitId: query.parentOrgUnitId,
         search: query.search,
         isActive: query.isActive,

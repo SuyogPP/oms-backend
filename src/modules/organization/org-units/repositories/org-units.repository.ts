@@ -558,6 +558,7 @@ export class OrgUnitsRepository {
     userId: string,
     options: {
       orgUnitTypeId?: number;
+      depth?: number;
       parentOrgUnitId?: string;
       search?: string;
       isActive?: boolean;
@@ -577,7 +578,8 @@ export class OrgUnitsRepository {
         AND (@1 IS NULL OR u.OrgUnitTypeId = @1)
         AND (@2 IS NULL OR u.ParentOrgUnitId = @2)
         AND (@3 IS NULL OR (u.Name LIKE '%' + @3 + '%' OR u.Code LIKE '%' + @3 + '%'))
-        AND (@4 IS NULL OR u.IsActive = @4);
+        AND (@4 IS NULL OR u.IsActive = @4)
+        AND (@5 IS NULL OR u.Depth = @5);
     `;
 
     const countParams = [
@@ -586,6 +588,7 @@ export class OrgUnitsRepository {
       options.parentOrgUnitId ?? null,
       options.search ?? null,
       options.isActive !== undefined ? (options.isActive ? 1 : 0) : null,
+      options.depth !== undefined ? options.depth : null,
     ];
 
     const countRes = await this.getExecutor(qr).query(countSql, countParams);
@@ -627,8 +630,9 @@ export class OrgUnitsRepository {
         AND (@2 IS NULL OR u.ParentOrgUnitId = @2)
         AND (@3 IS NULL OR (u.Name LIKE '%' + @3 + '%' OR u.Code LIKE '%' + @3 + '%'))
         AND (@4 IS NULL OR u.IsActive = @4)
+        AND (@5 IS NULL OR u.Depth = @5)
       ORDER BY u.Depth ASC, u.SortOrder ASC, u.Name ASC
-      OFFSET @5 ROWS FETCH NEXT @6 ROWS ONLY;
+      OFFSET @6 ROWS FETCH NEXT @7 ROWS ONLY;
     `;
 
     const dataParams = [...countParams, offset, limit];

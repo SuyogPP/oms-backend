@@ -1,13 +1,20 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsBoolean, IsInt, IsOptional, IsString, IsUUID } from 'class-validator';
-import { Transform } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import { PaginationQueryDto } from '../../../../common/dto/pagination.dto';
 
 export class ListOrgUnitsDto extends PaginationQueryDto {
   @ApiPropertyOptional({ description: 'Filter by OrgUnitTypeId (1=ORG, 2=BU, 3=DEPT, 4=SECTION)' })
   @IsOptional()
+  @Type(() => Number)
   @IsInt()
   orgUnitTypeId?: number;
+
+  @ApiPropertyOptional({ description: 'Filter by hierarchy depth level (0=root, 1=BU, 2=DEPT, 3=SECTION)' })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  depth?: number;
 
   @ApiPropertyOptional({ description: 'Filter direct children of specified parent' })
   @IsOptional()
