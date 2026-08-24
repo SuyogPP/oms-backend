@@ -20,10 +20,10 @@ import { SecurityEventsModule } from './modules/security-events/security-events.
 import { AuditModule } from './modules/audit/audit.module';
 import { SecurityModule } from './modules/security/security.module';
 import { HealthModule } from './modules/health/health.module';
-import { UsersModule } from './modules/users/users.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { RetentionModule } from './modules/retention/retention.module';
 import { OrganizationModule } from './modules/organization/organization.module';
+import { AuthorizationModule } from './modules/authorization/authorization.module';
 
 // Guards
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
@@ -57,10 +57,10 @@ import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 
     // Domain Modules
     HealthModule,
-    UsersModule,
     AuthModule,
     RetentionModule,
     OrganizationModule,
+    AuthorizationModule,
   ],
   providers: [
     // 1. Rate Limiting Guard (Applies before JWT auth)

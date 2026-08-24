@@ -54,7 +54,10 @@ export class AuthorizationService {
       throw new ForbiddenException('Insufficient permissions');
     }
 
-    if (context.permissions.includes('SECURITY.ADMIN')) {
+    if (
+      context.roles?.includes('SYSTEM_ADMIN') ||
+      context.permissions.includes('SECURITY.ADMIN')
+    ) {
       return;
     }
 

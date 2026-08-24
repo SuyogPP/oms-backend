@@ -1,0 +1,6 @@
+export const DELEGATION_PERMISSIONS = {
+  MANAGE: 'USER.DELEGATION.MANAGE',
+  VIEW: 'USER.VIEW',
+} as const;
+
+export const MAX_DELEGATION_DURATION_DAYS = 90;

@@ -111,6 +111,99 @@ export class AuditService {
     });
   }
 
+  async logUserUpdated(data: {
+    userId: string;
+    updatedFields?: any;
+    ipAddress?: string;
+    userAgent?: string;
+  }) {
+    const deviceFingerprint = data.userAgent ?? 'UNKNOWN_DEVICE';
+    const ipAddress = data.ipAddress ?? '0.0.0.0';
+
+    const deviceId = await this.auditRepository.ensureDevice({
+      deviceFingerprint,
+      ipAddress,
+      deviceType: 'UNKNOWN',
+      browserName: null,
+      osName: null,
+      userAgentRaw: data.userAgent ?? null,
+    });
+
+    await this.auditRepository.logAuthChange({
+      sessionId: null,
+      deviceId,
+      deviceFingerprint,
+      ipAddress,
+      deviceType: 'UNKNOWN',
+      browserName: null,
+      osName: null,
+      userAgentRaw: data.userAgent ?? null,
+      apiCallId: null,
+      changedByUserId: null,
+      changedByUsername: null,
+      tableName: 'Users',
+      entityType: 'USER',
+      entityId: data.userId,
+      affectedUserId: data.userId,
+      operationType: 'UPDATE',
+      fieldName: null,
+      oldValue: null,
+      newValue: null,
+      rowSnapshotBefore: null,
+      rowSnapshotAfter: data.updatedFields ? JSON.stringify(data.updatedFields) : null,
+      changeCategory: 'IDENTITY_CHANGE',
+      changeReason: 'User profile/identity updated',
+      isSystemChange: false,
+    });
+  }
+
+  async logUserStatusChanged(data: {
+    userId: string;
+    isActive: boolean;
+    reason?: string;
+    ipAddress?: string;
+    userAgent?: string;
+  }) {
+    const deviceFingerprint = data.userAgent ?? 'UNKNOWN_DEVICE';
+    const ipAddress = data.ipAddress ?? '0.0.0.0';
+
+    const deviceId = await this.auditRepository.ensureDevice({
+      deviceFingerprint,
+      ipAddress,
+      deviceType: 'UNKNOWN',
+      browserName: null,
+      osName: null,
+      userAgentRaw: data.userAgent ?? null,
+    });
+
+    await this.auditRepository.logAuthChange({
+      sessionId: null,
+      deviceId,
+      deviceFingerprint,
+      ipAddress,
+      deviceType: 'UNKNOWN',
+      browserName: null,
+      osName: null,
+      userAgentRaw: data.userAgent ?? null,
+      apiCallId: null,
+      changedByUserId: null,
+      changedByUsername: null,
+      tableName: 'Users',
+      entityType: 'USER',
+      entityId: data.userId,
+      affectedUserId: data.userId,
+      operationType: 'STATUS_CHANGE',
+      fieldName: 'IsActive',
+      oldValue: data.isActive ? '0' : '1',
+      newValue: data.isActive ? '1' : '0',
+      rowSnapshotBefore: null,
+      rowSnapshotAfter: null,
+      changeCategory: 'IDENTITY_CHANGE',
+      changeReason: data.reason ?? 'User active status changed',
+      isSystemChange: false,
+    });
+  }
+
   async logUserDeleted(data: {
     userId: string;
     ipAddress?: string;

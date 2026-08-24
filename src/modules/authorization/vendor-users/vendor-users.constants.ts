@@ -1,0 +1,3 @@
+export const VENDOR_USER_PERMISSIONS = {
+  MANAGE: 'VENDORUSER.MANAGE',
+} as const;

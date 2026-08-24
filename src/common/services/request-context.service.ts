@@ -12,6 +12,7 @@ export interface RequestContextStore {
   loginSessionId?: string | null;
   path: string;
   method: string;
+  effectivePermissionsCache?: Map<string, any>;
 }
 
 @Injectable()
@@ -93,5 +94,25 @@ export class RequestContextService {
 
   getMethod(): string {
     return this.getStore()?.method || '';
+  }
+
+  /**
+   * Retrieves a cached value from the current request context store.
+   */
+  getCachedPermission<T>(key: string): T | undefined {
+    return this.getStore()?.effectivePermissionsCache?.get(key);
+  }
+
+  /**
+   * Caches a value inside the current request context store.
+   */
+  setCachedPermission<T>(key: string, value: T): void {
+    const store = this.getStore();
+    if (store) {
+      if (!store.effectivePermissionsCache) {
+        store.effectivePermissionsCache = new Map<string, any>();
+      }
+      store.effectivePermissionsCache.set(key, value);
+    }
   }
 }
