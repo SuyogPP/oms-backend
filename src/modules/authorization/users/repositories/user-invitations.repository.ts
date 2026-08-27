@@ -25,29 +25,32 @@ export class UserInvitationsRepository {
     const rows = await this.getExecutor(qr).query(
       `
       INSERT INTO [auth].[UserInvitations] (
-          InvitationID,
+          UserInvitationID,
           UserID,
           TokenHash,
           Purpose,
           ExpiresAt,
-          CreatedAt,
-          CreatedBy
+          IssuedByUserID,
+          IssuedToEmail,
+          CreatedAt
       )
-      OUTPUT INSERTED.InvitationID AS invitationId
-      VALUES (
+      OUTPUT INSERTED.UserInvitationID AS invitationId
+      SELECT
           NEWID(),
           @0,
-          @1,
+          CONVERT(VARBINARY(32), @1, 2),
           @2,
           @3,
-          SYSUTCDATETIME(),
-          @4
-      );
+          @4,
+          COALESCE(u.Email, 'user@domain.com'),
+          SYSUTCDATETIME()
+      FROM [auth].[Users] u
+      WHERE u.UserID = @0;
       `,
       [userId, tokenHash, purpose, expiresAt, createdBy || null],
     );
 
-    return rows[0].invitationId;
+    return rows[0]?.invitationId || userId;
   }
 
   /**
@@ -60,16 +63,16 @@ export class UserInvitationsRepository {
     const rows = await this.getExecutor(qr).query(
       `
       SELECT 
-          i.InvitationID AS invitationId,
+          i.UserInvitationID AS invitationId,
           i.UserID AS userId,
-          i.TokenHash AS tokenHash,
+          CONVERT(NVARCHAR(64), i.TokenHash, 2) AS tokenHash,
           i.Purpose AS purpose,
           i.ExpiresAt AS expiresAt,
           i.ConsumedAt AS consumedAt,
           i.CreatedAt AS createdAt,
-          i.CreatedBy AS createdBy
+          i.IssuedByUserID AS createdBy
       FROM [auth].[UserInvitations] i
-      WHERE i.TokenHash = @0;
+      WHERE i.TokenHash = CONVERT(VARBINARY(32), @0, 2);
       `,
       [tokenHash],
     );
@@ -102,7 +105,7 @@ export class UserInvitationsRepository {
       `
       UPDATE [auth].[UserInvitations]
       SET ConsumedAt = SYSUTCDATETIME()
-      WHERE InvitationID = @0;
+      WHERE UserInvitationID = @0;
       `,
       [invitationId],
     );
@@ -119,10 +122,11 @@ export class UserInvitationsRepository {
     await this.getExecutor(qr).query(
       `
       UPDATE [auth].[UserInvitations]
-      SET ConsumedAt = SYSUTCDATETIME()
+      SET ConsumedAt = SYSUTCDATETIME(), RevokedAt = SYSUTCDATETIME()
       WHERE UserID = @0
         AND Purpose = @1
-        AND ConsumedAt IS NULL;
+        AND ConsumedAt IS NULL
+        AND RevokedAt IS NULL;
       `,
       [userId, purpose],
     );
@@ -139,14 +143,14 @@ export class UserInvitationsRepository {
     const rows = await this.getExecutor(qr).query(
       `
       SELECT TOP 1
-          i.InvitationID AS invitationId,
+          i.UserInvitationID AS invitationId,
           i.UserID AS userId,
-          i.TokenHash AS tokenHash,
+          CONVERT(NVARCHAR(64), i.TokenHash, 2) AS tokenHash,
           i.Purpose AS purpose,
           i.ExpiresAt AS expiresAt,
           i.ConsumedAt AS consumedAt,
           i.CreatedAt AS createdAt,
-          i.CreatedBy AS createdBy
+          i.IssuedByUserID AS createdBy
       FROM [auth].[UserInvitations] i
       WHERE i.UserID = @0 AND i.Purpose = @1
       ORDER BY i.CreatedAt DESC;
@@ -190,21 +194,21 @@ export class UserInvitationsRepository {
     const rows = await this.getExecutor(qr).query(
       `
       SELECT 
-          i.InvitationID AS invitationId,
+          i.UserInvitationID AS invitationId,
           i.UserID AS userId,
-          i.TokenHash AS tokenHash,
+          CONVERT(NVARCHAR(64), i.TokenHash, 2) AS tokenHash,
           i.Purpose AS purpose,
           i.ExpiresAt AS expiresAt,
           i.ConsumedAt AS consumedAt,
           i.CreatedAt AS createdAt,
-          i.CreatedBy AS createdBy,
+          i.IssuedByUserID AS createdBy,
           u.Username AS username,
           u.Email AS email,
           u.IsActive AS isActive,
           u.IsDeleted AS isDeleted
       FROM [auth].[UserInvitations] i
       INNER JOIN [auth].[Users] u ON u.UserID = i.UserID
-      WHERE i.TokenHash = @0;
+      WHERE i.TokenHash = CONVERT(VARBINARY(32), @0, 2);
       `,
       [tokenHash],
     );

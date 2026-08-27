@@ -15,6 +15,7 @@ export class UsersMapper {
       lockedUntil: model.lockedUntil,
       status: model.status,
       profile: model.profile ? { ...model.profile } : null,
+      roles: model.roles || [],
       createdAt: model.createdAt,
       updatedAt: model.updatedAt,
     };

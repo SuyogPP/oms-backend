@@ -69,6 +69,13 @@ export class UserFilterDto {
   @Min(1)
   @IsOptional()
   @Type(() => Number)
+  pageSize?: number;
+
+  @ApiProperty({ example: 20, required: false, default: 20 })
+  @IsInt()
+  @Min(1)
+  @IsOptional()
+  @Type(() => Number)
   limit: number = 20;
 
   @ApiProperty({ example: 'createdAt', required: false, default: 'createdAt' })

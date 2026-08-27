@@ -59,6 +59,7 @@ export class UsersService {
       total: result.total,
       page: result.page,
       limit: result.limit,
+      pageSize: result.limit,
       totalPages: result.totalPages,
     };
   }

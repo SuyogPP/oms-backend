@@ -124,6 +124,7 @@ export interface IUserFilterOptions {
   isLocked?: boolean;
   requesterUserId?: string;
   page?: number;
+  pageSize?: number;
   limit?: number;
   sortBy?: string;
   sortOrder?: 'ASC' | 'DESC';
@@ -133,6 +134,7 @@ export interface IUserListResult {
   items: IUserWithProfile[];
   total: number;
   page: number;
+  pageSize?: number;
   limit: number;
   totalPages: number;
 }

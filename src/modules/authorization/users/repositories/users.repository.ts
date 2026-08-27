@@ -43,18 +43,28 @@ export class UsersRepository {
           p.UserProfileID AS userProfileId,
           p.FirstName AS firstName,
           p.LastName AS lastName,
-          p.DisplayName AS displayName,
-          p.PhoneNumber AS phoneNumber,
+          RTRIM(LTRIM(p.FirstName + ' ' + ISNULL(p.LastName, ''))) AS displayName,
+          p.MobileNo AS phoneNumber,
           p.JobTitle AS jobTitle,
-          p.OrganizationID AS organizationId,
+          CAST(NULL AS UNIQUEIDENTIFIER) AS organizationId,
           p.BusinessUnitID AS businessUnitId,
           p.DepartmentID AS departmentId,
           p.SectionID AS sectionId,
-          p.VendorID AS vendorId,
-          p.MustChangePassword AS mustChangePassword,
-          p.PasswordChangedAt AS passwordChangedAt
+          CAST(NULL AS UNIQUEIDENTIFIER) AS vendorId,
+          ISNULL(lc.MustChangePassword, 0) AS mustChangePassword,
+          lc.PasswordChangedAt AS passwordChangedAt,
+          (
+            SELECT STRING_AGG(r.RoleCode, ',')
+            FROM [auth].[UserRoles] ur
+            INNER JOIN [auth].[Roles] r ON r.RoleID = ur.RoleID
+            WHERE ur.UserID = u.UserID
+              AND ur.IsActive = 1
+              AND (ur.EffectiveFrom IS NULL OR ur.EffectiveFrom <= SYSUTCDATETIME())
+              AND (ur.EffectiveTo IS NULL OR ur.EffectiveTo > SYSUTCDATETIME())
+          ) AS roles
       FROM [auth].[Users] u
       LEFT JOIN [auth].[UserProfiles] p ON p.UserID = u.UserID
+      LEFT JOIN [auth].[LocalCredentials] lc ON lc.UserID = u.UserID
       WHERE u.UserID = @0 AND u.IsDeleted = 0;
       `,
       [userId],
@@ -95,18 +105,28 @@ export class UsersRepository {
           p.UserProfileID AS userProfileId,
           p.FirstName AS firstName,
           p.LastName AS lastName,
-          p.DisplayName AS displayName,
-          p.PhoneNumber AS phoneNumber,
+          RTRIM(LTRIM(p.FirstName + ' ' + ISNULL(p.LastName, ''))) AS displayName,
+          p.MobileNo AS phoneNumber,
           p.JobTitle AS jobTitle,
-          p.OrganizationID AS organizationId,
+          CAST(NULL AS UNIQUEIDENTIFIER) AS organizationId,
           p.BusinessUnitID AS businessUnitId,
           p.DepartmentID AS departmentId,
           p.SectionID AS sectionId,
-          p.VendorID AS vendorId,
-          p.MustChangePassword AS mustChangePassword,
-          p.PasswordChangedAt AS passwordChangedAt
+          CAST(NULL AS UNIQUEIDENTIFIER) AS vendorId,
+          ISNULL(lc.MustChangePassword, 0) AS mustChangePassword,
+          lc.PasswordChangedAt AS passwordChangedAt,
+          (
+            SELECT STRING_AGG(r.RoleCode, ',')
+            FROM [auth].[UserRoles] ur
+            INNER JOIN [auth].[Roles] r ON r.RoleID = ur.RoleID
+            WHERE ur.UserID = u.UserID
+              AND ur.IsActive = 1
+              AND (ur.EffectiveFrom IS NULL OR ur.EffectiveFrom <= SYSUTCDATETIME())
+              AND (ur.EffectiveTo IS NULL OR ur.EffectiveTo > SYSUTCDATETIME())
+          ) AS roles
       FROM [auth].[Users] u
       LEFT JOIN [auth].[UserProfiles] p ON p.UserID = u.UserID
+      LEFT JOIN [auth].[LocalCredentials] lc ON lc.UserID = u.UserID
       WHERE u.UserID = @0;
       `,
       [userId],
@@ -207,11 +227,13 @@ export class UsersRepository {
       isLocked,
       requesterUserId,
       page = 1,
-      limit = 20,
+      limit: rawLimit,
+      pageSize,
       sortBy = 'createdAt',
       sortOrder = 'DESC',
     } = options;
 
+    const limit = pageSize ?? rawLimit ?? 20;
     const offset = (page - 1) * limit;
     const params: any[] = [];
     let paramIndex = 0;
@@ -272,15 +294,13 @@ export class UsersRepository {
     }
 
     if (organizationId) {
-      whereClause += ` AND p.OrganizationID = @${paramIndex}`;
+      whereClause += ` AND (p.DepartmentID = @${paramIndex} OR p.BusinessUnitID = @${paramIndex})`;
       params.push(organizationId);
       paramIndex++;
     }
 
     if (vendorId) {
-      whereClause += ` AND p.VendorID = @${paramIndex}`;
-      params.push(vendorId);
-      paramIndex++;
+      whereClause += ` AND u.UserType = 'VENDOR'`;
     }
 
     if (options.hasNoRole) {
@@ -368,18 +388,28 @@ export class UsersRepository {
           p.UserProfileID AS userProfileId,
           p.FirstName AS firstName,
           p.LastName AS lastName,
-          p.DisplayName AS displayName,
-          p.PhoneNumber AS phoneNumber,
+          RTRIM(LTRIM(p.FirstName + ' ' + ISNULL(p.LastName, ''))) AS displayName,
+          p.MobileNo AS phoneNumber,
           p.JobTitle AS jobTitle,
-          p.OrganizationID AS organizationId,
+          CAST(NULL AS UNIQUEIDENTIFIER) AS organizationId,
           p.BusinessUnitID AS businessUnitId,
           p.DepartmentID AS departmentId,
           p.SectionID AS sectionId,
-          p.VendorID AS vendorId,
-          p.MustChangePassword AS mustChangePassword,
-          p.PasswordChangedAt AS passwordChangedAt
+          CAST(NULL AS UNIQUEIDENTIFIER) AS vendorId,
+          ISNULL(lc.MustChangePassword, 0) AS mustChangePassword,
+          lc.PasswordChangedAt AS passwordChangedAt,
+          (
+            SELECT STRING_AGG(r.RoleCode, ',')
+            FROM [auth].[UserRoles] ur
+            INNER JOIN [auth].[Roles] r ON r.RoleID = ur.RoleID
+            WHERE ur.UserID = u.UserID
+              AND ur.IsActive = 1
+              AND (ur.EffectiveFrom IS NULL OR ur.EffectiveFrom <= SYSUTCDATETIME())
+              AND (ur.EffectiveTo IS NULL OR ur.EffectiveTo > SYSUTCDATETIME())
+          ) AS roles
       FROM [auth].[Users] u
       LEFT JOIN [auth].[UserProfiles] p ON p.UserID = u.UserID
+      LEFT JOIN [auth].[LocalCredentials] lc ON lc.UserID = u.UserID
       ${whereClause}
       ORDER BY ${orderCol} ${orderDirection}
       OFFSET ${offset} ROWS
@@ -461,6 +491,86 @@ export class UsersRepository {
       userAgent: r.userAgent,
       createdAt: new Date(r.createdAt),
     }));
+  }
+
+  /**
+   * Checks if user is head of any active organizational unit.
+   */
+  async isUserOrgHead(userId: string, qr?: QueryRunner): Promise<boolean> {
+    const rows = await this.getExecutor(qr).query(
+      `
+      SELECT TOP 1 1 AS isHead
+      FROM [org].[OrgManagers] om
+      WHERE om.UserID = @0
+        AND om.IsPrimary = 1
+        AND om.IsActive = 1
+        AND om.EffectiveFrom <= SYSUTCDATETIME()
+        AND (om.EffectiveTo IS NULL OR om.EffectiveTo > SYSUTCDATETIME());
+      `,
+      [userId],
+    );
+
+    return rows && rows.length > 0;
+  }
+
+  private mapUserRow(r: any): IUserWithProfile {
+    let status: 'ACTIVE' | 'INACTIVE' | 'INVITED' | 'LOCKED' = 'ACTIVE';
+    if (r.lockedUntil && new Date(r.lockedUntil) > new Date()) {
+      status = 'LOCKED';
+    } else if (!r.isActive) {
+      status = 'INACTIVE';
+    }
+
+    const roles: string[] = r.roles
+      ? typeof r.roles === 'string'
+        ? r.roles.split(',').map((s: string) => s.trim()).filter(Boolean)
+        : Array.isArray(r.roles)
+          ? r.roles
+          : []
+      : [];
+
+    return {
+      userId: r.userId,
+      employeeId: r.employeeId,
+      username: r.username,
+      email: r.email,
+      userType: r.userType,
+      isActive: r.isActive === 1 || r.isActive === true,
+      isDeleted: r.isDeleted === 1 || r.isDeleted === true,
+      deletedAt: r.deletedAt ? new Date(r.deletedAt) : null,
+      deletedBy: r.deletedBy,
+      failedLoginCount: Number(r.failedLoginCount || 0),
+      lastFailedLoginAt: r.lastFailedLoginAt ? new Date(r.lastFailedLoginAt) : null,
+      lockedUntil: r.lockedUntil ? new Date(r.lockedUntil) : null,
+      adObjectId: r.adObjectId,
+      createdAt: new Date(r.createdAt),
+      updatedAt: new Date(r.updatedAt),
+      status,
+      roles,
+      profile: r.userProfileId
+        ? {
+            userProfileId: r.userProfileId,
+            userId: r.userId,
+            firstName: r.firstName,
+            lastName: r.lastName,
+            displayName: r.displayName,
+            phoneNumber: r.phoneNumber,
+            jobTitle: r.jobTitle,
+            organizationId: r.organizationId,
+            businessUnitId: r.businessUnitId,
+            departmentId: r.departmentId,
+            sectionId: r.sectionId,
+            vendorId: r.vendorId,
+            mustChangePassword:
+              r.mustChangePassword === 1 || r.mustChangePassword === true,
+            passwordChangedAt: r.passwordChangedAt
+              ? new Date(r.passwordChangedAt)
+              : null,
+            createdAt: new Date(r.createdAt),
+            updatedAt: new Date(r.updatedAt),
+          }
+        : null,
+    };
   }
 
   /**
@@ -716,10 +826,6 @@ export class UsersRepository {
       UPDATE [auth].[LocalCredentials]
       SET MustChangePassword = @1
       WHERE UserID = @0;
-
-      UPDATE [auth].[UserProfiles]
-      SET MustChangePassword = @1, UpdatedAt = SYSUTCDATETIME()
-      WHERE UserID = @0;
       `,
       [userId, mustChange ? 1 : 0],
     );
@@ -803,56 +909,5 @@ export class UsersRepository {
     );
 
     return rows && rows.length > 0;
-  }
-
-  private mapUserRow(r: any): IUserWithProfile {
-    let status: 'ACTIVE' | 'INACTIVE' | 'INVITED' | 'LOCKED' = 'ACTIVE';
-    if (r.lockedUntil && new Date(r.lockedUntil) > new Date()) {
-      status = 'LOCKED';
-    } else if (!r.isActive) {
-      status = 'INACTIVE';
-    }
-
-    return {
-      userId: r.userId,
-      employeeId: r.employeeId,
-      username: r.username,
-      email: r.email,
-      userType: r.userType,
-      isActive: r.isActive === 1 || r.isActive === true,
-      isDeleted: r.isDeleted === 1 || r.isDeleted === true,
-      deletedAt: r.deletedAt ? new Date(r.deletedAt) : null,
-      deletedBy: r.deletedBy,
-      failedLoginCount: Number(r.failedLoginCount || 0),
-      lastFailedLoginAt: r.lastFailedLoginAt ? new Date(r.lastFailedLoginAt) : null,
-      lockedUntil: r.lockedUntil ? new Date(r.lockedUntil) : null,
-      adObjectId: r.adObjectId,
-      createdAt: new Date(r.createdAt),
-      updatedAt: new Date(r.updatedAt),
-      status,
-      profile: r.userProfileId
-        ? {
-            userProfileId: r.userProfileId,
-            userId: r.userId,
-            firstName: r.firstName,
-            lastName: r.lastName,
-            displayName: r.displayName,
-            phoneNumber: r.phoneNumber,
-            jobTitle: r.jobTitle,
-            organizationId: r.organizationId,
-            businessUnitId: r.businessUnitId,
-            departmentId: r.departmentId,
-            sectionId: r.sectionId,
-            vendorId: r.vendorId,
-            mustChangePassword:
-              r.mustChangePassword === 1 || r.mustChangePassword === true,
-            passwordChangedAt: r.passwordChangedAt
-              ? new Date(r.passwordChangedAt)
-              : null,
-            createdAt: new Date(r.createdAt),
-            updatedAt: new Date(r.updatedAt),
-          }
-        : null,
-    };
   }
 }

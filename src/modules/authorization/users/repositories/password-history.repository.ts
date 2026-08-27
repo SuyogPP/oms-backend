@@ -25,7 +25,7 @@ export class PasswordHistoryRepository {
           PasswordHistoryID,
           UserID,
           PasswordHash,
-          ChangedAt
+          CreatedAt
       )
       OUTPUT INSERTED.PasswordHistoryID AS passwordHistoryId
       VALUES (
@@ -55,10 +55,10 @@ export class PasswordHistoryRepository {
           ph.PasswordHistoryID AS passwordHistoryId,
           ph.UserID AS userId,
           ph.PasswordHash AS passwordHash,
-          ph.ChangedAt AS changedAt
+          ph.CreatedAt AS changedAt
       FROM [auth].[PasswordHistory] ph
       WHERE ph.UserID = @0
-      ORDER BY ph.ChangedAt DESC;
+      ORDER BY ph.CreatedAt DESC;
       `,
       [userId, count],
     );
@@ -84,7 +84,7 @@ export class PasswordHistoryRepository {
       WITH RankedHistory AS (
           SELECT 
               PasswordHistoryID,
-              ROW_NUMBER() OVER (ORDER BY ChangedAt DESC) as rn
+              ROW_NUMBER() OVER (ORDER BY CreatedAt DESC) as rn
           FROM [auth].[PasswordHistory]
           WHERE UserID = @0
       )

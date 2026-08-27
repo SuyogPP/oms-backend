@@ -28,21 +28,20 @@ export class UserScopesRepository {
           s.ScopeDefinitionID AS scopeDefinitionId,
           sd.ScopeCode AS scopeCode,
           sd.ScopeName AS scopeName,
-          s.OrgUnitId AS orgUnitId,
+          COALESCE(s.DepartmentID, s.BusinessUnitID, s.SectionID, s.OrganizationID) AS orgUnitId,
           s.OrganizationID AS organizationId,
           s.BusinessUnitID AS businessUnitId,
           s.DepartmentID AS departmentId,
           s.SectionID AS sectionId,
           ou.Name AS orgUnitName,
           ou.Code AS orgUnitCode,
-          s.EffectiveFrom AS effectiveFrom,
-          s.EffectiveTo AS effectiveTo,
-          s.IsActive AS isActive
+          CAST(NULL AS DATETIME2) AS effectiveFrom,
+          CAST(NULL AS DATETIME2) AS effectiveTo,
+          CAST(1 AS BIT) AS isActive
       FROM [auth].[UserOrganizationScopes] s
       INNER JOIN [auth].[ScopeDefinitions] sd ON sd.ScopeDefinitionID = s.ScopeDefinitionID
-      LEFT JOIN [org].[OrgUnits] ou ON ou.OrgUnitId = COALESCE(s.OrgUnitId, s.DepartmentID, s.BusinessUnitID, s.SectionID, s.OrganizationID)
-      WHERE s.UserID = @0
-      ORDER BY s.CreatedAt DESC;
+      LEFT JOIN [org].[OrgUnits] ou ON ou.OrgUnitId = COALESCE(s.DepartmentID, s.BusinessUnitID, s.SectionID, s.OrganizationID)
+      WHERE s.UserID = @0;
       `,
       [userId],
     );
@@ -82,24 +81,20 @@ export class UserScopesRepository {
           s.ScopeDefinitionID AS scopeDefinitionId,
           sd.ScopeCode AS scopeCode,
           sd.ScopeName AS scopeName,
-          s.OrgUnitId AS orgUnitId,
+          COALESCE(s.DepartmentID, s.BusinessUnitID, s.SectionID, s.OrganizationID) AS orgUnitId,
           s.OrganizationID AS organizationId,
           s.BusinessUnitID AS businessUnitId,
           s.DepartmentID AS departmentId,
           s.SectionID AS sectionId,
           ou.Name AS orgUnitName,
           ou.Code AS orgUnitCode,
-          s.EffectiveFrom AS effectiveFrom,
-          s.EffectiveTo AS effectiveTo,
-          s.IsActive AS isActive
+          CAST(NULL AS DATETIME2) AS effectiveFrom,
+          CAST(NULL AS DATETIME2) AS effectiveTo,
+          CAST(1 AS BIT) AS isActive
       FROM [auth].[UserOrganizationScopes] s
       INNER JOIN [auth].[ScopeDefinitions] sd ON sd.ScopeDefinitionID = s.ScopeDefinitionID
-      LEFT JOIN [org].[OrgUnits] ou ON ou.OrgUnitId = COALESCE(s.OrgUnitId, s.DepartmentID, s.BusinessUnitID, s.SectionID, s.OrganizationID)
-      WHERE s.UserID = @0
-        AND (s.IsActive = 1 OR s.IsActive IS NULL)
-        AND (s.EffectiveFrom IS NULL OR s.EffectiveFrom <= SYSUTCDATETIME())
-        AND (s.EffectiveTo IS NULL OR s.EffectiveTo > SYSUTCDATETIME())
-      ORDER BY s.CreatedAt DESC;
+      LEFT JOIN [org].[OrgUnits] ou ON ou.OrgUnitId = COALESCE(s.DepartmentID, s.BusinessUnitID, s.SectionID, s.OrganizationID)
+      WHERE s.UserID = @0;
       `,
       [userId],
     );
@@ -139,19 +134,19 @@ export class UserScopesRepository {
           s.ScopeDefinitionID AS scopeDefinitionId,
           sd.ScopeCode AS scopeCode,
           sd.ScopeName AS scopeName,
-          s.OrgUnitId AS orgUnitId,
+          COALESCE(s.DepartmentID, s.BusinessUnitID, s.SectionID, s.OrganizationID) AS orgUnitId,
           s.OrganizationID AS organizationId,
           s.BusinessUnitID AS businessUnitId,
           s.DepartmentID AS departmentId,
           s.SectionID AS sectionId,
           ou.Name AS orgUnitName,
           ou.Code AS orgUnitCode,
-          s.EffectiveFrom AS effectiveFrom,
-          s.EffectiveTo AS effectiveTo,
-          s.IsActive AS isActive
+          CAST(NULL AS DATETIME2) AS effectiveFrom,
+          CAST(NULL AS DATETIME2) AS effectiveTo,
+          CAST(1 AS BIT) AS isActive
       FROM [auth].[UserOrganizationScopes] s
       INNER JOIN [auth].[ScopeDefinitions] sd ON sd.ScopeDefinitionID = s.ScopeDefinitionID
-      LEFT JOIN [org].[OrgUnits] ou ON ou.OrgUnitId = COALESCE(s.OrgUnitId, s.DepartmentID, s.BusinessUnitID, s.SectionID, s.OrganizationID)
+      LEFT JOIN [org].[OrgUnits] ou ON ou.OrgUnitId = COALESCE(s.DepartmentID, s.BusinessUnitID, s.SectionID, s.OrganizationID)
       WHERE s.UserOrganizationScopeID = @0;
       `,
       [userOrganizationScopeId],
@@ -184,36 +179,21 @@ export class UserScopesRepository {
 
   /**
    * Assigns an organizational scope to a user.
-   * Follows Domain 2 reconciliation Option (a): populates OrgUnitId and legacy column.
    */
   async assignScope(
     data: IAssignScopeData,
     qr?: QueryRunner,
   ): Promise<string> {
-    const orgUnitId =
-      data.orgUnitId ||
-      data.departmentId ||
-      data.businessUnitId ||
-      data.sectionId ||
-      data.organizationId ||
-      null;
-
     const rows = await this.getExecutor(qr).query(
       `
       INSERT INTO [auth].[UserOrganizationScopes] (
           UserOrganizationScopeID,
           UserID,
           ScopeDefinitionID,
-          OrgUnitId,
           OrganizationID,
           BusinessUnitID,
           DepartmentID,
-          SectionID,
-          EffectiveFrom,
-          EffectiveTo,
-          IsActive,
-          CreatedAt,
-          UpdatedAt
+          SectionID
       )
       OUTPUT INSERTED.UserOrganizationScopeID AS userOrganizationScopeId
       VALUES (
@@ -223,25 +203,16 @@ export class UserScopesRepository {
           @2,
           @3,
           @4,
-          @5,
-          @6,
-          COALESCE(@7, SYSUTCDATETIME()),
-          @8,
-          1,
-          SYSUTCDATETIME(),
-          SYSUTCDATETIME()
+          @5
       );
       `,
       [
         data.userId,
         data.scopeDefinitionId,
-        orgUnitId,
         data.organizationId || null,
         data.businessUnitId || null,
         data.departmentId || null,
         data.sectionId || null,
-        data.effectiveFrom || null,
-        data.effectiveTo || null,
       ],
     );
 
@@ -249,7 +220,7 @@ export class UserScopesRepository {
   }
 
   /**
-   * Revokes a scope assignment by setting EffectiveTo = SYSUTCDATETIME() (S7: never hard delete).
+   * Revokes a scope assignment.
    */
   async revokeScope(
     userOrganizationScopeId: string,
@@ -257,10 +228,7 @@ export class UserScopesRepository {
   ): Promise<void> {
     await this.getExecutor(qr).query(
       `
-      UPDATE [auth].[UserOrganizationScopes]
-      SET 
-          EffectiveTo = SYSUTCDATETIME(),
-          UpdatedAt = SYSUTCDATETIME()
+      DELETE FROM [auth].[UserOrganizationScopes]
       WHERE UserOrganizationScopeID = @0;
       `,
       [userOrganizationScopeId],
@@ -275,10 +243,7 @@ export class UserScopesRepository {
       `
       SELECT COUNT(*) AS total
       FROM [auth].[UserOrganizationScopes]
-      WHERE UserID = @0
-        AND (IsActive = 1 OR IsActive IS NULL)
-        AND (EffectiveFrom IS NULL OR EffectiveFrom <= SYSUTCDATETIME())
-        AND (EffectiveTo IS NULL OR EffectiveTo > SYSUTCDATETIME());
+      WHERE UserID = @0;
       `,
       [userId],
     );

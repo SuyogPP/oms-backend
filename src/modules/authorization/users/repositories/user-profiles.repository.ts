@@ -28,19 +28,20 @@ export class UserProfilesRepository {
           p.UserID AS userId,
           p.FirstName AS firstName,
           p.LastName AS lastName,
-          p.DisplayName AS displayName,
-          p.PhoneNumber AS phoneNumber,
+          RTRIM(LTRIM(p.FirstName + ' ' + ISNULL(p.LastName, ''))) AS displayName,
+          p.MobileNo AS phoneNumber,
           p.JobTitle AS jobTitle,
-          p.OrganizationID AS organizationId,
+          CAST(NULL AS UNIQUEIDENTIFIER) AS organizationId,
           p.BusinessUnitID AS businessUnitId,
           p.DepartmentID AS departmentId,
           p.SectionID AS sectionId,
-          p.VendorID AS vendorId,
-          p.MustChangePassword AS mustChangePassword,
-          p.PasswordChangedAt AS passwordChangedAt,
-          p.CreatedAt AS createdAt,
-          p.UpdatedAt AS updatedAt
+          CAST(NULL AS UNIQUEIDENTIFIER) AS vendorId,
+          ISNULL(lc.MustChangePassword, 0) AS mustChangePassword,
+          lc.PasswordChangedAt AS passwordChangedAt,
+          CAST(SYSUTCDATETIME() AS DATETIME2) AS createdAt,
+          CAST(SYSUTCDATETIME() AS DATETIME2) AS updatedAt
       FROM [auth].[UserProfiles] p
+      LEFT JOIN [auth].[LocalCredentials] lc ON lc.UserID = p.UserID
       WHERE p.UserID = @0;
       `,
       [userId],
@@ -82,9 +83,6 @@ export class UserProfilesRepository {
     profile: ICreateUserProfileData,
     qr?: QueryRunner,
   ): Promise<string> {
-    const displayName =
-      profile.displayName || `${profile.firstName} ${profile.lastName}`.trim();
-
     const rows = await this.getExecutor(qr).query(
       `
       INSERT INTO [auth].[UserProfiles] (
@@ -92,17 +90,11 @@ export class UserProfilesRepository {
           UserID,
           FirstName,
           LastName,
-          DisplayName,
-          PhoneNumber,
+          MobileNo,
           JobTitle,
-          OrganizationID,
-          BusinessUnitID,
           DepartmentID,
-          SectionID,
-          VendorID,
-          MustChangePassword,
-          CreatedAt,
-          UpdatedAt
+          BusinessUnitID,
+          SectionID
       )
       OUTPUT INSERTED.UserProfileID AS userProfileId
       VALUES (
@@ -114,27 +106,18 @@ export class UserProfilesRepository {
           @4,
           @5,
           @6,
-          @7,
-          @8,
-          @9,
-          @10,
-          1,
-          SYSUTCDATETIME(),
-          SYSUTCDATETIME()
+          @7
       );
       `,
       [
         userId,
         profile.firstName,
         profile.lastName,
-        displayName,
         profile.phoneNumber || null,
         profile.jobTitle || null,
-        profile.organizationId || null,
-        profile.businessUnitId || null,
         profile.departmentId || null,
+        profile.businessUnitId || null,
         profile.sectionId || null,
-        profile.vendorId || null,
       ],
     );
 
@@ -155,35 +138,28 @@ export class UserProfilesRepository {
       SET 
           FirstName = COALESCE(@1, FirstName),
           LastName = COALESCE(@2, LastName),
-          DisplayName = COALESCE(@3, DisplayName),
-          PhoneNumber = COALESCE(@4, PhoneNumber),
-          JobTitle = COALESCE(@5, JobTitle),
-          OrganizationID = CASE WHEN @6 IS NOT NULL THEN @6 ELSE OrganizationID END,
-          BusinessUnitID = CASE WHEN @7 IS NOT NULL THEN @7 ELSE BusinessUnitID END,
-          DepartmentID = CASE WHEN @8 IS NOT NULL THEN @8 ELSE DepartmentID END,
-          SectionID = CASE WHEN @9 IS NOT NULL THEN @9 ELSE SectionID END,
-          VendorID = CASE WHEN @10 IS NOT NULL THEN @10 ELSE VendorID END,
-          UpdatedAt = SYSUTCDATETIME()
+          MobileNo = COALESCE(@3, MobileNo),
+          JobTitle = COALESCE(@4, JobTitle),
+          DepartmentID = CASE WHEN @5 IS NOT NULL THEN @5 ELSE DepartmentID END,
+          BusinessUnitID = CASE WHEN @6 IS NOT NULL THEN @6 ELSE BusinessUnitID END,
+          SectionID = CASE WHEN @7 IS NOT NULL THEN @7 ELSE SectionID END
       WHERE UserID = @0;
       `,
       [
         userId,
         profile.firstName || null,
         profile.lastName || null,
-        profile.displayName || null,
         profile.phoneNumber || null,
         profile.jobTitle || null,
-        profile.organizationId !== undefined ? profile.organizationId : null,
-        profile.businessUnitId !== undefined ? profile.businessUnitId : null,
         profile.departmentId !== undefined ? profile.departmentId : null,
+        profile.businessUnitId !== undefined ? profile.businessUnitId : null,
         profile.sectionId !== undefined ? profile.sectionId : null,
-        profile.vendorId !== undefined ? profile.vendorId : null,
       ],
     );
   }
 
   /**
-   * Sets MustChangePassword flag.
+   * Sets MustChangePassword flag in LocalCredentials.
    */
   async setMustChangePassword(
     userId: string,
@@ -192,11 +168,10 @@ export class UserProfilesRepository {
   ): Promise<void> {
     await this.getExecutor(qr).query(
       `
-      UPDATE [auth].[UserProfiles]
+      UPDATE [auth].[LocalCredentials]
       SET 
           MustChangePassword = @1,
-          PasswordChangedAt = CASE WHEN @1 = 0 THEN SYSUTCDATETIME() ELSE PasswordChangedAt END,
-          UpdatedAt = SYSUTCDATETIME()
+          PasswordChangedAt = CASE WHEN @1 = 0 THEN SYSUTCDATETIME() ELSE PasswordChangedAt END
       WHERE UserID = @0;
       `,
       [userId, mustChange ? 1 : 0],

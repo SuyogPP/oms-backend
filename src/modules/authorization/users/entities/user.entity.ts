@@ -86,6 +86,9 @@ export class UserEntity implements IUserWithProfile {
   @ApiProperty({ type: UserProfileEntity, required: false })
   profile?: UserProfileEntity | null;
 
+  @ApiProperty({ example: ['SYSTEM_ADMIN'], type: [String], required: false })
+  roles?: string[];
+
   @ApiProperty({ example: '2026-08-01T00:00:00.000Z' })
   createdAt!: Date;
 
@@ -105,6 +108,9 @@ export class UserListResponseEntity implements IUserListResult {
 
   @ApiProperty({ example: 20 })
   limit!: number;
+
+  @ApiProperty({ example: 20, required: false })
+  pageSize?: number;
 
   @ApiProperty({ example: 3 })
   totalPages!: number;

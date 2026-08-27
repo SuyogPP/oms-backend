@@ -33,7 +33,7 @@ export class DelegationsRepository {
           d.EndDate AS endDate,
           d.Reason AS reason,
           d.IsActive AS isActive,
-          d.CreatedAt AS createdAt
+          d.StartDate AS createdAt
       FROM [auth].[Delegations] d
       LEFT JOIN [auth].[UserProfiles] fp ON fp.UserID = d.FromUserID
       LEFT JOIN [auth].[UserProfiles] tp ON tp.UserID = d.ToUserID
@@ -94,7 +94,7 @@ export class DelegationsRepository {
           d.EndDate AS endDate,
           d.Reason AS reason,
           d.IsActive AS isActive,
-          d.CreatedAt AS createdAt
+          d.StartDate AS createdAt
       FROM [auth].[Delegations] d
       LEFT JOIN [auth].[UserProfiles] fp ON fp.UserID = d.FromUserID
       LEFT JOIN [auth].[UserProfiles] tp ON tp.UserID = d.ToUserID
@@ -137,7 +137,7 @@ export class DelegationsRepository {
           d.EndDate AS endDate,
           d.Reason AS reason,
           d.IsActive AS isActive,
-          d.CreatedAt AS createdAt
+          d.StartDate AS createdAt
       FROM [auth].[Delegations] d
       LEFT JOIN [auth].[UserProfiles] fp ON fp.UserID = d.FromUserID
       LEFT JOIN [auth].[UserProfiles] tp ON tp.UserID = d.ToUserID
@@ -177,8 +177,7 @@ export class DelegationsRepository {
           StartDate,
           EndDate,
           Reason,
-          IsActive,
-          CreatedAt
+          IsActive
       )
       OUTPUT INSERTED.DelegationID AS delegationId
       VALUES (
@@ -188,8 +187,7 @@ export class DelegationsRepository {
           @2,
           @3,
           @4,
-          1,
-          SYSUTCDATETIME()
+          1
       );
       `,
       [

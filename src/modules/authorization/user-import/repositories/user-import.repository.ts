@@ -42,19 +42,42 @@ export class UserImportRepository {
   }
 
   /**
+   * Batch checks existing employee IDs.
+   */
+  async findExistingEmployeeIds(
+    employeeIds: string[],
+    qr?: QueryRunner,
+  ): Promise<string[]> {
+    if (!employeeIds || employeeIds.length === 0) return [];
+    const placeholders = employeeIds.map((_, i) => `@${i}`).join(', ');
+    const rows = await this.getExecutor(qr).query(
+      `SELECT LOWER(EmployeeID) as employeeId FROM [auth].[UserProfiles] WHERE LOWER(EmployeeID) IN (${placeholders})`,
+      employeeIds.map((id) => id.toLowerCase()),
+    );
+    return rows.map((r: any) => r.employeeId);
+  }
+
+  /**
    * Batch finds org units by codes.
    */
   async findOrgUnitsByCodes(
     codes: string[],
     qr?: QueryRunner,
-  ): Promise<Array<{ code: string; orgUnitId: string }>> {
+  ): Promise<
+    Array<{ code: string; orgUnitId: string; typeId: number; name: string }>
+  > {
     if (!codes || codes.length === 0) return [];
     const placeholders = codes.map((_, i) => `@${i}`).join(', ');
     const rows = await this.getExecutor(qr).query(
-      `SELECT Code as code, OrgUnitId as orgUnitId FROM [org].[OrgUnits] WHERE Code IN (${placeholders}) AND IsDeleted = 0`,
+      `SELECT Code as code, OrgUnitId as orgUnitId, OrgUnitTypeId as typeId, Name as name FROM [org].[OrgUnits] WHERE Code IN (${placeholders}) AND IsDeleted = 0`,
       codes,
     );
-    return rows.map((r: any) => ({ code: r.code, orgUnitId: r.orgUnitId }));
+    return rows.map((r: any) => ({
+      code: r.code,
+      orgUnitId: r.orgUnitId,
+      typeId: r.typeId,
+      name: r.name,
+    }));
   }
 
   /**
@@ -63,7 +86,9 @@ export class UserImportRepository {
   async findRolesByCodes(
     roleCodes: string[],
     qr?: QueryRunner,
-  ): Promise<Array<{ roleCode: string; roleId: string }>> {
+  ): Promise<
+    Array<{ roleCode: string; roleId: string; isVendorRole: boolean }>
+  > {
     if (!roleCodes || roleCodes.length === 0) return [];
     const placeholders = roleCodes.map((_, i) => `@${i}`).join(', ');
     const rows = await this.getExecutor(qr).query(
@@ -73,6 +98,22 @@ export class UserImportRepository {
     return rows.map((r: any) => ({
       roleCode: r.roleCode,
       roleId: r.roleId,
+      isVendorRole: r.roleCode.toUpperCase().startsWith('VENDOR'),
+    }));
+  }
+
+  /**
+   * Retrieves all scope definitions.
+   */
+  async findScopeDefinitions(
+    qr?: QueryRunner,
+  ): Promise<Array<{ scopeCode: string; scopeDefinitionId: string }>> {
+    const rows = await this.getExecutor(qr).query(
+      `SELECT ScopeCode as scopeCode, ScopeDefinitionID as scopeDefinitionId FROM [auth].[ScopeDefinitions]`,
+    );
+    return rows.map((r: any) => ({
+      scopeCode: r.scopeCode,
+      scopeDefinitionId: r.scopeDefinitionId,
     }));
   }
 }

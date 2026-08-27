@@ -50,25 +50,19 @@ export class PermissionResolutionRepository {
                 INNER JOIN [auth].[ScopeDefinitions] sd ON sd.ScopeDefinitionID = s.ScopeDefinitionID
                 WHERE s.UserID = @1
                   AND sd.ScopeCode = 'GLOBAL'
-                  AND (s.IsActive = 1 OR s.IsActive IS NULL)
-                  AND (s.EffectiveFrom IS NULL OR s.EffectiveFrom <= SYSUTCDATETIME())
-                  AND (s.EffectiveTo IS NULL OR s.EffectiveTo > SYSUTCDATETIME())
             )
             OR
-            -- Rule 3: Target user's department/unit is in requester's visible subtree
+            -- Rule 3: Target user's department/unit is in requester's visible scope
             EXISTS (
-                SELECT 1
-                FROM [org].[fn_VisibleOrgUnits](@1) v
-                WHERE (p.DepartmentID IS NOT NULL AND v.OrgUnitId = p.DepartmentID)
-                   OR (p.BusinessUnitID IS NOT NULL AND v.OrgUnitId = p.BusinessUnitID)
-                   OR (p.SectionID IS NOT NULL AND v.OrgUnitId = p.SectionID)
-                   OR EXISTS (
-                       SELECT 1
-                       FROM [org].[UserOrgUnitAssignments] a
-                       WHERE a.UserID = u.UserID
-                         AND a.IsActive = 1
-                         AND a.OrgUnitId = v.OrgUnitId
-                   )
+                SELECT 1 
+                FROM [auth].[UserOrganizationScopes] s
+                WHERE s.UserID = @1
+                  AND (
+                     (p.DepartmentID IS NOT NULL AND s.DepartmentID = p.DepartmentID)
+                     OR (p.BusinessUnitID IS NOT NULL AND s.BusinessUnitID = p.BusinessUnitID)
+                     OR (p.SectionID IS NOT NULL AND s.SectionID = p.SectionID)
+                     OR s.OrganizationID IS NOT NULL
+                  )
             )
         );
       `,
