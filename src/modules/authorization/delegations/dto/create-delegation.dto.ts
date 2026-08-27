@@ -18,12 +18,12 @@ export class CreateDelegationDto {
   @ApiProperty({ example: '2026-08-01T00:00:00.000Z' })
   @IsDateString()
   @IsNotEmpty()
-  startDate!: Date;
+  startDate!: string;
 
   @ApiProperty({ example: '2026-09-05T00:00:00.000Z' })
   @IsDateString()
   @IsNotEmpty()
-  endDate!: Date;
+  endDate!: string;
 
   @ApiProperty({ example: 'Annual leave delegation for departmental approvals' })
   @IsString()
@@ -41,7 +41,7 @@ export class UpdateDelegationDto {
   @ApiProperty({ example: '2026-09-10T00:00:00.000Z', required: false })
   @IsDateString()
   @IsOptional()
-  endDate?: Date;
+  endDate?: string;
 
   @ApiProperty({ example: 'Extended leave duration', required: false })
   @IsString()

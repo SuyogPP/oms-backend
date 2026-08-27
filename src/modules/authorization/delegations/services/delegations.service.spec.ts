@@ -113,8 +113,8 @@ describe('DelegationsService (Domain 3, Section 9.3 Rules D1-D7 & Section 8)', (
   describe('2. create (Rules D1-D7 Validation Suite)', () => {
     const validDto = {
       toUserId: delegateId,
-      startDate: new Date('2026-09-01T00:00:00Z'),
-      endDate: new Date('2026-09-15T00:00:00Z'),
+      startDate: '2026-09-01T00:00:00Z',
+      endDate: '2026-09-15T00:00:00Z',
       reason: 'Annual leave coverage',
     };
 
@@ -174,8 +174,8 @@ describe('DelegationsService (Domain 3, Section 9.3 Rules D1-D7 & Section 8)', (
     it('D1: rejects self-delegation (FromUserID == ToUserID)', async () => {
       const selfDto = {
         toUserId: delegatorId,
-        startDate: new Date('2026-09-01'),
-        endDate: new Date('2026-09-15'),
+        startDate: '2026-09-01T00:00:00Z',
+        endDate: '2026-09-15T00:00:00Z',
         reason: 'Self delegation',
       };
 
@@ -187,8 +187,8 @@ describe('DelegationsService (Domain 3, Section 9.3 Rules D1-D7 & Section 8)', (
     it('D2: rejects endDate <= startDate', async () => {
       const invalidDatesDto = {
         toUserId: delegateId,
-        startDate: new Date('2026-09-15'),
-        endDate: new Date('2026-09-01'),
+        startDate: '2026-09-15T00:00:00Z',
+        endDate: '2026-09-01T00:00:00Z',
         reason: 'Invalid dates',
       };
 
@@ -200,8 +200,8 @@ describe('DelegationsService (Domain 3, Section 9.3 Rules D1-D7 & Section 8)', (
     it('D2: rejects duration exceeding 90 days', async () => {
       const longDto = {
         toUserId: delegateId,
-        startDate: new Date('2026-01-01'),
-        endDate: new Date('2026-06-01'), // 151 days
+        startDate: '2026-01-01T00:00:00Z',
+        endDate: '2026-06-01T00:00:00Z', // 151 days
         reason: 'Too long delegation',
       };
 

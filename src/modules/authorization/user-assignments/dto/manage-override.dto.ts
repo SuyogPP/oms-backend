@@ -38,10 +38,10 @@ export class ManageOverrideDto {
   @ApiProperty({ example: '2026-01-01T00:00:00.000Z', required: false })
   @IsDateString()
   @IsOptional()
-  effectiveFrom?: Date;
+  effectiveFrom?: string;
 
   @ApiProperty({ example: '2026-09-30T00:00:00.000Z', required: false })
   @IsDateString()
   @IsOptional()
-  effectiveTo?: Date;
+  effectiveTo?: string;
 }

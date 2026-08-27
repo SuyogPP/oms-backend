@@ -51,6 +51,13 @@ export class UserRolesService {
   }
 
   /**
+   * Retrieves all active master roles.
+   */
+  async findAllRoles() {
+    return this.userRolesRepository.findAllRoles();
+  }
+
+  /**
    * Assigns a role to a user with temporal boundaries (§4.2, §8, §9.1, V3).
    *
    * Invariants:
@@ -65,17 +72,26 @@ export class UserRolesService {
     dto: AssignRoleDto,
     operatorUserId?: string,
   ): Promise<IUserRoleAssignment> {
+    // Resolve role by UUID or RoleCode
+    const role = await this.userRolesRepository.findRoleByIdOrCode(dto.roleId);
+    if (!role) {
+      throw new NotFoundException({
+        code: USER_ERROR_CODES.ROLE_NOT_FOUND,
+        message: `Role [${dto.roleId}] not found in system roles registry.`,
+      });
+    }
+
     // 1. Full validation (Self-action U14, User existence, Vendor restriction V3)
     await this.userValidationService.validateAssignRole(
       userId,
-      dto.roleId,
+      role.roleId,
       operatorUserId,
     );
 
     // 2. Persist temporal role assignment
     const userRoleId = await this.userRolesRepository.assignRole({
       userId,
-      roleId: dto.roleId,
+      roleId: role.roleId,
       effectiveFrom: dto.effectiveFrom ? new Date(dto.effectiveFrom) : new Date(),
       effectiveTo: dto.effectiveTo ? new Date(dto.effectiveTo) : null,
       assignedBy: operatorUserId,

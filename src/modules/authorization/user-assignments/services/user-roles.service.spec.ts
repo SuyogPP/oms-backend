@@ -28,6 +28,14 @@ describe('UserRolesService (Domain 3, Section 8 Assignments & Section 4.2)', () 
     assignRole: jest.fn(),
     revokeRole: jest.fn(),
     hasActiveRole: jest.fn(),
+    findRoleByIdOrCode: jest.fn().mockResolvedValue({
+      roleId: '3053433E-F36B-1410-85ED-009A959FB344',
+      roleCode: 'HOD',
+      roleName: 'Head of Department',
+      isSystemRole: true,
+      isActive: true,
+    }),
+    findAllRoles: jest.fn().mockResolvedValue([]),
   };
 
   const mockUsersRepository = {
@@ -143,8 +151,8 @@ describe('UserRolesService (Domain 3, Section 8 Assignments & Section 4.2)', () 
 
       const dto = {
         roleId,
-        effectiveFrom: new Date('2026-09-01T00:00:00Z'),
-        effectiveTo: new Date('2027-09-01T00:00:00Z'),
+        effectiveFrom: '2026-09-01T00:00:00.000Z',
+        effectiveTo: '2027-09-01T00:00:00.000Z',
       };
 
       const result = await service.assignRole(sampleUserId, dto, operatorUserId);

@@ -298,7 +298,10 @@ export class DelegationsService {
       }
     }
 
-    await this.delegationsRepository.update(delegationId, dto);
+    await this.delegationsRepository.update(delegationId, {
+      ...dto,
+      endDate: dto.endDate ? new Date(dto.endDate) : undefined,
+    });
 
     const updated = await this.delegationsRepository.findById(delegationId);
 

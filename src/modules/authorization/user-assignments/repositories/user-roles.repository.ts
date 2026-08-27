@@ -254,4 +254,84 @@ export class UserRolesRepository {
 
     return rows && rows.length > 0;
   }
+
+  /**
+   * Retrieves all active roles in the system.
+   */
+  async findAllRoles(qr?: QueryRunner): Promise<
+    Array<{
+      roleId: string;
+      roleCode: string;
+      roleName: string;
+      description?: string;
+      isSystemRole: boolean;
+      isActive: boolean;
+    }>
+  > {
+    const rows = await this.getExecutor(qr).query(
+      `
+      SELECT 
+          RoleID AS roleId,
+          RoleCode AS roleCode,
+          RoleName AS roleName,
+          Description AS description,
+          IsSystemRole AS isSystemRole,
+          IsActive AS isActive
+      FROM [auth].[Roles]
+      WHERE IsActive = 1
+      ORDER BY RoleName ASC;
+      `,
+    );
+
+    return rows.map((r: any) => ({
+      roleId: r.roleId,
+      roleCode: r.roleCode,
+      roleName: r.roleName,
+      description: r.description,
+      isSystemRole: r.isSystemRole === 1 || r.isSystemRole === true,
+      isActive: r.isActive === 1 || r.isActive === true,
+    }));
+  }
+
+  /**
+   * Finds a role by its UUID or RoleCode.
+   */
+  async findRoleByIdOrCode(
+    identifier: string,
+    qr?: QueryRunner,
+  ): Promise<{
+    roleId: string;
+    roleCode: string;
+    roleName: string;
+    description?: string;
+    isSystemRole: boolean;
+    isActive: boolean;
+  } | null> {
+    const rows = await this.getExecutor(qr).query(
+      `
+      SELECT 
+          RoleID AS roleId,
+          RoleCode AS roleCode,
+          RoleName AS roleName,
+          Description AS description,
+          IsSystemRole AS isSystemRole,
+          IsActive AS isActive
+      FROM [auth].[Roles]
+      WHERE (CAST(RoleID AS NVARCHAR(50)) = @0 OR LOWER(RoleCode) = LOWER(@0))
+        AND IsActive = 1;
+      `,
+      [identifier],
+    );
+
+    if (!rows || rows.length === 0) return null;
+    const r = rows[0];
+    return {
+      roleId: r.roleId,
+      roleCode: r.roleCode,
+      roleName: r.roleName,
+      description: r.description,
+      isSystemRole: r.isSystemRole === 1 || r.isSystemRole === true,
+      isActive: r.isActive === 1 || r.isActive === true,
+    };
+  }
 }

@@ -4,7 +4,7 @@ import { CommonModule } from '../../../common/common.module';
 import { UsersModule } from '../users/users.module';
 import { SecurityEventsModule } from '../../security-events/security-events.module';
 import { AuditModule } from '../../audit/audit.module';
-import { UserRolesController } from './controllers/user-roles.controller';
+import { UserRolesController, RolesController } from './controllers/user-roles.controller';
 import { UserScopesController } from './controllers/user-scopes.controller';
 import { UserOverridesController } from './controllers/user-overrides.controller';
 import { UserRolesService } from './services/user-roles.service';
@@ -25,6 +25,7 @@ import { UserAssignmentsMapper } from './user-assignments.mapper';
   ],
   controllers: [
     UserRolesController,
+    RolesController,
     UserScopesController,
     UserOverridesController,
   ],

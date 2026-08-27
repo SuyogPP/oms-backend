@@ -58,8 +58,8 @@ describe('DelegationsController (Domain 3, Section 8)', () => {
   it('POST /authorization/users/:id/delegations -> delegates to service.create', async () => {
     const dto = {
       toUserId: delegateId,
-      startDate: new Date('2026-09-01'),
-      endDate: new Date('2026-09-15'),
+      startDate: '2026-09-01T00:00:00Z',
+      endDate: '2026-09-15T00:00:00Z',
       reason: 'Leave coverage',
     };
     mockService.create.mockResolvedValueOnce({ delegationId });

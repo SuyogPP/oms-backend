@@ -96,3 +96,22 @@ export class UserRolesController {
     };
   }
 }
+
+@ApiTags('Authorization - Roles')
+@ApiBearerAuth('JWT')
+@Controller('authorization/roles')
+export class RolesController {
+  constructor(private readonly userRolesService: UserRolesService) {}
+
+  @Get()
+  @RequirePermissions(USER_PERMISSIONS.VIEW)
+  @UseGuards(PermissionGuard)
+  @ApiOperation({ summary: 'Get all active master roles' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'List of master roles retrieved',
+  })
+  async findAll() {
+    return this.userRolesService.findAllRoles();
+  }
+}
