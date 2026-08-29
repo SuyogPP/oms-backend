@@ -282,6 +282,7 @@ export class AuthCoreService {
         const accessToken = this.jwtService.sign(
             {
                 userId: user.UserID,
+                username: userDetails?.username || user.Username || user.Email?.split('@')[0],
                 loginSessionId,
                 userType: userDetails?.userType || user.UserType,
                 email: userDetails?.email || user.Email,
@@ -449,6 +450,7 @@ export class AuthCoreService {
         const accessToken = this.jwtService.sign(
             {
                 userId: session.UserID,
+                username: userDetails?.username || userDetails?.email?.split('@')[0] || 'User',
                 loginSessionId: session.LoginSessionID,
                 userType: userDetails?.userType || 'User',
                 email: userDetails?.email || '',
