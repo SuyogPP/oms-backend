@@ -378,51 +378,84 @@ export class UsersRepository {
     const total = countResult[0]?.total ? Number(countResult[0].total) : 0;
 
     const dataSql = `
+      WITH NumberedRows AS (
+          SELECT 
+              u.UserID AS userId,
+              u.EmployeeID AS employeeId,
+              u.Username AS username,
+              u.Email AS email,
+              u.UserType AS userType,
+              u.IsActive AS isActive,
+              u.IsDeleted AS isDeleted,
+              u.DeletedAt AS deletedAt,
+              u.DeletedBy AS deletedBy,
+              u.FailedLoginCount AS failedLoginCount,
+              u.LastFailedLoginAt AS lastFailedLoginAt,
+              u.LockedUntil AS lockedUntil,
+              u.ADObjectID AS adObjectId,
+              u.CreatedAt AS createdAt,
+              u.UpdatedAt AS updatedAt,
+              p.UserProfileID AS userProfileId,
+              p.FirstName AS firstName,
+              p.LastName AS lastName,
+              RTRIM(LTRIM(p.FirstName + ' ' + ISNULL(p.LastName, ''))) AS displayName,
+              p.MobileNo AS phoneNumber,
+              p.JobTitle AS jobTitle,
+              CAST(NULL AS UNIQUEIDENTIFIER) AS organizationId,
+              p.BusinessUnitID AS businessUnitId,
+              p.DepartmentID AS departmentId,
+              p.SectionID AS sectionId,
+              CAST(NULL AS UNIQUEIDENTIFIER) AS vendorId,
+              ISNULL(lc.MustChangePassword, 0) AS mustChangePassword,
+              lc.PasswordChangedAt AS passwordChangedAt,
+              (
+                SELECT STRING_AGG(r.RoleCode, ',')
+                FROM [auth].[UserRoles] ur
+                INNER JOIN [auth].[Roles] r ON r.RoleID = ur.RoleID
+                WHERE ur.UserID = u.UserID
+                  AND ur.IsActive = 1
+                  AND (ur.EffectiveFrom IS NULL OR ur.EffectiveFrom <= SYSUTCDATETIME())
+                  AND (ur.EffectiveTo IS NULL OR ur.EffectiveTo > SYSUTCDATETIME())
+              ) AS roles,
+              ROW_NUMBER() OVER (ORDER BY ${orderCol} ${orderDirection}) AS RowNum
+          FROM [auth].[Users] u
+          LEFT JOIN [auth].[UserProfiles] p ON p.UserID = u.UserID
+          LEFT JOIN [auth].[LocalCredentials] lc ON lc.UserID = u.UserID
+          ${whereClause}
+      )
       SELECT 
-          u.UserID AS userId,
-          u.EmployeeID AS employeeId,
-          u.Username AS username,
-          u.Email AS email,
-          u.UserType AS userType,
-          u.IsActive AS isActive,
-          u.IsDeleted AS isDeleted,
-          u.DeletedAt AS deletedAt,
-          u.DeletedBy AS deletedBy,
-          u.FailedLoginCount AS failedLoginCount,
-          u.LastFailedLoginAt AS lastFailedLoginAt,
-          u.LockedUntil AS lockedUntil,
-          u.ADObjectID AS adObjectId,
-          u.CreatedAt AS createdAt,
-          u.UpdatedAt AS updatedAt,
-          p.UserProfileID AS userProfileId,
-          p.FirstName AS firstName,
-          p.LastName AS lastName,
-          RTRIM(LTRIM(p.FirstName + ' ' + ISNULL(p.LastName, ''))) AS displayName,
-          p.MobileNo AS phoneNumber,
-          p.JobTitle AS jobTitle,
-          CAST(NULL AS UNIQUEIDENTIFIER) AS organizationId,
-          p.BusinessUnitID AS businessUnitId,
-          p.DepartmentID AS departmentId,
-          p.SectionID AS sectionId,
-          CAST(NULL AS UNIQUEIDENTIFIER) AS vendorId,
-          ISNULL(lc.MustChangePassword, 0) AS mustChangePassword,
-          lc.PasswordChangedAt AS passwordChangedAt,
-          (
-            SELECT STRING_AGG(r.RoleCode, ',')
-            FROM [auth].[UserRoles] ur
-            INNER JOIN [auth].[Roles] r ON r.RoleID = ur.RoleID
-            WHERE ur.UserID = u.UserID
-              AND ur.IsActive = 1
-              AND (ur.EffectiveFrom IS NULL OR ur.EffectiveFrom <= SYSUTCDATETIME())
-              AND (ur.EffectiveTo IS NULL OR ur.EffectiveTo > SYSUTCDATETIME())
-          ) AS roles
-      FROM [auth].[Users] u
-      LEFT JOIN [auth].[UserProfiles] p ON p.UserID = u.UserID
-      LEFT JOIN [auth].[LocalCredentials] lc ON lc.UserID = u.UserID
-      ${whereClause}
-      ORDER BY ${orderCol} ${orderDirection}
-      OFFSET ${offset} ROWS
-      FETCH NEXT ${limit} ROWS ONLY;
+          userId,
+          employeeId,
+          username,
+          email,
+          userType,
+          isActive,
+          isDeleted,
+          deletedAt,
+          deletedBy,
+          failedLoginCount,
+          lastFailedLoginAt,
+          lockedUntil,
+          adObjectId,
+          createdAt,
+          updatedAt,
+          userProfileId,
+          firstName,
+          lastName,
+          displayName,
+          phoneNumber,
+          jobTitle,
+          organizationId,
+          businessUnitId,
+          departmentId,
+          sectionId,
+          vendorId,
+          mustChangePassword,
+          passwordChangedAt,
+          roles
+      FROM NumberedRows
+      WHERE RowNum > ${offset} AND RowNum <= (${offset} + ${limit})
+      ORDER BY RowNum;
     `;
 
     const rows = await this.getExecutor(qr).query(dataSql, params);

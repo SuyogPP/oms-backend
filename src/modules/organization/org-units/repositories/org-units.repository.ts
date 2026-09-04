@@ -598,44 +598,76 @@ export class OrgUnitsRepository {
     const total = Number(countRes[0]?.total || 0);
 
     const dataSql = `
+      WITH NumberedRows AS (
+        SELECT
+          u.OrgUnitId AS orgUnitId,
+          u.OrgUnitTypeId AS orgUnitTypeId,
+          u.ParentOrgUnitId AS parentOrgUnitId,
+          u.Code AS code,
+          u.Name AS name,
+          u.NameAr AS nameAr,
+          u.ShortName AS shortName,
+          u.Description AS description,
+          u.MaterializedPath AS materializedPath,
+          u.Depth AS depth,
+          u.CostCenterCode AS costCenterCode,
+          u.ADObjectGuid AS adObjectGuid,
+          u.ADDistinguishedName AS adDistinguishedName,
+          u.OracleOrgCode AS oracleOrgCode,
+          u.HeadUserId AS headUserId,
+          u.EmailAddress AS emailAddress,
+          u.PhoneNumber AS phoneNumber,
+          u.SortOrder AS sortOrder,
+          u.EffectiveFrom AS effectiveFrom,
+          u.EffectiveTo AS effectiveTo,
+          u.IsActive AS isActive,
+          u.IsDeleted AS isDeleted,
+          u.CreatedBy AS createdBy,
+          u.CreatedAt AS createdAt,
+          u.UpdatedBy AS updatedBy,
+          u.UpdatedAt AS updatedAt,
+          CONVERT(VARCHAR(34), CAST(u.RowVersion AS VARBINARY(8)), 1) AS rowVersion,
+          ROW_NUMBER() OVER (ORDER BY u.Depth ASC, u.SortOrder ASC, u.Name ASC) AS RowNum
+        FROM org.OrgUnits u
+        INNER JOIN org.fn_VisibleOrgUnits(@0) v ON v.OrgUnitId = u.OrgUnitId
+        WHERE u.IsDeleted = 0
+          AND (@1 IS NULL OR u.OrgUnitTypeId = @1)
+          AND (@2 IS NULL OR u.ParentOrgUnitId = @2)
+          AND (@3 IS NULL OR (u.Name LIKE '%' + @3 + '%' OR u.Code LIKE '%' + @3 + '%'))
+          AND (@4 IS NULL OR u.IsActive = @4)
+          AND (@5 IS NULL OR u.Depth = @5)
+      )
       SELECT
-        u.OrgUnitId AS orgUnitId,
-        u.OrgUnitTypeId AS orgUnitTypeId,
-        u.ParentOrgUnitId AS parentOrgUnitId,
-        u.Code AS code,
-        u.Name AS name,
-        u.NameAr AS nameAr,
-        u.ShortName AS shortName,
-        u.Description AS description,
-        u.MaterializedPath AS materializedPath,
-        u.Depth AS depth,
-        u.CostCenterCode AS costCenterCode,
-        u.ADObjectGuid AS adObjectGuid,
-        u.ADDistinguishedName AS adDistinguishedName,
-        u.OracleOrgCode AS oracleOrgCode,
-        u.HeadUserId AS headUserId,
-        u.EmailAddress AS emailAddress,
-        u.PhoneNumber AS phoneNumber,
-        u.SortOrder AS sortOrder,
-        u.EffectiveFrom AS effectiveFrom,
-        u.EffectiveTo AS effectiveTo,
-        u.IsActive AS isActive,
-        u.IsDeleted AS isDeleted,
-        u.CreatedBy AS createdBy,
-        u.CreatedAt AS createdAt,
-        u.UpdatedBy AS updatedBy,
-        u.UpdatedAt AS updatedAt,
-        CONVERT(VARCHAR(34), CAST(u.RowVersion AS VARBINARY(8)), 1) AS rowVersion
-      FROM org.OrgUnits u
-      INNER JOIN org.fn_VisibleOrgUnits(@0) v ON v.OrgUnitId = u.OrgUnitId
-      WHERE u.IsDeleted = 0
-        AND (@1 IS NULL OR u.OrgUnitTypeId = @1)
-        AND (@2 IS NULL OR u.ParentOrgUnitId = @2)
-        AND (@3 IS NULL OR (u.Name LIKE '%' + @3 + '%' OR u.Code LIKE '%' + @3 + '%'))
-        AND (@4 IS NULL OR u.IsActive = @4)
-        AND (@5 IS NULL OR u.Depth = @5)
-      ORDER BY u.Depth ASC, u.SortOrder ASC, u.Name ASC
-      OFFSET @6 ROWS FETCH NEXT @7 ROWS ONLY;
+        orgUnitId,
+        orgUnitTypeId,
+        parentOrgUnitId,
+        code,
+        name,
+        nameAr,
+        shortName,
+        description,
+        materializedPath,
+        depth,
+        costCenterCode,
+        adObjectGuid,
+        adDistinguishedName,
+        oracleOrgCode,
+        headUserId,
+        emailAddress,
+        phoneNumber,
+        sortOrder,
+        effectiveFrom,
+        effectiveTo,
+        isActive,
+        isDeleted,
+        createdBy,
+        createdAt,
+        updatedBy,
+        updatedAt,
+        rowVersion
+      FROM NumberedRows
+      WHERE RowNum > @6 AND RowNum <= (@6 + @7)
+      ORDER BY RowNum;
     `;
 
     const dataParams = [...countParams, offset, limit];

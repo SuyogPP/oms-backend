@@ -109,25 +109,44 @@ export class OrgUnitChangeLogRepository {
     const total = Number(countRes[0]?.total || 0);
 
     const dataSql = `
+      WITH NumberedRows AS (
+        SELECT
+          OrgUnitChangeLogId AS orgUnitChangeLogId,
+          OrgUnitId AS orgUnitId,
+          ChangeType AS changeType,
+          OldParentOrgUnitId AS oldParentOrgUnitId,
+          NewParentOrgUnitId AS newParentOrgUnitId,
+          OldValues AS oldValues,
+          NewValues AS newValues,
+          AffectedNodeCount AS affectedNodeCount,
+          Reason AS reason,
+          CorrelationId AS correlationId,
+          IPAddress AS ipAddress,
+          UserAgent AS userAgent,
+          PerformedBy AS performedBy,
+          PerformedAt AS performedAt,
+          ROW_NUMBER() OVER (ORDER BY PerformedAt DESC, OrgUnitChangeLogId DESC) AS RowNum
+        FROM org.OrgUnitChangeLog
+        WHERE OrgUnitId = @0
+      )
       SELECT
-        OrgUnitChangeLogId AS orgUnitChangeLogId,
-        OrgUnitId AS orgUnitId,
-        ChangeType AS changeType,
-        OldParentOrgUnitId AS oldParentOrgUnitId,
-        NewParentOrgUnitId AS newParentOrgUnitId,
-        OldValues AS oldValues,
-        NewValues AS newValues,
-        AffectedNodeCount AS affectedNodeCount,
-        Reason AS reason,
-        CorrelationId AS correlationId,
-        IPAddress AS ipAddress,
-        UserAgent AS userAgent,
-        PerformedBy AS performedBy,
-        PerformedAt AS performedAt
-      FROM org.OrgUnitChangeLog
-      WHERE OrgUnitId = @0
-      ORDER BY PerformedAt DESC, OrgUnitChangeLogId DESC
-      OFFSET @1 ROWS FETCH NEXT @2 ROWS ONLY;
+        orgUnitChangeLogId,
+        orgUnitId,
+        changeType,
+        oldParentOrgUnitId,
+        newParentOrgUnitId,
+        oldValues,
+        newValues,
+        affectedNodeCount,
+        reason,
+        correlationId,
+        ipAddress,
+        userAgent,
+        performedBy,
+        performedAt
+      FROM NumberedRows
+      WHERE RowNum > @1 AND RowNum <= (@1 + @2)
+      ORDER BY RowNum;
     `;
 
     const rows = await this.getExecutor(qr).query(dataSql, [
@@ -157,24 +176,43 @@ export class OrgUnitChangeLogRepository {
     const total = Number(countRes[0]?.total || 0);
 
     const dataSql = `
+      WITH NumberedRows AS (
+        SELECT
+          OrgUnitChangeLogId AS orgUnitChangeLogId,
+          OrgUnitId AS orgUnitId,
+          ChangeType AS changeType,
+          OldParentOrgUnitId AS oldParentOrgUnitId,
+          NewParentOrgUnitId AS newParentOrgUnitId,
+          OldValues AS oldValues,
+          NewValues AS newValues,
+          AffectedNodeCount AS affectedNodeCount,
+          Reason AS reason,
+          CorrelationId AS correlationId,
+          IPAddress AS ipAddress,
+          UserAgent AS userAgent,
+          PerformedBy AS performedBy,
+          PerformedAt AS performedAt,
+          ROW_NUMBER() OVER (ORDER BY PerformedAt DESC, OrgUnitChangeLogId DESC) AS RowNum
+        FROM org.OrgUnitChangeLog
+      )
       SELECT
-        OrgUnitChangeLogId AS orgUnitChangeLogId,
-        OrgUnitId AS orgUnitId,
-        ChangeType AS changeType,
-        OldParentOrgUnitId AS oldParentOrgUnitId,
-        NewParentOrgUnitId AS newParentOrgUnitId,
-        OldValues AS oldValues,
-        NewValues AS newValues,
-        AffectedNodeCount AS affectedNodeCount,
-        Reason AS reason,
-        CorrelationId AS correlationId,
-        IPAddress AS ipAddress,
-        UserAgent AS userAgent,
-        PerformedBy AS performedBy,
-        PerformedAt AS performedAt
-      FROM org.OrgUnitChangeLog
-      ORDER BY PerformedAt DESC, OrgUnitChangeLogId DESC
-      OFFSET @0 ROWS FETCH NEXT @1 ROWS ONLY;
+        orgUnitChangeLogId,
+        orgUnitId,
+        changeType,
+        oldParentOrgUnitId,
+        newParentOrgUnitId,
+        oldValues,
+        newValues,
+        affectedNodeCount,
+        reason,
+        correlationId,
+        ipAddress,
+        userAgent,
+        performedBy,
+        performedAt
+      FROM NumberedRows
+      WHERE RowNum > @0 AND RowNum <= (@0 + @1)
+      ORDER BY RowNum;
     `;
 
     const rows = await this.getExecutor(qr).query(dataSql, [offset, pageSize]);

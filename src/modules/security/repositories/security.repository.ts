@@ -298,6 +298,20 @@ export class SecurityRepository {
     const limitIndex = allParams.length + 1;
 
     const dataQuery = `
+            WITH NumberedRows AS (
+                SELECT
+                    SecurityEventID,
+                    UserID,
+                    LoginSessionID,
+                    EventType,
+                    EventDescription,
+                    IPAddress,
+                    UserAgent,
+                    CreatedAt,
+                    ROW_NUMBER() OVER (ORDER BY ${sortColumn} ${sortOrder}) AS RowNum
+                FROM [auth].[SecurityEvents]
+                ${finalWhere}
+            )
             SELECT
                 SecurityEventID,
                 UserID,
@@ -307,11 +321,9 @@ export class SecurityRepository {
                 IPAddress,
                 UserAgent,
                 CreatedAt
-            FROM [auth].[SecurityEvents]
-            ${finalWhere}
-            ORDER BY ${sortColumn} ${sortOrder}
-            OFFSET @${offsetIndex} ROWS
-            FETCH NEXT @${limitIndex} ROWS ONLY
+            FROM NumberedRows
+            WHERE RowNum > @${offsetIndex} AND RowNum <= (@${offsetIndex} + @${limitIndex})
+            ORDER BY RowNum
         `;
 
     const rows = await this.dataSource.query(dataQuery, dataParams);
@@ -395,6 +407,20 @@ export class SecurityRepository {
     const limitIndex = allParams.length + 1;
 
     const dataQuery = `
+            WITH NumberedRows AS (
+                SELECT
+                    FailedLoginAttemptID,
+                    UserID,
+                    Username,
+                    IPAddress,
+                    FailureReason,
+                    AttemptedAt,
+                    BrowserName,
+                    DeviceType,
+                    ROW_NUMBER() OVER (ORDER BY ${sortColumn} ${sortOrder}) AS RowNum
+                FROM [auth].[FailedLoginAttempts]
+                ${finalWhere}
+            )
             SELECT
                 FailedLoginAttemptID,
                 UserID,
@@ -404,11 +430,9 @@ export class SecurityRepository {
                 AttemptedAt,
                 BrowserName,
                 DeviceType
-            FROM [auth].[FailedLoginAttempts]
-            ${finalWhere}
-            ORDER BY ${sortColumn} ${sortOrder}
-            OFFSET @${offsetIndex} ROWS
-            FETCH NEXT @${limitIndex} ROWS ONLY
+            FROM NumberedRows
+            WHERE RowNum > @${offsetIndex} AND RowNum <= (@${offsetIndex} + @${limitIndex})
+            ORDER BY RowNum
         `;
 
     const rows = await this.dataSource.query(dataQuery, dataParams);
