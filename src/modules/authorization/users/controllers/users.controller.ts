@@ -47,15 +47,22 @@ export class UsersController {
   @RequirePermissions(USER_PERMISSIONS.VIEW)
   @UseGuards(PermissionGuard)
   @ApiOperation({
-    summary: 'List users with pagination, sorting, filters, and scope enforcement',
+    summary:
+      'List users with pagination, sorting, filters, and scope enforcement',
   })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Paginated user list retrieved successfully',
     type: UserListResponseEntity,
   })
-  @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Missing or invalid JWT token' })
-  @ApiResponse({ status: HttpStatus.FORBIDDEN, description: 'Missing USER.VIEW permission' })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Missing or invalid JWT token',
+  })
+  @ApiResponse({
+    status: HttpStatus.FORBIDDEN,
+    description: 'Missing USER.VIEW permission',
+  })
   async findAll(
     @Query() filter: UserFilterDto,
     @CurrentUser() currentUser?: ICurrentUser,
@@ -72,7 +79,10 @@ export class UsersController {
     description: 'Export dataset generated successfully',
     type: [UserEntity],
   })
-  @ApiResponse({ status: HttpStatus.FORBIDDEN, description: 'Missing USER.EXPORT permission' })
+  @ApiResponse({
+    status: HttpStatus.FORBIDDEN,
+    description: 'Missing USER.EXPORT permission',
+  })
   async exportUsers(
     @Query() filter: UserFilterDto,
     @CurrentUser() currentUser?: ICurrentUser,
@@ -90,7 +100,10 @@ export class UsersController {
     description: 'User details retrieved',
     type: UserEntity,
   })
-  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'User not found or out of scope' })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'User not found or out of scope',
+  })
   async findById(
     @Param('id') id: string,
     @CurrentUser() currentUser?: ICurrentUser,
@@ -107,9 +120,18 @@ export class UsersController {
     description: 'User created successfully and invitation issued',
     type: UserEntity,
   })
-  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Validation failed' })
-  @ApiResponse({ status: HttpStatus.CONFLICT, description: 'Email or username already exists' })
-  @ApiResponse({ status: HttpStatus.FORBIDDEN, description: 'Creator scope does not cover department' })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Validation failed',
+  })
+  @ApiResponse({
+    status: HttpStatus.CONFLICT,
+    description: 'Email or username already exists',
+  })
+  @ApiResponse({
+    status: HttpStatus.FORBIDDEN,
+    description: 'Creator scope does not cover department',
+  })
   async create(
     @Body() dto: CreateUserDto,
     @CurrentUser() currentUser?: ICurrentUser,
@@ -127,8 +149,14 @@ export class UsersController {
     description: 'User updated successfully',
     type: UserEntity,
   })
-  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'User not found or out of scope' })
-  @ApiResponse({ status: HttpStatus.CONFLICT, description: 'Email or username conflict' })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'User not found or out of scope',
+  })
+  @ApiResponse({
+    status: HttpStatus.CONFLICT,
+    description: 'Email or username conflict',
+  })
   async update(
     @Param('id') id: string,
     @Body() dto: UpdateUserDto,
@@ -143,7 +171,10 @@ export class UsersController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Activate an inactive user account' })
   @ApiParam({ name: 'id', description: 'User UUID' })
-  @ApiResponse({ status: HttpStatus.OK, description: 'User activated successfully' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'User activated successfully',
+  })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'User not found' })
   async activate(
     @Param('id') id: string,
@@ -157,11 +188,19 @@ export class UsersController {
   @RequirePermissions(USER_PERMISSIONS.DEACTIVATE)
   @UseGuards(PermissionGuard)
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Deactivate a user account and revoke active sessions' })
+  @ApiOperation({
+    summary: 'Deactivate a user account and revoke active sessions',
+  })
   @ApiParam({ name: 'id', description: 'User UUID' })
-  @ApiResponse({ status: HttpStatus.OK, description: 'User deactivated successfully' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'User deactivated successfully',
+  })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'User not found' })
-  @ApiResponse({ status: HttpStatus.CONFLICT, description: 'Self-deactivation or last admin guard triggered' })
+  @ApiResponse({
+    status: HttpStatus.CONFLICT,
+    description: 'Self-deactivation or last admin guard triggered',
+  })
   async deactivate(
     @Param('id') id: string,
     @CurrentUser() currentUser?: ICurrentUser,
@@ -174,11 +213,21 @@ export class UsersController {
   @RequirePermissions(USER_PERMISSIONS.DELETE)
   @UseGuards(PermissionGuard)
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Soft delete a user, revoke sessions, and terminate active roles & delegations' })
+  @ApiOperation({
+    summary:
+      'Soft delete a user, revoke sessions, and terminate active roles & delegations',
+  })
   @ApiParam({ name: 'id', description: 'User UUID' })
-  @ApiResponse({ status: HttpStatus.OK, description: 'User soft-deleted successfully' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'User soft-deleted successfully',
+  })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'User not found' })
-  @ApiResponse({ status: HttpStatus.CONFLICT, description: 'Self-deletion, last admin, or primary unit head guard triggered' })
+  @ApiResponse({
+    status: HttpStatus.CONFLICT,
+    description:
+      'Self-deletion, last admin, or primary unit head guard triggered',
+  })
   async delete(
     @Param('id') id: string,
     @CurrentUser() currentUser?: ICurrentUser,
@@ -190,14 +239,19 @@ export class UsersController {
   @Get(':id/activity')
   @RequirePermissions(USER_PERMISSIONS.VIEW)
   @UseGuards(PermissionGuard)
-  @ApiOperation({ summary: 'Get security and authentication event history for a user' })
+  @ApiOperation({
+    summary: 'Get security and authentication event history for a user',
+  })
   @ApiParam({ name: 'id', description: 'User UUID' })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'User activity log retrieved',
     type: [UserActivityEntity],
   })
-  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'User not found or out of scope' })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'User not found or out of scope',
+  })
   async getActivity(
     @Param('id') id: string,
     @CurrentUser() currentUser?: ICurrentUser,

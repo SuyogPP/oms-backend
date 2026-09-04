@@ -3,7 +3,6 @@ import {
   IsNotEmpty,
   MinLength,
   IsOptional,
-  IsUUID,
   Matches,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
@@ -12,7 +11,8 @@ export class InviteUserDto {
   @ApiProperty({
     example: true,
     required: false,
-    description: 'Whether to force revocation of existing active invitation and reissue a new token',
+    description:
+      'Whether to force revocation of existing active invitation and reissue a new token',
   })
   @IsOptional()
   resend?: boolean;
@@ -21,18 +21,16 @@ export class InviteUserDto {
 export class AcceptInvitationDto {
   @ApiProperty({
     example: 'Str0ngP@ssw0rd2026!',
-    description: 'Password satisfying complexity rules (minimum 8 chars, mixed case, number, symbol)',
+    description:
+      'Password satisfying complexity rules (minimum 8 chars, mixed case, number, symbol)',
   })
   @IsString()
   @IsNotEmpty()
   @MinLength(8)
-  @Matches(
-    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/,
-    {
-      message:
-        'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character.',
-    },
-  )
+  @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/, {
+    message:
+      'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character.',
+  })
   password!: string;
 }
 
@@ -68,7 +66,8 @@ export class InvitationDispatchResultDto {
   @ApiProperty({
     example: 'abc123def456...',
     required: false,
-    description: 'Transient raw token returned for local email dispatch / automated testing',
+    description:
+      'Transient raw token returned for local email dispatch / automated testing',
   })
   rawToken?: string;
 

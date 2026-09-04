@@ -30,7 +30,9 @@ export class OrgUnitTypesController {
 
   @Get()
   @RequirePermissions(ORG_PERMISSIONS.VIEW)
-  @ApiOperation({ summary: 'Get all organization unit types with permitted hierarchy rules' })
+  @ApiOperation({
+    summary: 'Get all organization unit types with permitted hierarchy rules',
+  })
   @ApiResponse({
     status: 200,
     description: 'List of organization unit types with allowed child type IDs',
@@ -42,7 +44,9 @@ export class OrgUnitTypesController {
 
   @Get(':id/allowed-parents')
   @RequirePermissions(ORG_PERMISSIONS.VIEW)
-  @ApiOperation({ summary: 'Get allowed parent unit types for a given child unit type' })
+  @ApiOperation({
+    summary: 'Get allowed parent unit types for a given child unit type',
+  })
   @ApiResponse({
     status: 200,
     description: 'List of permitted parent unit types',

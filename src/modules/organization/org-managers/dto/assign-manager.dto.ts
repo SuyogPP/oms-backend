@@ -23,20 +23,28 @@ export class AssignManagerDto {
     enum: ['HEAD', 'DEPUTY', 'ACTING'],
     description: 'Manager role type',
   })
-  @IsIn([ORG_MANAGER_ROLES.HEAD, ORG_MANAGER_ROLES.DEPUTY, ORG_MANAGER_ROLES.ACTING])
+  @IsIn([
+    ORG_MANAGER_ROLES.HEAD,
+    ORG_MANAGER_ROLES.DEPUTY,
+    ORG_MANAGER_ROLES.ACTING,
+  ])
   @IsNotEmpty()
   managerRoleCode: string;
 
   @ApiPropertyOptional({
     example: true,
     default: false,
-    description: 'Designates the primary unit head (auto-ends previous primary HEAD)',
+    description:
+      'Designates the primary unit head (auto-ends previous primary HEAD)',
   })
   @IsOptional()
   @IsBoolean()
   isPrimary?: boolean;
 
-  @ApiProperty({ example: '2026-09-01', description: 'Start date (YYYY-MM-DD)' })
+  @ApiProperty({
+    example: '2026-09-01',
+    description: 'Start date (YYYY-MM-DD)',
+  })
   @IsString()
   @IsNotEmpty()
   effectiveFrom: string;

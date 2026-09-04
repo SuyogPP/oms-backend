@@ -7,19 +7,9 @@ import { RetentionRepository } from './repositories/retention.repository';
 import { RetentionService } from './services/retention.service';
 
 @Module({
-    imports: [
-        AuthModule,
-        SecurityModule,
-        SecurityEventsModule,
-    ],
-    controllers: [RetentionController],
-    providers: [
-        RetentionService,
-        RetentionRepository,
-    ],
-    exports: [
-        RetentionService,
-        RetentionRepository,
-    ],
+  imports: [AuthModule, SecurityModule, SecurityEventsModule],
+  controllers: [RetentionController],
+  providers: [RetentionService, RetentionRepository],
+  exports: [RetentionService, RetentionRepository],
 })
 export class RetentionModule {}

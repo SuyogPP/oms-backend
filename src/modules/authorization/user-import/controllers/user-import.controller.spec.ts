@@ -48,16 +48,24 @@ describe('UserImportController (Domain 3, Section 8)', () => {
     controller.getTemplate(res);
 
     expect(service.getTemplate).toHaveBeenCalled();
-    expect(res.setHeader).toHaveBeenCalledWith('Content-Type', 'text/csv; charset=utf-8');
+    expect(res.setHeader).toHaveBeenCalledWith(
+      'Content-Type',
+      'text/csv; charset=utf-8',
+    );
     expect(res.send).toHaveBeenCalledWith('header1,header2\n');
   });
 
   it('POST /authorization/users/import/validate -> delegates to service.validateImport', async () => {
     const dto = { rows: [] };
-    mockService.validateImport.mockResolvedValueOnce({ importToken: 'imp_123' });
+    mockService.validateImport.mockResolvedValueOnce({
+      importToken: 'imp_123',
+    });
 
     const result = await controller.validateImport(dto, currentUser as any);
-    expect(service.validateImport).toHaveBeenCalledWith(dto, currentUser.userId);
+    expect(service.validateImport).toHaveBeenCalledWith(
+      dto,
+      currentUser.userId,
+    );
     expect(result.importToken).toBe('imp_123');
   });
 

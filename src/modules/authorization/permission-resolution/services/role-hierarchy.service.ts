@@ -6,9 +6,7 @@ import { RoleResolutionItem } from '../interfaces/permission-resolution.interfac
 export class RoleHierarchyService {
   private readonly logger = new Logger(RoleHierarchyService.name);
 
-  constructor(
-    private readonly repository: PermissionResolutionRepository,
-  ) {}
+  constructor(private readonly repository: PermissionResolutionRepository) {}
 
   /**
    * Resolves direct and transitive child roles conferred by the user's active direct roles.

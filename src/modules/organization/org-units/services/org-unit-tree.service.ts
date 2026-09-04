@@ -1,9 +1,4 @@
-import {
-  HttpException,
-  HttpStatus,
-  Injectable,
-  Logger,
-} from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { randomUUID } from 'crypto';
 import { DataSource, QueryRunner } from 'typeorm';
@@ -98,7 +93,8 @@ export class OrgUnitTreeService {
           emailAddress: dto.emailAddress,
           phoneNumber: dto.phoneNumber,
           sortOrder: dto.sortOrder ?? 0,
-          effectiveFrom: dto.effectiveFrom ?? new Date().toISOString().split('T')[0],
+          effectiveFrom:
+            dto.effectiveFrom ?? new Date().toISOString().split('T')[0],
           createdBy: actorUserId,
         },
         qr,
@@ -198,24 +194,31 @@ export class OrgUnitTreeService {
       }
 
       // Root cannot be moved (§7.3 D5)
-      if (movingUnit.parentOrgUnitId === null || movingUnit.orgUnitTypeId === 1) {
+      if (
+        movingUnit.parentOrgUnitId === null ||
+        movingUnit.orgUnitTypeId === 1
+      ) {
         throw new HttpException(
           {
             code: ORG_ERROR_CODES.ORG_ROOT_PROTECTED,
-            message: 'The root holding organization unit is protected and cannot be reparented.',
+            message:
+              'The root holding organization unit is protected and cannot be reparented.',
           },
           HttpStatus.CONFLICT,
         );
       }
 
       // Optimistic concurrency verification (§11.1)
-      const currentToken = movingUnit.rowVersion.toLowerCase().replace(/^0x/, '');
+      const currentToken = movingUnit.rowVersion
+        .toLowerCase()
+        .replace(/^0x/, '');
       const expectedToken = dto.rowVersion.toLowerCase().replace(/^0x/, '');
       if (currentToken !== expectedToken) {
         throw new HttpException(
           {
             code: ORG_ERROR_CODES.ORG_CONCURRENCY_CONFLICT,
-            message: 'The organization unit has been modified by another transaction. Please reload and retry.',
+            message:
+              'The organization unit has been modified by another transaction. Please reload and retry.',
           },
           HttpStatus.CONFLICT,
         );
@@ -225,7 +228,11 @@ export class OrgUnitTreeService {
       await this.closureRepository.detachSubtree(nodeId, qr);
 
       // 4. Step 2: Attach closure (§6.2)
-      await this.closureRepository.attachSubtree(nodeId, dto.newParentOrgUnitId, qr);
+      await this.closureRepository.attachSubtree(
+        nodeId,
+        dto.newParentOrgUnitId,
+        qr,
+      );
 
       // 5. Update adjacency parent on moving node
       await qr.query(
@@ -244,7 +251,10 @@ export class OrgUnitTreeService {
       await this.rebuildPathsForSubtree(nodeId, qr);
 
       // 8. Calculate affected node count
-      const subtreeIds = await this.closureRepository.getDescendantIds(nodeId, qr);
+      const subtreeIds = await this.closureRepository.getDescendantIds(
+        nodeId,
+        qr,
+      );
       const affectedNodeCount = subtreeIds.length;
 
       // 9. Write change log
@@ -293,7 +303,10 @@ export class OrgUnitTreeService {
   /**
    * §6.2 Recomputes Depth for all nodes in the subtree using transitive depths from closure.
    */
-  async recomputeDepthForSubtree(nodeId: string, qr?: QueryRunner): Promise<void> {
+  async recomputeDepthForSubtree(
+    nodeId: string,
+    qr?: QueryRunner,
+  ): Promise<void> {
     const sql = `
       UPDATE u
       SET u.Depth = c.Depth
@@ -314,7 +327,10 @@ export class OrgUnitTreeService {
   /**
    * §6.2 Rebuilds MaterializedPath for the entire subtree using a recursive CTE with unlimited recursion depth.
    */
-  async rebuildPathsForSubtree(nodeId: string, qr?: QueryRunner): Promise<void> {
+  async rebuildPathsForSubtree(
+    nodeId: string,
+    qr?: QueryRunner,
+  ): Promise<void> {
     const sql = `
       WITH Subtree AS (
           SELECT u.OrgUnitId,

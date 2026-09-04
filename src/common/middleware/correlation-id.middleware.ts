@@ -24,7 +24,8 @@ export class CorrelationIdMiddleware implements NestMiddleware {
     const userAgent = (req.headers['user-agent'] as string) || 'UNKNOWN';
 
     const userId = (req.headers['x-user-id'] as string) || null;
-    const loginSessionId = (req.headers['x-login-session-id'] as string) || null;
+    const loginSessionId =
+      (req.headers['x-login-session-id'] as string) || null;
 
     const store: RequestContextStore = {
       correlationId,

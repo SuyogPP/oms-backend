@@ -1,6 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { DataSource, QueryRunner } from 'typeorm';
-import { IUserOverrideAssignment, IManageOverrideData } from '../interfaces/user-assignments.interface';
+import {
+  IUserOverrideAssignment,
+  IManageOverrideData,
+} from '../interfaces/user-assignments.interface';
 
 @Injectable()
 export class UserOverridesRepository {

@@ -22,7 +22,10 @@ export class OrgUnitTypeEntity {
   @ApiProperty({ example: 'DEPARTMENT', description: 'Scope level code' })
   scopeLevelCode: string;
 
-  @ApiProperty({ example: true, description: 'Allows annual budget allocation' })
+  @ApiProperty({
+    example: true,
+    description: 'Allows annual budget allocation',
+  })
   allowsBudget: boolean;
 
   @ApiProperty({ example: true, description: 'Allows requisition submissions' })

@@ -11,28 +11,25 @@ import { AuthModule } from '../auth/auth.module';
 import { SecurityEventsModule } from '../security-events/security-events.module';
 
 @Module({
-    imports: [
-        forwardRef(() => AuthModule),
-        SecurityEventsModule,
-    ],
-    controllers: [
-        SecurityDashboardController,
-        SecurityChartsController,
-        SecuritySettingsController,
-    ],
-    providers: [
-        SecurityRepository,
-        SecuritySettingsRepository,
-        SecurityChartsService,
-        SecurityDashboardService,
-        SecuritySettingsService,
-    ],
-    exports: [
-        SecurityRepository,
-        SecuritySettingsRepository,
-        SecurityChartsService,
-        SecurityDashboardService,
-        SecuritySettingsService,
-    ],
+  imports: [forwardRef(() => AuthModule), SecurityEventsModule],
+  controllers: [
+    SecurityDashboardController,
+    SecurityChartsController,
+    SecuritySettingsController,
+  ],
+  providers: [
+    SecurityRepository,
+    SecuritySettingsRepository,
+    SecurityChartsService,
+    SecurityDashboardService,
+    SecuritySettingsService,
+  ],
+  exports: [
+    SecurityRepository,
+    SecuritySettingsRepository,
+    SecurityChartsService,
+    SecurityDashboardService,
+    SecuritySettingsService,
+  ],
 })
 export class SecurityModule {}

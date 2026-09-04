@@ -1,5 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { NotFoundException, ConflictException, BadRequestException } from '@nestjs/common';
+import {
+  NotFoundException,
+  ConflictException,
+  BadRequestException,
+} from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { UserRolesService } from './user-roles.service';
 import { UserRolesRepository } from '../repositories/user-roles.repository';
@@ -7,7 +11,7 @@ import { UsersRepository } from '../../users/repositories/users.repository';
 import { UserValidationService } from '../../users/services/user-validation.service';
 import { SecurityEventsService } from '../../../security-events/services/security-events.service';
 import { AuditService } from '../../../audit/service/audit.services';
-import { USER_TYPES, USER_ERROR_CODES } from '../../users/users.constants';
+import { USER_ERROR_CODES } from '../../users/users.constants';
 
 describe('UserRolesService (Domain 3, Section 8 Assignments & Section 4.2)', () => {
   let service: UserRolesService;
@@ -76,8 +80,12 @@ describe('UserRolesService (Domain 3, Section 8 Assignments & Section 4.2)', () 
     service = module.get<UserRolesService>(UserRolesService);
     userRolesRepository = module.get<UserRolesRepository>(UserRolesRepository);
     usersRepository = module.get<UsersRepository>(UsersRepository);
-    validationService = module.get<UserValidationService>(UserValidationService);
-    securityEventsService = module.get<SecurityEventsService>(SecurityEventsService);
+    validationService = module.get<UserValidationService>(
+      UserValidationService,
+    );
+    securityEventsService = module.get<SecurityEventsService>(
+      SecurityEventsService,
+    );
     auditService = module.get<AuditService>(AuditService);
 
     jest.clearAllMocks();
@@ -126,9 +134,9 @@ describe('UserRolesService (Domain 3, Section 8 Assignments & Section 4.2)', () 
       // Visible org units query returns empty
       mockDataSource.query.mockResolvedValueOnce([]);
 
-      await expect(service.findByUserId(sampleUserId, operatorUserId)).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(
+        service.findByUserId(sampleUserId, operatorUserId),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -155,7 +163,11 @@ describe('UserRolesService (Domain 3, Section 8 Assignments & Section 4.2)', () 
         effectiveTo: '2027-09-01T00:00:00.000Z',
       };
 
-      const result = await service.assignRole(sampleUserId, dto, operatorUserId);
+      const result = await service.assignRole(
+        sampleUserId,
+        dto,
+        operatorUserId,
+      );
 
       // Validation was executed
       expect(mockValidationService.validateAssignRole).toHaveBeenCalledWith(
@@ -176,8 +188,13 @@ describe('UserRolesService (Domain 3, Section 8 Assignments & Section 4.2)', () 
       );
 
       // Security and Audit logged
-      expect(mockSecurityEventsService.log).toHaveBeenCalledWith('ROLE_ASSIGNED', expect.any(Object));
-      expect(mockAuditService.logUserUpdated).toHaveBeenCalledWith(expect.objectContaining({ userId: sampleUserId }));
+      expect(mockSecurityEventsService.log).toHaveBeenCalledWith(
+        'ROLE_ASSIGNED',
+        expect.any(Object),
+      );
+      expect(mockAuditService.logUserUpdated).toHaveBeenCalledWith(
+        expect.objectContaining({ userId: sampleUserId }),
+      );
 
       expect(result.roleCode).toBe('FINANCE_APPROVER');
     });
@@ -226,11 +243,18 @@ describe('UserRolesService (Domain 3, Section 8 Assignments & Section 4.2)', () 
       await service.revokeRole(userRoleId, operatorUserId);
 
       // Revoke sets EffectiveTo = now; does NOT set IsActive = 0
-      expect(mockUserRolesRepository.revokeRole).toHaveBeenCalledWith(userRoleId);
+      expect(mockUserRolesRepository.revokeRole).toHaveBeenCalledWith(
+        userRoleId,
+      );
 
       // Security event & Audit logged
-      expect(mockSecurityEventsService.log).toHaveBeenCalledWith('ROLE_REVOKED', expect.any(Object));
-      expect(mockAuditService.logUserUpdated).toHaveBeenCalledWith(expect.objectContaining({ userId: sampleUserId }));
+      expect(mockSecurityEventsService.log).toHaveBeenCalledWith(
+        'ROLE_REVOKED',
+        expect.any(Object),
+      );
+      expect(mockAuditService.logUserUpdated).toHaveBeenCalledWith(
+        expect.objectContaining({ userId: sampleUserId }),
+      );
     });
 
     it('rejects revoking your own role with 409 USER_SELF_ACTION (§9.1 / U14)', async () => {
@@ -242,9 +266,9 @@ describe('UserRolesService (Domain 3, Section 8 Assignments & Section 4.2)', () 
         isActive: true,
       });
 
-      await expect(service.revokeRole(userRoleId, operatorUserId)).rejects.toThrow(
-        ConflictException,
-      );
+      await expect(
+        service.revokeRole(userRoleId, operatorUserId),
+      ).rejects.toThrow(ConflictException);
 
       expect(mockUserRolesRepository.revokeRole).not.toHaveBeenCalled();
     });
@@ -252,9 +276,9 @@ describe('UserRolesService (Domain 3, Section 8 Assignments & Section 4.2)', () 
     it('throws 404 if role assignment record does not exist', async () => {
       mockUserRolesRepository.findById.mockResolvedValueOnce(null);
 
-      await expect(service.revokeRole('non-existent-id', operatorUserId)).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(
+        service.revokeRole('non-existent-id', operatorUserId),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -262,7 +286,8 @@ describe('UserRolesService (Domain 3, Section 8 Assignments & Section 4.2)', () 
     it('asserts that newly assigned active role takes immediate effect on subsequent request resolution', async () => {
       // Step 1: User has NO active roles initially
       mockUserRolesRepository.findActiveByUserId.mockResolvedValueOnce([]);
-      const initialRoles = await userRolesRepository.findActiveByUserId(sampleUserId);
+      const initialRoles =
+        await userRolesRepository.findActiveByUserId(sampleUserId);
       expect(initialRoles.length).toBe(0);
 
       // Step 2: Administrator assigns HOD role to user
@@ -300,7 +325,8 @@ describe('UserRolesService (Domain 3, Section 8 Assignments & Section 4.2)', () 
         },
       ]);
 
-      const subsequentRoles = await userRolesRepository.findActiveByUserId(sampleUserId);
+      const subsequentRoles =
+        await userRolesRepository.findActiveByUserId(sampleUserId);
       expect(subsequentRoles.length).toBe(1);
       expect(subsequentRoles[0].roleCode).toBe('HOD');
     });

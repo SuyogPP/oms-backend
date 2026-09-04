@@ -64,7 +64,7 @@ describe('VendorUsersController (Domain 3, Section 8)', () => {
     };
     mockService.create.mockResolvedValueOnce({ userId: sampleUserId });
 
-    const result = await controller.create(dto as any, currentUser as any);
+    const result = await controller.create(dto, currentUser as any);
     expect(service.create).toHaveBeenCalledWith(dto, currentUser.userId);
     expect(result.userId).toBe(sampleUserId);
   });
@@ -73,24 +73,44 @@ describe('VendorUsersController (Domain 3, Section 8)', () => {
     const dto = { firstName: 'Ahmed Updated' };
     mockService.update.mockResolvedValueOnce({ userId: sampleUserId });
 
-    const result = await controller.update(sampleUserId, dto as any, currentUser as any);
-    expect(service.update).toHaveBeenCalledWith(sampleUserId, dto, currentUser.userId);
+    const result = await controller.update(
+      sampleUserId,
+      dto,
+      currentUser as any,
+    );
+    expect(service.update).toHaveBeenCalledWith(
+      sampleUserId,
+      dto,
+      currentUser.userId,
+    );
     expect(result.userId).toBe(sampleUserId);
   });
 
   it('POST /authorization/vendor-users/:id/deactivate -> delegates to service.deactivate', async () => {
     mockService.deactivate.mockResolvedValueOnce(undefined);
 
-    const result = await controller.deactivate(sampleUserId, currentUser as any);
-    expect(service.deactivate).toHaveBeenCalledWith(sampleUserId, currentUser.userId);
+    const result = await controller.deactivate(
+      sampleUserId,
+      currentUser as any,
+    );
+    expect(service.deactivate).toHaveBeenCalledWith(
+      sampleUserId,
+      currentUser.userId,
+    );
     expect(result.success).toBe(true);
   });
 
   it('POST /authorization/vendor-users/vendors/:vendorId/deactivate -> delegates to service.deactivateAllByVendorId', async () => {
     mockService.deactivateAllByVendorId.mockResolvedValueOnce(undefined);
 
-    const result = await controller.deactivateByVendor(vendorId, currentUser as any);
-    expect(service.deactivateAllByVendorId).toHaveBeenCalledWith(vendorId, currentUser.userId);
+    const result = await controller.deactivateByVendor(
+      vendorId,
+      currentUser as any,
+    );
+    expect(service.deactivateAllByVendorId).toHaveBeenCalledWith(
+      vendorId,
+      currentUser.userId,
+    );
     expect(result.success).toBe(true);
   });
 });

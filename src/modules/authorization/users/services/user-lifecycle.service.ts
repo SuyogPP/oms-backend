@@ -1,9 +1,4 @@
-import {
-  Injectable,
-  NotFoundException,
-  BadRequestException,
-  Logger,
-} from '@nestjs/common';
+import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { UsersRepository } from '../repositories/users.repository';
 import { UserRolesRepository } from '../../user-assignments/repositories/user-roles.repository';
@@ -78,7 +73,10 @@ export class UserLifecycleService {
     }
 
     // Run security validations (U14 & U15)
-    await this.userValidationService.validateDeactivateUser(userId, operatorUserId);
+    await this.userValidationService.validateDeactivateUser(
+      userId,
+      operatorUserId,
+    );
 
     if (!user.isActive) {
       return; // Already inactive (idempotent)
@@ -151,7 +149,11 @@ export class UserLifecycleService {
 
     try {
       // 1. Soft delete user
-      await this.usersRepository.softDelete(userId, operatorUserId, queryRunner);
+      await this.usersRepository.softDelete(
+        userId,
+        operatorUserId,
+        queryRunner,
+      );
 
       // 2. Revoke active sessions
       await this.usersRepository.revokeAllUserSessions(

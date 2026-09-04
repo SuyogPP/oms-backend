@@ -23,7 +23,9 @@ export class DelegationEntity implements IDelegation {
   @ApiProperty({ example: '2026-09-05T00:00:00.000Z' })
   endDate!: Date;
 
-  @ApiProperty({ example: 'Annual leave delegation for departmental approvals' })
+  @ApiProperty({
+    example: 'Annual leave delegation for departmental approvals',
+  })
   reason!: string;
 
   @ApiProperty({ example: true })

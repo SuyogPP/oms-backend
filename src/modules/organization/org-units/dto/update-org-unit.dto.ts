@@ -10,7 +10,8 @@ import { ORG_CODE_REGEX } from '../org-units.constants';
 
 export class UpdateOrgUnitDto {
   @ApiPropertyOptional({
-    description: 'Do NOT use for reparenting. Changing parentOrgUnitId via PATCH is rejected.',
+    description:
+      'Do NOT use for reparenting. Changing parentOrgUnitId via PATCH is rejected.',
   })
   @IsOptional()
   parentOrgUnitId?: any;

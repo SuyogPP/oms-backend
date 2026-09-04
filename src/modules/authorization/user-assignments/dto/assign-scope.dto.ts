@@ -4,7 +4,8 @@ import { ApiProperty } from '@nestjs/swagger';
 export class AssignScopeDto {
   @ApiProperty({
     example: '1053433E-F36B-1410-85ED-009A959FB122',
-    description: 'ScopeDefinition UUID (GLOBAL, ORGANIZATION, BUSINESS_UNIT, DEPARTMENT, SECTION)',
+    description:
+      'ScopeDefinition UUID (GLOBAL, ORGANIZATION, BUSINESS_UNIT, DEPARTMENT, SECTION)',
   })
   @IsUUID()
   @IsNotEmpty()
@@ -19,22 +20,34 @@ export class AssignScopeDto {
   @IsOptional()
   orgUnitId?: string;
 
-  @ApiProperty({ example: '1053433E-F36B-1410-85ED-009A959FB122', required: false })
+  @ApiProperty({
+    example: '1053433E-F36B-1410-85ED-009A959FB122',
+    required: false,
+  })
   @IsUUID()
   @IsOptional()
   organizationId?: string;
 
-  @ApiProperty({ example: '1053433E-F36B-1410-85ED-009A959FB122', required: false })
+  @ApiProperty({
+    example: '1053433E-F36B-1410-85ED-009A959FB122',
+    required: false,
+  })
   @IsUUID()
   @IsOptional()
   businessUnitId?: string;
 
-  @ApiProperty({ example: '1053433E-F36B-1410-85ED-009A959FB122', required: false })
+  @ApiProperty({
+    example: '1053433E-F36B-1410-85ED-009A959FB122',
+    required: false,
+  })
   @IsUUID()
   @IsOptional()
   departmentId?: string;
 
-  @ApiProperty({ example: '1053433E-F36B-1410-85ED-009A959FB122', required: false })
+  @ApiProperty({
+    example: '1053433E-F36B-1410-85ED-009A959FB122',
+    required: false,
+  })
   @IsUUID()
   @IsOptional()
   sectionId?: string;
@@ -53,7 +66,8 @@ export class AssignScopeDto {
 export class ScopeCountResponseDto {
   @ApiProperty({
     example: 42,
-    description: 'Number of active organizational units accessible under the specified scope',
+    description:
+      'Number of active organizational units accessible under the specified scope',
   })
   accessibleOrgUnitsCount!: number;
 

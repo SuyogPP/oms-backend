@@ -69,7 +69,8 @@ export class UserOverridesService {
     if (!dto.reason || dto.reason.trim() === '') {
       throw new BadRequestException({
         code: 'OVERRIDE_REASON_REQUIRED',
-        message: 'A stated business reason is mandatory for creating permission overrides.',
+        message:
+          'A stated business reason is mandatory for creating permission overrides.',
       });
     }
 
@@ -104,7 +105,8 @@ export class UserOverridesService {
     const perm = permRows[0];
 
     // 4. Capture Before State for active overrides of this permission
-    const existingOverrides = await this.userOverridesRepository.findActiveByUserId(userId);
+    const existingOverrides =
+      await this.userOverridesRepository.findActiveByUserId(userId);
     const beforeOverride = existingOverrides.find(
       (o) => o.permissionId === dto.permissionId,
     );
@@ -116,7 +118,9 @@ export class UserOverridesService {
       isGranted: dto.isGranted,
       reason: dto.reason.trim(),
       approvedBy: operatorUserId,
-      effectiveFrom: dto.effectiveFrom ? new Date(dto.effectiveFrom) : new Date(),
+      effectiveFrom: dto.effectiveFrom
+        ? new Date(dto.effectiveFrom)
+        : new Date(),
       effectiveTo: dto.effectiveTo ? new Date(dto.effectiveTo) : null,
     });
 

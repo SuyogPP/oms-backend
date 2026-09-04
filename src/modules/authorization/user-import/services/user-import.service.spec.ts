@@ -57,8 +57,11 @@ describe('UserImportService (Domain 3, Section 5.1, 6.2, Two-Phase Import)', () 
     }).compile();
 
     service = module.get<UserImportService>(UserImportService);
-    userImportRepository = module.get<UserImportRepository>(UserImportRepository);
-    securityEventsService = module.get<SecurityEventsService>(SecurityEventsService);
+    userImportRepository =
+      module.get<UserImportRepository>(UserImportRepository);
+    securityEventsService = module.get<SecurityEventsService>(
+      SecurityEventsService,
+    );
     auditService = module.get<AuditService>(AuditService);
 
     jest.clearAllMocks();
@@ -75,15 +78,15 @@ describe('UserImportService (Domain 3, Section 5.1, 6.2, Two-Phase Import)', () 
         employeeId: `EMP-${i}`,
       }));
 
-      await expect(service.validateImport({ rows }, operatorUserId)).rejects.toThrow(
-        BadRequestException,
-      );
+      await expect(
+        service.validateImport({ rows }, operatorUserId),
+      ).rejects.toThrow(BadRequestException);
     });
 
     it('rejects empty rows with 400 Bad Request', async () => {
-      await expect(service.validateImport({ rows: [] }, operatorUserId)).rejects.toThrow(
-        BadRequestException,
-      );
+      await expect(
+        service.validateImport({ rows: [] }, operatorUserId),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 
@@ -105,16 +108,28 @@ describe('UserImportService (Domain 3, Section 5.1, 6.2, Two-Phase Import)', () 
       ];
 
       mockUserImportRepository.findOrgUnitsByCodes.mockResolvedValueOnce([
-        { code: 'DEP-PROC', orgUnitId: 'dept-uuid', typeId: 3, name: 'Procurement' },
+        {
+          code: 'DEP-PROC',
+          orgUnitId: 'dept-uuid',
+          typeId: 3,
+          name: 'Procurement',
+        },
       ]);
       mockUserImportRepository.findRolesByCodes.mockResolvedValueOnce([
-        { roleCode: 'PROCUREMENT_BUYER', roleId: 'role-uuid', isVendorRole: false },
+        {
+          roleCode: 'PROCUREMENT_BUYER',
+          roleId: 'role-uuid',
+          isVendorRole: false,
+        },
       ]);
       mockUserImportRepository.findScopeDefinitions.mockResolvedValueOnce([
         { scopeCode: 'DEPARTMENT', scopeDefinitionId: 'scope-def-uuid' },
       ]);
 
-      const result = await service.validateImport({ rows: validRows }, operatorUserId);
+      const result = await service.validateImport(
+        { rows: validRows },
+        operatorUserId,
+      );
 
       expect(result.totalRows).toBe(1);
       expect(result.validRows).toBe(1);
@@ -153,12 +168,17 @@ describe('UserImportService (Domain 3, Section 5.1, 6.2, Two-Phase Import)', () 
       ];
 
       // Existing email in DB
-      mockUserImportRepository.findExistingEmails.mockResolvedValueOnce(['existing@diez.ae']);
+      mockUserImportRepository.findExistingEmails.mockResolvedValueOnce([
+        'existing@diez.ae',
+      ]);
       mockUserImportRepository.findRolesByCodes.mockResolvedValueOnce([
         { roleCode: 'VENDOR_ADMIN', roleId: 'v-role-uuid', isVendorRole: true },
       ]);
 
-      const result = await service.validateImport({ rows: invalidRows }, operatorUserId);
+      const result = await service.validateImport(
+        { rows: invalidRows },
+        operatorUserId,
+      );
 
       expect(result.invalidRows).toBe(3);
       expect(result.errors.length).toBeGreaterThanOrEqual(3);
@@ -179,7 +199,10 @@ describe('UserImportService (Domain 3, Section 5.1, 6.2, Two-Phase Import)', () 
         },
       ];
 
-      const valResult = await service.validateImport({ rows: validRows }, operatorUserId);
+      const valResult = await service.validateImport(
+        { rows: validRows },
+        operatorUserId,
+      );
       expect(valResult.importToken).toBeDefined();
 
       mockQueryRunner.query
@@ -208,13 +231,19 @@ describe('UserImportService (Domain 3, Section 5.1, 6.2, Two-Phase Import)', () 
 
       // Audit Log called
       expect(mockAuditService.logUserCreated).toHaveBeenCalledWith(
-        expect.objectContaining({ userId: 'created-user-id-1', username: 'ali.rashid' }),
+        expect.objectContaining({
+          userId: 'created-user-id-1',
+          username: 'ali.rashid',
+        }),
       );
     });
 
     it('rejects commit with expired or invalid token with 400 Bad Request', async () => {
       await expect(
-        service.commitImport({ importToken: 'non-existent-token' }, operatorUserId),
+        service.commitImport(
+          { importToken: 'non-existent-token' },
+          operatorUserId,
+        ),
       ).rejects.toThrow(BadRequestException);
     });
 
@@ -230,7 +259,10 @@ describe('UserImportService (Domain 3, Section 5.1, 6.2, Two-Phase Import)', () 
         },
       ];
 
-      const valResult = await service.validateImport({ rows: validRows }, operatorUserId);
+      const valResult = await service.validateImport(
+        { rows: validRows },
+        operatorUserId,
+      );
 
       // Simulate DB crash during profile insert
       mockQueryRunner.query
@@ -238,7 +270,10 @@ describe('UserImportService (Domain 3, Section 5.1, 6.2, Two-Phase Import)', () 
         .mockRejectedValueOnce(new Error('DB Constraint Violation'));
 
       await expect(
-        service.commitImport({ importToken: valResult.importToken }, operatorUserId),
+        service.commitImport(
+          { importToken: valResult.importToken },
+          operatorUserId,
+        ),
       ).rejects.toThrow('DB Constraint Violation');
 
       expect(mockQueryRunner.rollbackTransaction).toHaveBeenCalled();
@@ -248,7 +283,9 @@ describe('UserImportService (Domain 3, Section 5.1, 6.2, Two-Phase Import)', () 
   describe('4. Downloadable Template', () => {
     it('returns CSV template with required column headers', () => {
       const csv = service.getTemplate();
-      expect(csv).toContain('employeeId,username,email,firstName,lastName,jobTitle,departmentCode,roles,scopeCode,scopeUnitCode');
+      expect(csv).toContain(
+        'employeeId,username,email,firstName,lastName,jobTitle,departmentCode,roles,scopeCode,scopeUnitCode',
+      );
       expect(csv).toContain('EMP-1001');
       expect(csv).toContain('ali.rashid@diez.ae');
     });

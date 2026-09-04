@@ -1,9 +1,4 @@
-import {
-  Injectable,
-  NotFoundException,
-  ConflictException,
-  Logger,
-} from '@nestjs/common';
+import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { UserScopesRepository } from '../repositories/user-scopes.repository';
 import { UsersRepository } from '../../users/repositories/users.repository';
@@ -82,7 +77,9 @@ export class UserScopesService {
       businessUnitId: dto.businessUnitId,
       departmentId: dto.departmentId,
       sectionId: dto.sectionId,
-      effectiveFrom: dto.effectiveFrom ? new Date(dto.effectiveFrom) : new Date(),
+      effectiveFrom: dto.effectiveFrom
+        ? new Date(dto.effectiveFrom)
+        : new Date(),
       effectiveTo: dto.effectiveTo ? new Date(dto.effectiveTo) : null,
     });
 

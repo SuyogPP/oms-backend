@@ -33,7 +33,10 @@ export class UserRoleEntity implements IUserRoleAssignment {
   @ApiProperty({ example: true })
   isActive!: boolean;
 
-  @ApiProperty({ example: '1053433E-F36B-1410-85ED-009A959FB122', required: false })
+  @ApiProperty({
+    example: '1053433E-F36B-1410-85ED-009A959FB122',
+    required: false,
+  })
   assignedBy?: string | null;
 
   @ApiProperty({ example: '2026-01-01T00:00:00.000Z' })
@@ -56,7 +59,10 @@ export class UserScopeEntity implements IUserScopeAssignment {
   @ApiProperty({ example: 'Department Scope' })
   scopeName!: string;
 
-  @ApiProperty({ example: '1053433E-F36B-1410-85ED-009A959FB122', required: false })
+  @ApiProperty({
+    example: '1053433E-F36B-1410-85ED-009A959FB122',
+    required: false,
+  })
   orgUnitId?: string | null;
 
   @ApiProperty({ example: 'Finance Department', required: false })
@@ -100,7 +106,10 @@ export class UserOverrideEntity implements IUserOverrideAssignment {
   @ApiProperty({ example: 'Special project authorization', required: false })
   reason?: string | null;
 
-  @ApiProperty({ example: '1053433E-F36B-1410-85ED-009A959FB122', required: false })
+  @ApiProperty({
+    example: '1053433E-F36B-1410-85ED-009A959FB122',
+    required: false,
+  })
   approvedBy?: string | null;
 
   @ApiProperty({ example: '2026-01-01T00:00:00.000Z' })

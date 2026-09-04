@@ -18,9 +18,14 @@ export class SecurityEventsRepository {
 
   async createSecurityEvent(data: CreateSecurityEventInput): Promise<void> {
     try {
-      const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-      const validUserId = data.userId && UUID_REGEX.test(data.userId) ? data.userId : null;
-      const validLoginSessionId = data.loginSessionId && UUID_REGEX.test(data.loginSessionId) ? data.loginSessionId : null;
+      const UUID_REGEX =
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      const validUserId =
+        data.userId && UUID_REGEX.test(data.userId) ? data.userId : null;
+      const validLoginSessionId =
+        data.loginSessionId && UUID_REGEX.test(data.loginSessionId)
+          ? data.loginSessionId
+          : null;
 
       await this.dataSource.query(
         `

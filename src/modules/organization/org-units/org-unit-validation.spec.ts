@@ -1,10 +1,7 @@
 import { HttpException, HttpStatus } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { DataSource } from 'typeorm';
-import {
-  ORG_ERROR_CODES,
-  ORG_MANAGER_ROLES,
-} from './org-units.constants';
+import { ORG_ERROR_CODES, ORG_MANAGER_ROLES } from './org-units.constants';
 import { ORG_UNIT_REFERENCE_CHECKS } from './interfaces/org-unit-reference-check.interface';
 import { OrgUnitClosureRepository } from './repositories/org-unit-closure.repository';
 import { OrgUnitTypesRepository } from './repositories/org-unit-types.repository';
@@ -57,7 +54,9 @@ describe('OrgUnitValidationService (Domain 2 - Section 7 Rules)', () => {
   describe('Section 7.1: Creation Rules (C1 – C10)', () => {
     it('C1: throws 400 ORG_TYPE_INVALID if unit type does not exist or inactive', async () => {
       mockTypesRepo.findTypeById.mockResolvedValue(null);
-      await expect(service.validateC1_TypeExistsAndActive(999)).rejects.toMatchObject({
+      await expect(
+        service.validateC1_TypeExistsAndActive(999),
+      ).rejects.toMatchObject({
         status: HttpStatus.BAD_REQUEST,
         response: { code: ORG_ERROR_CODES.ORG_TYPE_INVALID },
       });
@@ -77,7 +76,9 @@ describe('OrgUnitValidationService (Domain 2 - Section 7 Rules)', () => {
 
     it('C4: throws 409 ORG_ROOT_EXISTS if active root already exists', async () => {
       mockOrgUnitsRepo.findActiveRoot.mockResolvedValue({ code: 'DIEZ' });
-      await expect(service.validateC4_SingleActiveRoot(true)).rejects.toMatchObject({
+      await expect(
+        service.validateC4_SingleActiveRoot(true),
+      ).rejects.toMatchObject({
         status: HttpStatus.CONFLICT,
         response: { code: ORG_ERROR_CODES.ORG_ROOT_EXISTS },
       });
@@ -85,14 +86,19 @@ describe('OrgUnitValidationService (Domain 2 - Section 7 Rules)', () => {
 
     it('C5: throws 400 ORG_HIERARCHY_RULE_VIOLATION if type combination invalid', async () => {
       mockTypesRepo.findHierarchyRule.mockResolvedValue(null);
-      await expect(service.validateC5_HierarchyRule(3, 4)).rejects.toMatchObject({
+      await expect(
+        service.validateC5_HierarchyRule(3, 4),
+      ).rejects.toMatchObject({
         status: HttpStatus.BAD_REQUEST,
         response: { code: ORG_ERROR_CODES.ORG_HIERARCHY_RULE_VIOLATION },
       });
     });
 
     it('C6: throws 400 ORG_PARENT_INVALID / ORG_PARENT_INACTIVE', async () => {
-      mockOrgUnitsRepo.findById.mockResolvedValue({ isActive: false, isDeleted: false });
+      mockOrgUnitsRepo.findById.mockResolvedValue({
+        isActive: false,
+        isDeleted: false,
+      });
       await expect(
         service.validateC6_ParentExistsAndActive('parent-1'),
       ).rejects.toMatchObject({
@@ -102,7 +108,10 @@ describe('OrgUnitValidationService (Domain 2 - Section 7 Rules)', () => {
     });
 
     it('C7: throws 409 ORG_CODE_DUPLICATE if sibling with same code exists', async () => {
-      mockOrgUnitsRepo.findByCode.mockResolvedValue({ orgUnitId: 'u-1', code: 'IT' });
+      mockOrgUnitsRepo.findByCode.mockResolvedValue({
+        orgUnitId: 'u-1',
+        code: 'IT',
+      });
       await expect(
         service.validateC7_CodeUniqueAmongSiblings('p-1', 'IT'),
       ).rejects.toMatchObject({
@@ -112,12 +121,17 @@ describe('OrgUnitValidationService (Domain 2 - Section 7 Rules)', () => {
     });
 
     it('C8: throws 400 ORG_CODE_FORMAT on invalid regex', () => {
-      expect(() => service.validateC8_CodeFormat('it#123')).toThrow(HttpException);
+      expect(() => service.validateC8_CodeFormat('it#123')).toThrow(
+        HttpException,
+      );
     });
 
     it('C9: throws 400 ORG_EFFECTIVE_BEFORE_PARENT if child date before parent date', () => {
       expect(() =>
-        service.validateC9_EffectiveFromNotBeforeParent('2026-01-01', '2026-06-01'),
+        service.validateC9_EffectiveFromNotBeforeParent(
+          '2026-01-01',
+          '2026-06-01',
+        ),
       ).toThrow(HttpException);
     });
 
@@ -160,7 +174,10 @@ describe('OrgUnitValidationService (Domain 2 - Section 7 Rules)', () => {
     });
 
     it('M5: throws 409 ORG_CODE_DUPLICATE if code exists under new parent', async () => {
-      mockOrgUnitsRepo.findByCode.mockResolvedValue({ orgUnitId: 'other-u', code: 'IT' });
+      mockOrgUnitsRepo.findByCode.mockResolvedValue({
+        orgUnitId: 'other-u',
+        code: 'IT',
+      });
       await expect(
         service.validateM5_CodeUniqueAmongNewSiblings('u-1', 'new-p', 'IT'),
       ).rejects.toMatchObject({
@@ -209,7 +226,10 @@ describe('OrgUnitValidationService (Domain 2 - Section 7 Rules)', () => {
 
     it('D5: throws 409 ORG_ROOT_PROTECTED when attempting to delete root', () => {
       expect(() =>
-        service.validateD5_RootProtected({ parentOrgUnitId: null, orgUnitTypeId: 1 } as any),
+        service.validateD5_RootProtected({
+          parentOrgUnitId: null,
+          orgUnitTypeId: 1,
+        } as any),
       ).toThrow(HttpException);
     });
   });

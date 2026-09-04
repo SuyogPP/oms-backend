@@ -1,6 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import {
-  NotFoundException,
   ConflictException,
   BadRequestException,
   ForbiddenException,
@@ -65,9 +64,13 @@ describe('DelegationsService (Domain 3, Section 9.3 Rules D1-D7 & Section 8)', (
     }).compile();
 
     service = module.get<DelegationsService>(DelegationsService);
-    delegationsRepository = module.get<DelegationsRepository>(DelegationsRepository);
+    delegationsRepository = module.get<DelegationsRepository>(
+      DelegationsRepository,
+    );
     usersRepository = module.get<UsersRepository>(UsersRepository);
-    securityEventsService = module.get<SecurityEventsService>(SecurityEventsService);
+    securityEventsService = module.get<SecurityEventsService>(
+      SecurityEventsService,
+    );
     auditService = module.get<AuditService>(AuditService);
 
     jest.clearAllMocks();
@@ -98,15 +101,23 @@ describe('DelegationsService (Domain 3, Section 9.3 Rules D1-D7 & Section 8)', (
         },
       ];
 
-      mockDelegationsRepository.findByFromUserId.mockResolvedValueOnce(grantedDelegations);
-      mockDelegationsRepository.findByToUserId.mockResolvedValueOnce(receivedDelegations);
+      mockDelegationsRepository.findByFromUserId.mockResolvedValueOnce(
+        grantedDelegations,
+      );
+      mockDelegationsRepository.findByToUserId.mockResolvedValueOnce(
+        receivedDelegations,
+      );
 
       const result = await service.findMyDelegations(delegatorId);
 
       expect(result.granted).toEqual(grantedDelegations);
       expect(result.received).toEqual(receivedDelegations);
-      expect(mockDelegationsRepository.findByFromUserId).toHaveBeenCalledWith(delegatorId);
-      expect(mockDelegationsRepository.findByToUserId).toHaveBeenCalledWith(delegatorId);
+      expect(mockDelegationsRepository.findByFromUserId).toHaveBeenCalledWith(
+        delegatorId,
+      );
+      expect(mockDelegationsRepository.findByToUserId).toHaveBeenCalledWith(
+        delegatorId,
+      );
     });
   });
 
@@ -128,8 +139,12 @@ describe('DelegationsService (Domain 3, Section 9.3 Rules D1-D7 & Section 8)', (
       });
 
       // No overlap and no chained delegation
-      mockDelegationsRepository.hasActiveOverlappingDelegation.mockResolvedValueOnce(false);
-      mockDelegationsRepository.isCurrentlyActingDelegate.mockResolvedValue(false);
+      mockDelegationsRepository.hasActiveOverlappingDelegation.mockResolvedValueOnce(
+        false,
+      );
+      mockDelegationsRepository.isCurrentlyActingDelegate.mockResolvedValue(
+        false,
+      );
 
       mockDelegationsRepository.create.mockResolvedValueOnce(delegationId);
       mockDelegationsRepository.findById.mockResolvedValueOnce({
@@ -179,9 +194,9 @@ describe('DelegationsService (Domain 3, Section 9.3 Rules D1-D7 & Section 8)', (
         reason: 'Self delegation',
       };
 
-      await expect(service.create(delegatorId, selfDto, delegatorId)).rejects.toThrow(
-        BadRequestException,
-      );
+      await expect(
+        service.create(delegatorId, selfDto, delegatorId),
+      ).rejects.toThrow(BadRequestException);
     });
 
     it('D2: rejects endDate <= startDate', async () => {
@@ -192,9 +207,9 @@ describe('DelegationsService (Domain 3, Section 9.3 Rules D1-D7 & Section 8)', (
         reason: 'Invalid dates',
       };
 
-      await expect(service.create(delegatorId, invalidDatesDto, delegatorId)).rejects.toThrow(
-        BadRequestException,
-      );
+      await expect(
+        service.create(delegatorId, invalidDatesDto, delegatorId),
+      ).rejects.toThrow(BadRequestException);
     });
 
     it('D2: rejects duration exceeding 90 days', async () => {
@@ -205,21 +220,25 @@ describe('DelegationsService (Domain 3, Section 9.3 Rules D1-D7 & Section 8)', (
         reason: 'Too long delegation',
       };
 
-      await expect(service.create(delegatorId, longDto, delegatorId)).rejects.toThrow(
-        BadRequestException,
-      );
+      await expect(
+        service.create(delegatorId, longDto, delegatorId),
+      ).rejects.toThrow(BadRequestException);
     });
 
     it('D3: rejects overlapping active delegations from same user (409 Conflict)', async () => {
-      mockDelegationsRepository.hasActiveOverlappingDelegation.mockResolvedValueOnce(true);
-
-      await expect(service.create(delegatorId, validDto, delegatorId)).rejects.toThrow(
-        ConflictException,
+      mockDelegationsRepository.hasActiveOverlappingDelegation.mockResolvedValueOnce(
+        true,
       );
+
+      await expect(
+        service.create(delegatorId, validDto, delegatorId),
+      ).rejects.toThrow(ConflictException);
     });
 
     it('D4: rejects non-internal delegate (e.g. VENDOR)', async () => {
-      mockDelegationsRepository.hasActiveOverlappingDelegation.mockResolvedValueOnce(false);
+      mockDelegationsRepository.hasActiveOverlappingDelegation.mockResolvedValueOnce(
+        false,
+      );
       mockUsersRepository.findById.mockResolvedValueOnce({
         userId: delegateId,
         userType: USER_TYPES.VENDOR,
@@ -227,9 +246,9 @@ describe('DelegationsService (Domain 3, Section 9.3 Rules D1-D7 & Section 8)', (
         isDeleted: false,
       });
 
-      await expect(service.create(delegatorId, validDto, delegatorId)).rejects.toThrow(
-        BadRequestException,
-      );
+      await expect(
+        service.create(delegatorId, validDto, delegatorId),
+      ).rejects.toThrow(BadRequestException);
     });
 
     it('D5: rejects chained delegation if delegator is currently an acting delegate', async () => {
@@ -239,23 +258,27 @@ describe('DelegationsService (Domain 3, Section 9.3 Rules D1-D7 & Section 8)', (
         isActive: true,
         isDeleted: false,
       });
-      mockDelegationsRepository.hasActiveOverlappingDelegation.mockResolvedValueOnce(false);
+      mockDelegationsRepository.hasActiveOverlappingDelegation.mockResolvedValueOnce(
+        false,
+      );
 
       // Delegator is currently acting delegate
-      mockDelegationsRepository.isCurrentlyActingDelegate.mockResolvedValueOnce(true);
-
-      await expect(service.create(delegatorId, validDto, delegatorId)).rejects.toThrow(
-        BadRequestException,
+      mockDelegationsRepository.isCurrentlyActingDelegate.mockResolvedValueOnce(
+        true,
       );
+
+      await expect(
+        service.create(delegatorId, validDto, delegatorId),
+      ).rejects.toThrow(BadRequestException);
     });
 
     it('Authorization: rejects non-admin creating delegation for another user (403 Forbidden)', async () => {
       // Caller is not delegator and has no USER.DELEGATION.MANAGE
       mockDataSource.query.mockResolvedValueOnce([]); // No admin permission
 
-      await expect(service.create(delegatorId, validDto, 'unauthorized-user')).rejects.toThrow(
-        ForbiddenException,
-      );
+      await expect(
+        service.create(delegatorId, validDto, 'unauthorized-user'),
+      ).rejects.toThrow(ForbiddenException);
     });
   });
 
@@ -270,7 +293,9 @@ describe('DelegationsService (Domain 3, Section 9.3 Rules D1-D7 & Section 8)', (
 
       await service.cancel(delegationId, delegatorId);
 
-      expect(mockDelegationsRepository.cancel).toHaveBeenCalledWith(delegationId);
+      expect(mockDelegationsRepository.cancel).toHaveBeenCalledWith(
+        delegationId,
+      );
       expect(mockSecurityEventsService.log).toHaveBeenCalledWith(
         'DELEGATION_CANCELLED',
         expect.objectContaining({ userId: delegatorId }),

@@ -1,8 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import {
-  NotFoundException,
-  BadRequestException,
-} from '@nestjs/common';
+import { BadRequestException } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { VendorUsersService } from './vendor-users.service';
 import { VendorUsersRepository } from '../repositories/vendor-users.repository';
@@ -71,9 +68,15 @@ describe('VendorUsersService (Domain 3, Section 7 Rules V1–V10)', () => {
     }).compile();
 
     service = module.get<VendorUsersService>(VendorUsersService);
-    vendorUsersRepository = module.get<VendorUsersRepository>(VendorUsersRepository);
-    validationService = module.get<UserValidationService>(UserValidationService);
-    securityEventsService = module.get<SecurityEventsService>(SecurityEventsService);
+    vendorUsersRepository = module.get<VendorUsersRepository>(
+      VendorUsersRepository,
+    );
+    validationService = module.get<UserValidationService>(
+      UserValidationService,
+    );
+    securityEventsService = module.get<SecurityEventsService>(
+      SecurityEventsService,
+    );
     auditService = module.get<AuditService>(AuditService);
 
     jest.clearAllMocks();
@@ -121,11 +124,21 @@ describe('VendorUsersService (Domain 3, Section 7 Rules V1–V10)', () => {
 
       const result = await service.create(validDto, operatorUserId);
 
-      expect(mockValidationService.validateV1_VendorUserType).toHaveBeenCalledWith(USER_TYPES.VENDOR);
-      expect(mockValidationService.validateV2_VendorLink).toHaveBeenCalledWith(vendorId);
-      expect(mockValidationService.validateU1_EmailUnique).toHaveBeenCalledWith(validDto.email);
-      expect(mockValidationService.validateU2_UsernameUnique).toHaveBeenCalledWith(validDto.username);
-      expect(mockValidationService.validateV5_VendorOrgUnitProfile).toHaveBeenCalledWith(USER_TYPES.VENDOR, {});
+      expect(
+        mockValidationService.validateV1_VendorUserType,
+      ).toHaveBeenCalledWith(USER_TYPES.VENDOR);
+      expect(mockValidationService.validateV2_VendorLink).toHaveBeenCalledWith(
+        vendorId,
+      );
+      expect(mockValidationService.validateU1_EmailUnique).toHaveBeenCalledWith(
+        validDto.email,
+      );
+      expect(
+        mockValidationService.validateU2_UsernameUnique,
+      ).toHaveBeenCalledWith(validDto.username);
+      expect(
+        mockValidationService.validateV5_VendorOrgUnitProfile,
+      ).toHaveBeenCalledWith(USER_TYPES.VENDOR, {});
 
       expect(mockVendorUsersRepository.create).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -197,7 +210,9 @@ describe('VendorUsersService (Domain 3, Section 7 Rules V1–V10)', () => {
 
       await service.deactivate(sampleUserId, operatorUserId);
 
-      expect(mockVendorUsersRepository.deactivate).toHaveBeenCalledWith(sampleUserId);
+      expect(mockVendorUsersRepository.deactivate).toHaveBeenCalledWith(
+        sampleUserId,
+      );
       expect(mockSecurityEventsService.log).toHaveBeenCalledWith(
         'VENDOR_USER_DEACTIVATED',
         expect.objectContaining({ userId: sampleUserId }),
@@ -209,7 +224,9 @@ describe('VendorUsersService (Domain 3, Section 7 Rules V1–V10)', () => {
     it('V10: deactivates all users associated with a deactivated vendor', async () => {
       await service.deactivateAllByVendorId(vendorId, operatorUserId);
 
-      expect(mockVendorUsersRepository.deactivateAllByVendorId).toHaveBeenCalledWith(vendorId);
+      expect(
+        mockVendorUsersRepository.deactivateAllByVendorId,
+      ).toHaveBeenCalledWith(vendorId);
       expect(mockSecurityEventsService.log).toHaveBeenCalledWith(
         'VENDOR_DEACTIVATED_CASCADE',
         expect.any(Object),

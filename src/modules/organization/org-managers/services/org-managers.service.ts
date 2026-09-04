@@ -1,12 +1,10 @@
-import {
-  HttpException,
-  HttpStatus,
-  Injectable,
-  Logger,
-} from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { AuditService } from '../../../audit/service/audit.services';
-import { ORG_ERROR_CODES, ORG_MANAGER_ROLES } from '../../org-units/org-units.constants';
+import {
+  ORG_ERROR_CODES,
+  ORG_MANAGER_ROLES,
+} from '../../org-units/org-units.constants';
 import { OrgUnitChangeLogRepository } from '../../org-units/repositories/org-unit-change-log.repository';
 import { OrgUnitsRepository } from '../../org-units/repositories/org-units.repository';
 import { OrgUnitValidationService } from '../../org-units/services/org-unit-validation.service';
@@ -41,8 +39,14 @@ export class OrgManagersService {
   /**
    * Retrieves current active primary HEAD manager for an organization unit.
    */
-  async findCurrentHead(orgUnitId: string, asOfDate?: string): Promise<OrgManagerEntity | null> {
-    const row = await this.managersRepository.findCurrentHead(orgUnitId, asOfDate);
+  async findCurrentHead(
+    orgUnitId: string,
+    asOfDate?: string,
+  ): Promise<OrgManagerEntity | null> {
+    const row = await this.managersRepository.findCurrentHead(
+      orgUnitId,
+      asOfDate,
+    );
     return row ? this.mapper.toEntity(row) : null;
   }
 
@@ -146,7 +150,11 @@ export class OrgManagersService {
       );
       return this.mapper.toEntity(fullRecord!);
     } catch (error: any) {
-      console.error('[assignManager error]:', error?.message, error?.stack || error);
+      console.error(
+        '[assignManager error]:',
+        error?.message,
+        error?.stack || error,
+      );
       if (qr.isTransactionActive) {
         await qr.rollbackTransaction();
       }
@@ -264,10 +272,7 @@ export class OrgManagersService {
   /**
    * Removes / ends a manager assignment.
    */
-  async removeManager(
-    managerId: string,
-    actorUserId: string,
-  ): Promise<void> {
+  async removeManager(managerId: string, actorUserId: string): Promise<void> {
     const existing = await this.managersRepository.findById(managerId);
     if (!existing) {
       throw new HttpException(
@@ -287,7 +292,10 @@ export class OrgManagersService {
       await this.managersRepository.softDelete(managerId, actorUserId, qr);
 
       // Rule G6: Refresh HeadUserId on OrgUnits if the removed manager was primary
-      if (existing.isPrimary && existing.managerRoleCode === ORG_MANAGER_ROLES.HEAD) {
+      if (
+        existing.isPrimary &&
+        existing.managerRoleCode === ORG_MANAGER_ROLES.HEAD
+      ) {
         const currentHead = await this.managersRepository.findCurrentHead(
           existing.orgUnitId,
           undefined,

@@ -38,7 +38,9 @@ export class OrgManagersController {
 
   @Get('units/:id/managers')
   @RequirePermissions(ORG_PERMISSIONS.VIEW)
-  @ApiOperation({ summary: 'Get all manager assignment history for an organization unit' })
+  @ApiOperation({
+    summary: 'Get all manager assignment history for an organization unit',
+  })
   @ApiResponse({
     status: 200,
     description: 'List of historical and current manager assignments',
@@ -50,7 +52,9 @@ export class OrgManagersController {
 
   @Get('units/:id/managers/current')
   @RequirePermissions(ORG_PERMISSIONS.VIEW)
-  @ApiOperation({ summary: 'Get current active primary head manager for an organization unit' })
+  @ApiOperation({
+    summary: 'Get current active primary head manager for an organization unit',
+  })
   @ApiResponse({
     status: 200,
     description: 'Current primary head manager details or null',
@@ -65,7 +69,9 @@ export class OrgManagersController {
 
   @Get('users/:userId/managed-units')
   @RequirePermissions(ORG_PERMISSIONS.VIEW)
-  @ApiOperation({ summary: 'Get all organization units managed by a specific user' })
+  @ApiOperation({
+    summary: 'Get all organization units managed by a specific user',
+  })
   @ApiResponse({
     status: 200,
     description: 'List of organization units managed by the user',
@@ -77,7 +83,10 @@ export class OrgManagersController {
 
   @Post('units/:id/managers')
   @RequirePermissions(ORG_PERMISSIONS.MANAGER_ASSIGN)
-  @ApiOperation({ summary: 'Assign a manager (HOD, Section Head, Deputy, Acting) to an org unit' })
+  @ApiOperation({
+    summary:
+      'Assign a manager (HOD, Section Head, Deputy, Acting) to an org unit',
+  })
   @ApiResponse({
     status: 201,
     description: 'The created manager assignment record',
@@ -119,6 +128,9 @@ export class OrgManagersController {
     @CurrentUser() user: ICurrentUser,
   ) {
     await this.managersService.removeManager(managerId, user.userId);
-    return { success: true, message: 'Manager assignment removed successfully.' };
+    return {
+      success: true,
+      message: 'Manager assignment removed successfully.',
+    };
   }
 }

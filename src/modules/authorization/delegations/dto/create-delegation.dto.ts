@@ -25,12 +25,17 @@ export class CreateDelegationDto {
   @IsNotEmpty()
   endDate!: string;
 
-  @ApiProperty({ example: 'Annual leave delegation for departmental approvals' })
+  @ApiProperty({
+    example: 'Annual leave delegation for departmental approvals',
+  })
   @IsString()
   @IsNotEmpty()
   reason!: string;
 
-  @ApiProperty({ example: ['1053433E-F36B-1410-85ED-009A959FB122'], required: false })
+  @ApiProperty({
+    example: ['1053433E-F36B-1410-85ED-009A959FB122'],
+    required: false,
+  })
   @IsArray()
   @IsUUID('4', { each: true })
   @IsOptional()

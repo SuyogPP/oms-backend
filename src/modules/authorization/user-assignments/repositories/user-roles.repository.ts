@@ -1,6 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { DataSource, QueryRunner } from 'typeorm';
-import { IUserRoleAssignment, IAssignRoleData } from '../interfaces/user-assignments.interface';
+import {
+  IUserRoleAssignment,
+  IAssignRoleData,
+} from '../interfaces/user-assignments.interface';
 
 @Injectable()
 export class UserRolesRepository {
@@ -153,10 +156,7 @@ export class UserRolesRepository {
   /**
    * Assigns a role to a user.
    */
-  async assignRole(
-    data: IAssignRoleData,
-    qr?: QueryRunner,
-  ): Promise<string> {
+  async assignRole(data: IAssignRoleData, qr?: QueryRunner): Promise<string> {
     const rows = await this.getExecutor(qr).query(
       `
       INSERT INTO [auth].[UserRoles] (

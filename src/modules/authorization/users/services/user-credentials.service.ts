@@ -68,7 +68,10 @@ export class UserCredentialsService {
 
     // 1. Generate 32 bytes cryptographically secure token
     const rawToken = crypto.randomBytes(32).toString('base64url');
-    const tokenHash = crypto.createHash('sha256').update(rawToken).digest('hex');
+    const tokenHash = crypto
+      .createHash('sha256')
+      .update(rawToken)
+      .digest('hex');
     const expiresAt = new Date(
       Date.now() + INVITATION_EXPIRY_DAYS * 24 * 60 * 60 * 1000,
     );
@@ -131,8 +134,12 @@ export class UserCredentialsService {
       });
     }
 
-    const tokenHash = crypto.createHash('sha256').update(rawToken.trim()).digest('hex');
-    const record = await this.userInvitationsRepository.findByTokenHashWithUser(tokenHash);
+    const tokenHash = crypto
+      .createHash('sha256')
+      .update(rawToken.trim())
+      .digest('hex');
+    const record =
+      await this.userInvitationsRepository.findByTokenHashWithUser(tokenHash);
 
     // Invariant generic check: non-existent, consumed, expired, or deleted user all return identical error
     if (
@@ -169,8 +176,12 @@ export class UserCredentialsService {
       });
     }
 
-    const tokenHash = crypto.createHash('sha256').update(rawToken.trim()).digest('hex');
-    const record = await this.userInvitationsRepository.findByTokenHashWithUser(tokenHash);
+    const tokenHash = crypto
+      .createHash('sha256')
+      .update(rawToken.trim())
+      .digest('hex');
+    const record =
+      await this.userInvitationsRepository.findByTokenHashWithUser(tokenHash);
 
     if (
       !record ||
@@ -193,11 +204,15 @@ export class UserCredentialsService {
     );
 
     for (const historyItem of recentHistory) {
-      const isMatch = await bcrypt.compare(dto.password, historyItem.passwordHash);
+      const isMatch = await bcrypt.compare(
+        dto.password,
+        historyItem.passwordHash,
+      );
       if (isMatch) {
         throw new BadRequestException({
           code: USER_ERROR_CODES.PASSWORD_HISTORY_VIOLATION,
-          message: 'Password has been used recently. Choose a different password.',
+          message:
+            'Password has been used recently. Choose a different password.',
         });
       }
     }
@@ -219,7 +234,11 @@ export class UserCredentialsService {
       );
 
       // 4. Record PasswordHistory and prune beyond 24 entries
-      await this.passwordHistoryRepository.add(userId, passwordHash, queryRunner);
+      await this.passwordHistoryRepository.add(
+        userId,
+        passwordHash,
+        queryRunner,
+      );
       await this.passwordHistoryRepository.prune(
         userId,
         PASSWORD_HISTORY_MAX_COUNT,
@@ -234,7 +253,11 @@ export class UserCredentialsService {
 
       // 6. Set user active & clear MustChangePassword flag
       await this.usersRepository.activate(userId, queryRunner);
-      await this.usersRepository.setMustChangePassword(userId, false, queryRunner);
+      await this.usersRepository.setMustChangePassword(
+        userId,
+        false,
+        queryRunner,
+      );
 
       await queryRunner.commitTransaction();
     } catch (error) {
@@ -284,7 +307,10 @@ export class UserCredentialsService {
     }
 
     const rawToken = crypto.randomBytes(32).toString('base64url');
-    const tokenHash = crypto.createHash('sha256').update(rawToken).digest('hex');
+    const tokenHash = crypto
+      .createHash('sha256')
+      .update(rawToken)
+      .digest('hex');
     const expiresAt = new Date(
       Date.now() + PASSWORD_RESET_EXPIRY_HOURS * 60 * 60 * 1000,
     );
@@ -312,7 +338,11 @@ export class UserCredentialsService {
       );
 
       // 3. Flag MustChangePassword = 1
-      await this.usersRepository.setMustChangePassword(userId, true, queryRunner);
+      await this.usersRepository.setMustChangePassword(
+        userId,
+        true,
+        queryRunner,
+      );
 
       // 4. Record LogoutHistory for active sessions before revocation
       await this.usersRepository.recordLogoutHistoryForSessions(

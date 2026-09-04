@@ -37,22 +37,34 @@ export class UpdateUserProfileDto {
   @IsOptional()
   jobTitle?: string;
 
-  @ApiProperty({ example: '1053433E-F36B-1410-85ED-009A959FB122', required: false })
+  @ApiProperty({
+    example: '1053433E-F36B-1410-85ED-009A959FB122',
+    required: false,
+  })
   @IsUUID()
   @IsOptional()
   organizationId?: string;
 
-  @ApiProperty({ example: '1053433E-F36B-1410-85ED-009A959FB122', required: false })
+  @ApiProperty({
+    example: '1053433E-F36B-1410-85ED-009A959FB122',
+    required: false,
+  })
   @IsUUID()
   @IsOptional()
   businessUnitId?: string;
 
-  @ApiProperty({ example: '1053433E-F36B-1410-85ED-009A959FB122', required: false })
+  @ApiProperty({
+    example: '1053433E-F36B-1410-85ED-009A959FB122',
+    required: false,
+  })
   @IsUUID()
   @IsOptional()
   departmentId?: string;
 
-  @ApiProperty({ example: '1053433E-F36B-1410-85ED-009A959FB122', required: false })
+  @ApiProperty({
+    example: '1053433E-F36B-1410-85ED-009A959FB122',
+    required: false,
+  })
   @IsUUID()
   @IsOptional()
   sectionId?: string;

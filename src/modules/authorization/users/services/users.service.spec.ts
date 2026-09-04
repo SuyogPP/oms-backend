@@ -71,8 +71,14 @@ describe('UsersService (Domain 3, §§5.1, 5.2, 8, 9.2)', () => {
       providers: [
         UsersService,
         { provide: UsersRepository, useValue: mockUsersRepository },
-        { provide: UserProfilesRepository, useValue: mockUserProfilesRepository },
-        { provide: UserInvitationsRepository, useValue: mockUserInvitationsRepository },
+        {
+          provide: UserProfilesRepository,
+          useValue: mockUserProfilesRepository,
+        },
+        {
+          provide: UserInvitationsRepository,
+          useValue: mockUserInvitationsRepository,
+        },
         { provide: UserValidationService, useValue: mockValidationService },
         { provide: SecurityEventsService, useValue: mockSecurityEventsService },
         { provide: AuditService, useValue: mockAuditService },
@@ -82,8 +88,12 @@ describe('UsersService (Domain 3, §§5.1, 5.2, 8, 9.2)', () => {
 
     service = module.get<UsersService>(UsersService);
     usersRepository = module.get<UsersRepository>(UsersRepository);
-    validationService = module.get<UserValidationService>(UserValidationService);
-    securityEventsService = module.get<SecurityEventsService>(SecurityEventsService);
+    validationService = module.get<UserValidationService>(
+      UserValidationService,
+    );
+    securityEventsService = module.get<SecurityEventsService>(
+      SecurityEventsService,
+    );
     auditService = module.get<AuditService>(AuditService);
 
     jest.clearAllMocks();
@@ -144,9 +154,9 @@ describe('UsersService (Domain 3, §§5.1, 5.2, 8, 9.2)', () => {
     it('returns 404 if user not found in database', async () => {
       mockUsersRepository.findById.mockResolvedValueOnce(null);
 
-      await expect(service.findById(sampleUserId, requesterUserId)).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(
+        service.findById(sampleUserId, requesterUserId),
+      ).rejects.toThrow(NotFoundException);
     });
 
     it('returns 404 (never 403) when user is outside requester visible scope', async () => {
@@ -167,9 +177,9 @@ describe('UsersService (Domain 3, §§5.1, 5.2, 8, 9.2)', () => {
       // Visible subtree does not contain dept-other-branch
       mockDataSource.query.mockResolvedValueOnce([]);
 
-      await expect(service.findById(sampleUserId, requesterUserId)).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(
+        service.findById(sampleUserId, requesterUserId),
+      ).rejects.toThrow(NotFoundException);
     });
 
     it('returns user details when requester holds GLOBAL scope', async () => {
@@ -228,7 +238,10 @@ describe('UsersService (Domain 3, §§5.1, 5.2, 8, 9.2)', () => {
       const result = await service.create(dto, requesterUserId);
 
       // Validation was executed
-      expect(mockValidationService.validateCreateUser).toHaveBeenCalledWith(dto, requesterUserId);
+      expect(mockValidationService.validateCreateUser).toHaveBeenCalledWith(
+        dto,
+        requesterUserId,
+      );
 
       // Transaction committed
       expect(mockQueryRunner.startTransaction).toHaveBeenCalled();
@@ -236,12 +249,18 @@ describe('UsersService (Domain 3, §§5.1, 5.2, 8, 9.2)', () => {
 
       // Repositories called with queryRunner
       expect(mockUsersRepository.create).toHaveBeenCalledWith(
-        expect.objectContaining({ username: 'layla.mansoori', email: 'layla@diez.ae' }),
+        expect.objectContaining({
+          username: 'layla.mansoori',
+          email: 'layla@diez.ae',
+        }),
         mockQueryRunner,
       );
       expect(mockUserProfilesRepository.create).toHaveBeenCalledWith(
         sampleUserId,
-        expect.objectContaining({ firstName: 'Layla', lastName: 'Al Mansoori' }),
+        expect.objectContaining({
+          firstName: 'Layla',
+          lastName: 'Al Mansoori',
+        }),
         mockQueryRunner,
       );
       expect(mockUserInvitationsRepository.create).toHaveBeenCalledWith(
@@ -254,8 +273,13 @@ describe('UsersService (Domain 3, §§5.1, 5.2, 8, 9.2)', () => {
       );
 
       // Security and Audit logged
-      expect(mockSecurityEventsService.log).toHaveBeenCalledWith('USER_CREATED', expect.any(Object));
-      expect(mockAuditService.logUserCreated).toHaveBeenCalledWith(expect.objectContaining({ userId: sampleUserId }));
+      expect(mockSecurityEventsService.log).toHaveBeenCalledWith(
+        'USER_CREATED',
+        expect.any(Object),
+      );
+      expect(mockAuditService.logUserCreated).toHaveBeenCalledWith(
+        expect.objectContaining({ userId: sampleUserId }),
+      );
 
       // Token generated
       expect(result.invitationToken).toBeDefined();
@@ -271,9 +295,13 @@ describe('UsersService (Domain 3, §§5.1, 5.2, 8, 9.2)', () => {
       };
 
       mockUsersRepository.create.mockResolvedValueOnce(sampleUserId);
-      mockUserProfilesRepository.create.mockRejectedValueOnce(new Error('DB Constraint Violation'));
+      mockUserProfilesRepository.create.mockRejectedValueOnce(
+        new Error('DB Constraint Violation'),
+      );
 
-      await expect(service.create(dto, requesterUserId)).rejects.toThrow('DB Constraint Violation');
+      await expect(service.create(dto, requesterUserId)).rejects.toThrow(
+        'DB Constraint Violation',
+      );
 
       expect(mockQueryRunner.rollbackTransaction).toHaveBeenCalled();
       expect(mockQueryRunner.commitTransaction).not.toHaveBeenCalled();
@@ -303,12 +331,29 @@ describe('UsersService (Domain 3, §§5.1, 5.2, 8, 9.2)', () => {
 
       const result = await service.update(sampleUserId, dto, requesterUserId);
 
-      expect(mockValidationService.validateUpdateUser).toHaveBeenCalledWith(sampleUserId, dto, requesterUserId);
-      expect(mockUsersRepository.update).toHaveBeenCalledWith(sampleUserId, expect.objectContaining({ email: 'tariq.new@diez.ae' }), mockQueryRunner);
-      expect(mockUserProfilesRepository.update).toHaveBeenCalledWith(sampleUserId, expect.objectContaining({ jobTitle: 'Chief Financial Officer' }), mockQueryRunner);
+      expect(mockValidationService.validateUpdateUser).toHaveBeenCalledWith(
+        sampleUserId,
+        dto,
+        requesterUserId,
+      );
+      expect(mockUsersRepository.update).toHaveBeenCalledWith(
+        sampleUserId,
+        expect.objectContaining({ email: 'tariq.new@diez.ae' }),
+        mockQueryRunner,
+      );
+      expect(mockUserProfilesRepository.update).toHaveBeenCalledWith(
+        sampleUserId,
+        expect.objectContaining({ jobTitle: 'Chief Financial Officer' }),
+        mockQueryRunner,
+      );
       expect(mockQueryRunner.commitTransaction).toHaveBeenCalled();
-      expect(mockSecurityEventsService.log).toHaveBeenCalledWith('USER_UPDATED', expect.any(Object));
-      expect(mockAuditService.logUserUpdated).toHaveBeenCalledWith(expect.objectContaining({ userId: sampleUserId }));
+      expect(mockSecurityEventsService.log).toHaveBeenCalledWith(
+        'USER_UPDATED',
+        expect.any(Object),
+      );
+      expect(mockAuditService.logUserUpdated).toHaveBeenCalledWith(
+        expect.objectContaining({ userId: sampleUserId }),
+      );
     });
   });
 
@@ -327,7 +372,13 @@ describe('UsersService (Domain 3, §§5.1, 5.2, 8, 9.2)', () => {
       ]);
 
       const list = await service.exportUsers(
-        { search: 'export', page: 1, limit: 20, sortBy: 'createdAt', sortOrder: 'DESC' },
+        {
+          search: 'export',
+          page: 1,
+          limit: 20,
+          sortBy: 'createdAt',
+          sortOrder: 'DESC',
+        },
         requesterUserId,
       );
       expect(list.length).toBe(1);
@@ -348,10 +399,18 @@ describe('UsersService (Domain 3, §§5.1, 5.2, 8, 9.2)', () => {
       mockDataSource.query.mockResolvedValueOnce([{ 1: 1 }]); // global scope
 
       mockUsersRepository.getUserActivity.mockResolvedValueOnce([
-        { eventId: 'evt-1', userId: sampleUserId, eventType: 'USER_LOGIN', description: 'Success' },
+        {
+          eventId: 'evt-1',
+          userId: sampleUserId,
+          eventType: 'USER_LOGIN',
+          description: 'Success',
+        },
       ]);
 
-      const events = await service.getUserActivity(sampleUserId, requesterUserId);
+      const events = await service.getUserActivity(
+        sampleUserId,
+        requesterUserId,
+      );
       expect(events.length).toBe(1);
       expect(events[0].eventType).toBe('USER_LOGIN');
     });

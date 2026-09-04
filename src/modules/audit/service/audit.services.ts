@@ -150,7 +150,9 @@ export class AuditService {
       oldValue: null,
       newValue: null,
       rowSnapshotBefore: null,
-      rowSnapshotAfter: data.updatedFields ? JSON.stringify(data.updatedFields) : null,
+      rowSnapshotAfter: data.updatedFields
+        ? JSON.stringify(data.updatedFields)
+        : null,
       changeCategory: 'IDENTITY_CHANGE',
       changeReason: 'User profile/identity updated',
       isSystemChange: false,
@@ -380,7 +382,13 @@ export class AuditService {
       userAgentRaw: null,
     });
 
-    const validOperations = ['INSERT', 'UPDATE', 'DELETE', 'SOFT_DELETE', 'STATUS_CHANGE'];
+    const validOperations = [
+      'INSERT',
+      'UPDATE',
+      'DELETE',
+      'SOFT_DELETE',
+      'STATUS_CHANGE',
+    ];
     let dbOperationType = data.operationType;
     if (!validOperations.includes(dbOperationType)) {
       if (dbOperationType === 'MOVE') dbOperationType = 'UPDATE';
@@ -423,8 +431,12 @@ export class AuditService {
       fieldName: null,
       oldValue: null,
       newValue: null,
-      rowSnapshotBefore: data.beforeSnapshot ? JSON.stringify(data.beforeSnapshot) : null,
-      rowSnapshotAfter: data.afterSnapshot ? JSON.stringify(data.afterSnapshot) : null,
+      rowSnapshotBefore: data.beforeSnapshot
+        ? JSON.stringify(data.beforeSnapshot)
+        : null,
+      rowSnapshotAfter: data.afterSnapshot
+        ? JSON.stringify(data.afterSnapshot)
+        : null,
       changeCategory: dbChangeCategory,
       changeReason: data.changeReason ?? 'Organization structure modification',
       isSystemChange: !data.actorUserId,

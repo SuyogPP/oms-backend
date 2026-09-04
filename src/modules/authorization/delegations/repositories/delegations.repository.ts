@@ -47,8 +47,9 @@ export class DelegationsRepository {
     }
 
     const r = rows[0];
-    const permRows = await this.getExecutor(qr).query(
-      `
+    const permRows = await this.getExecutor(qr)
+      .query(
+        `
       SELECT 
           p.PermissionID AS permissionId,
           p.PermissionCode AS permissionCode
@@ -56,8 +57,9 @@ export class DelegationsRepository {
       INNER JOIN [auth].[Permissions] p ON p.PermissionID = dp.PermissionID
       WHERE dp.DelegationID = @0;
       `,
-      [delegationId],
-    ).catch(() => []);
+        [delegationId],
+      )
+      .catch(() => []);
 
     return {
       delegationId: r.delegationId,
@@ -164,10 +166,7 @@ export class DelegationsRepository {
   /**
    * Creates a new delegation and optional scoped permissions.
    */
-  async create(
-    data: ICreateDelegationData,
-    qr?: QueryRunner,
-  ): Promise<string> {
+  async create(data: ICreateDelegationData, qr?: QueryRunner): Promise<string> {
     const rows = await this.getExecutor(qr).query(
       `
       INSERT INTO [auth].[Delegations] (
@@ -203,8 +202,9 @@ export class DelegationsRepository {
 
     if (data.permissionIds && data.permissionIds.length > 0) {
       for (const permId of data.permissionIds) {
-        await this.getExecutor(qr).query(
-          `
+        await this.getExecutor(qr)
+          .query(
+            `
           INSERT INTO [auth].[DelegationPermissions] (
               DelegationPermissionID,
               DelegationID,
@@ -218,8 +218,9 @@ export class DelegationsRepository {
               SYSUTCDATETIME()
           );
           `,
-          [delegationId, permId],
-        ).catch(() => {});
+            [delegationId, permId],
+          )
+          .catch(() => {});
       }
     }
 

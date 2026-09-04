@@ -40,17 +40,33 @@ describe('UserScopesController (Domain 3, Section 8)', () => {
   it('GET /authorization/users/:id/scopes -> delegates to service.findByUserId', async () => {
     mockService.findByUserId.mockResolvedValueOnce([]);
 
-    const result = await controller.findByUserId(sampleUserId, currentUser as any);
-    expect(service.findByUserId).toHaveBeenCalledWith(sampleUserId, currentUser.userId);
+    const result = await controller.findByUserId(
+      sampleUserId,
+      currentUser as any,
+    );
+    expect(service.findByUserId).toHaveBeenCalledWith(
+      sampleUserId,
+      currentUser.userId,
+    );
     expect(Array.isArray(result)).toBe(true);
   });
 
   it('POST /authorization/users/:id/scopes -> delegates to service.assignScope', async () => {
     const dto = { scopeDefinitionId };
-    mockService.assignScope.mockResolvedValueOnce({ userOrganizationScopeId: scopeId });
+    mockService.assignScope.mockResolvedValueOnce({
+      userOrganizationScopeId: scopeId,
+    });
 
-    const result = await controller.assignScope(sampleUserId, dto as any, currentUser as any);
-    expect(service.assignScope).toHaveBeenCalledWith(sampleUserId, dto, currentUser.userId);
+    const result = await controller.assignScope(
+      sampleUserId,
+      dto,
+      currentUser as any,
+    );
+    expect(service.assignScope).toHaveBeenCalledWith(
+      sampleUserId,
+      dto,
+      currentUser.userId,
+    );
     expect(result.userOrganizationScopeId).toBe(scopeId);
   });
 
@@ -58,7 +74,10 @@ describe('UserScopesController (Domain 3, Section 8)', () => {
     mockService.revokeScope.mockResolvedValueOnce(undefined);
 
     const result = await controller.revokeScope(scopeId, currentUser as any);
-    expect(service.revokeScope).toHaveBeenCalledWith(scopeId, currentUser.userId);
+    expect(service.revokeScope).toHaveBeenCalledWith(
+      scopeId,
+      currentUser.userId,
+    );
     expect(result.success).toBe(true);
   });
 
@@ -68,8 +87,14 @@ describe('UserScopesController (Domain 3, Section 8)', () => {
       scopeCode: 'DEPARTMENT',
     });
 
-    const result = await controller.previewCoverage(scopeDefinitionId, 'dept-123');
-    expect(service.countProposedScopeUnits).toHaveBeenCalledWith(scopeDefinitionId, 'dept-123');
+    const result = await controller.previewCoverage(
+      scopeDefinitionId,
+      'dept-123',
+    );
+    expect(service.countProposedScopeUnits).toHaveBeenCalledWith(
+      scopeDefinitionId,
+      'dept-123',
+    );
     expect(result.accessibleOrgUnitsCount).toBe(10);
   });
 });

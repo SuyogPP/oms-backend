@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus } from '@nestjs/common';
+import { HttpStatus } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { DataSource } from 'typeorm';
@@ -75,7 +75,11 @@ describe('OrgUnitTreeService (Domain 2 — Tree & Closure Maintenance)', () => {
       }));
 
       const res = await service.createNode(
-        { orgUnitTypeId: 1, code: 'DIEZ', name: 'Dubai Integrated Economic Zones' },
+        {
+          orgUnitTypeId: 1,
+          code: 'DIEZ',
+          name: 'Dubai Integrated Economic Zones',
+        },
         'actor-user-1',
         null,
       );
@@ -146,13 +150,17 @@ describe('OrgUnitTreeService (Domain 2 — Tree & Closure Maintenance)', () => {
         parentOrgUnitId: '22222222-3333-4444-5555-666666666666',
         code: 'IT',
         depth: 2,
-        materializedPath: '/11111111222233334444555555555555/22222222333344445555666666666666/33333333444455556666777777777777/',
+        materializedPath:
+          '/11111111222233334444555555555555/22222222333344445555666666666666/33333333444455556666777777777777/',
         rowVersion: '0x00000000000007D1',
       } as any;
 
       mockOrgUnitsRepo.findById
         .mockResolvedValueOnce(movingUnit) // initial check
-        .mockResolvedValueOnce({ ...movingUnit, parentOrgUnitId: 'new-parent-id' }); // after move
+        .mockResolvedValueOnce({
+          ...movingUnit,
+          parentOrgUnitId: 'new-parent-id',
+        }); // after move
 
       await service.moveSubtree(
         movingUnit.orgUnitId,
@@ -183,7 +191,9 @@ describe('OrgUnitTreeService (Domain 2 — Tree & Closure Maintenance)', () => {
 
       // 3. Adjacency, depth and CTE path updates called
       expect(mockQueryRunner.query).toHaveBeenCalledWith(
-        expect.stringContaining('UPDATE org.OrgUnits \n         SET ParentOrgUnitId = @1'),
+        expect.stringContaining(
+          'UPDATE org.OrgUnits \n         SET ParentOrgUnitId = @1',
+        ),
         [movingUnit.orgUnitId, 'new-parent-id', 'actor-admin'],
       );
 

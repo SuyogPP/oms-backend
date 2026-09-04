@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  NotFoundException,
-  Logger,
-} from '@nestjs/common';
+import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import * as crypto from 'crypto';
 import { DataSource } from 'typeorm';
 import { UsersRepository } from '../repositories/users.repository';
@@ -15,7 +11,11 @@ import { UsersMapper } from '../users.mapper';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdateUserDto } from '../dto/update-user.dto';
 import { UserFilterDto } from '../dto/user-filter.dto';
-import { UserEntity, UserListResponseEntity, UserActivityEntity } from '../entities/user.entity';
+import {
+  UserEntity,
+  UserListResponseEntity,
+  UserActivityEntity,
+} from '../entities/user.entity';
 import {
   USER_ERROR_CODES,
   INVITATION_PURPOSES,
@@ -235,7 +235,11 @@ export class UsersService {
     }
 
     // Validate update parameters
-    await this.userValidationService.validateUpdateUser(userId, dto, updaterUserId);
+    await this.userValidationService.validateUpdateUser(
+      userId,
+      dto,
+      updaterUserId,
+    );
 
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
@@ -243,7 +247,12 @@ export class UsersService {
 
     try {
       // 1. Update User core fields
-      if (dto.email || dto.username || dto.employeeId !== undefined || dto.userType) {
+      if (
+        dto.email ||
+        dto.username ||
+        dto.employeeId !== undefined ||
+        dto.userType
+      ) {
         await this.usersRepository.update(
           userId,
           {
@@ -378,7 +387,12 @@ export class UsersService {
          OR (@2 IS NOT NULL AND v.OrgUnitId = @2)
          OR (@3 IS NOT NULL AND v.OrgUnitId = @3);
       `,
-      [requesterUserId, targetDept || null, targetBu || null, targetSec || null],
+      [
+        requesterUserId,
+        targetDept || null,
+        targetBu || null,
+        targetSec || null,
+      ],
     );
 
     return visibleRows && visibleRows.length > 0;

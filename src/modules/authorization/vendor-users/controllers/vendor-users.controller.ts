@@ -78,7 +78,8 @@ export class VendorUsersController {
   })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
-    description: 'Validation failure: missing vendorId, invalid shape, email/username duplicate',
+    description:
+      'Validation failure: missing vendorId, invalid shape, email/username duplicate',
   })
   async create(
     @Body() dto: CreateVendorUserDto,

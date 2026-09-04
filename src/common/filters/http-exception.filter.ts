@@ -85,7 +85,7 @@ export class GlobalHttpExceptionFilter implements ExceptionFilter {
     response.status(status).json(errorResponse);
   }
 
-  private getErrorCodeFromStatus(status: number): string {
+  private getErrorCodeFromStatus(status: HttpStatus): string {
     switch (status) {
       case HttpStatus.BAD_REQUEST:
         return 'BAD_REQUEST';

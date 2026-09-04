@@ -92,7 +92,9 @@ describe('OrgScope Submodule (Domain 2 Section 9.3 Scope Enforcement)', () => {
         getVisibleOrgUnitIds: jest.fn().mockResolvedValue(['unit-1', 'unit-2']),
         getVisibleOrgUnits: jest.fn().mockResolvedValue(sampleVisibleUnits),
         isOrgUnitVisible: jest.fn().mockImplementation((userId, orgUnitId) => {
-          return Promise.resolve(orgUnitId === 'unit-1' || orgUnitId === 'unit-2');
+          return Promise.resolve(
+            orgUnitId === 'unit-1' || orgUnitId === 'unit-2',
+          );
         }),
       };
 
@@ -103,7 +105,9 @@ describe('OrgScope Submodule (Domain 2 Section 9.3 Scope Enforcement)', () => {
         ],
       }).compile();
 
-      resolverService = module.get<OrgScopeResolverService>(OrgScopeResolverService);
+      resolverService = module.get<OrgScopeResolverService>(
+        OrgScopeResolverService,
+      );
     });
 
     it('getUserScopes returns assigned scopes', async () => {
@@ -125,8 +129,12 @@ describe('OrgScope Submodule (Domain 2 Section 9.3 Scope Enforcement)', () => {
     });
 
     it('isOrgUnitVisible checks visibility correctly', async () => {
-      expect(await resolverService.isOrgUnitVisible('u-1', 'unit-1')).toBe(true);
-      expect(await resolverService.isOrgUnitVisible('u-1', 'unit-out-of-scope')).toBe(false);
+      expect(await resolverService.isOrgUnitVisible('u-1', 'unit-1')).toBe(
+        true,
+      );
+      expect(
+        await resolverService.isOrgUnitVisible('u-1', 'unit-out-of-scope'),
+      ).toBe(false);
     });
   });
 });

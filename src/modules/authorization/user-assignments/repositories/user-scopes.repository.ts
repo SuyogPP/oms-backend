@@ -62,7 +62,9 @@ export class UserScopesRepository {
       effectiveFrom: r.effectiveFrom ? new Date(r.effectiveFrom) : null,
       effectiveTo: r.effectiveTo ? new Date(r.effectiveTo) : null,
       isActive:
-        r.isActive !== undefined ? r.isActive === 1 || r.isActive === true : true,
+        r.isActive !== undefined
+          ? r.isActive === 1 || r.isActive === true
+          : true,
     }));
   }
 
@@ -115,7 +117,9 @@ export class UserScopesRepository {
       effectiveFrom: r.effectiveFrom ? new Date(r.effectiveFrom) : null,
       effectiveTo: r.effectiveTo ? new Date(r.effectiveTo) : null,
       isActive:
-        r.isActive !== undefined ? r.isActive === 1 || r.isActive === true : true,
+        r.isActive !== undefined
+          ? r.isActive === 1 || r.isActive === true
+          : true,
     }));
   }
 
@@ -173,17 +177,16 @@ export class UserScopesRepository {
       effectiveFrom: r.effectiveFrom ? new Date(r.effectiveFrom) : null,
       effectiveTo: r.effectiveTo ? new Date(r.effectiveTo) : null,
       isActive:
-        r.isActive !== undefined ? r.isActive === 1 || r.isActive === true : true,
+        r.isActive !== undefined
+          ? r.isActive === 1 || r.isActive === true
+          : true,
     };
   }
 
   /**
    * Assigns an organizational scope to a user.
    */
-  async assignScope(
-    data: IAssignScopeData,
-    qr?: QueryRunner,
-  ): Promise<string> {
+  async assignScope(data: IAssignScopeData, qr?: QueryRunner): Promise<string> {
     const rows = await this.getExecutor(qr).query(
       `
       INSERT INTO [auth].[UserOrganizationScopes] (

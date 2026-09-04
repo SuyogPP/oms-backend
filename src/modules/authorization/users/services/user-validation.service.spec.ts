@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { HttpException, HttpStatus } from '@nestjs/common';
+import { HttpStatus } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { UserValidationService } from './user-validation.service';
 import { UsersRepository } from '../repositories/users.repository';
@@ -44,62 +44,96 @@ describe('UserValidationService (Domain 3, §§5.1, 5.5, 6.1, 6.2, 7, 9.1)', () 
     describe('U14 & §9.1: Self-Action Prevention', () => {
       it('rejects deactivating own account with 409 USER_SELF_ACTION', () => {
         expect(() => {
-          service.validateU14_SelfAction(targetUserId, targetUserId, 'deactivate your own account');
+          service.validateU14_SelfAction(
+            targetUserId,
+            targetUserId,
+            'deactivate your own account',
+          );
         }).toThrow(
           expect.objectContaining({
             status: HttpStatus.CONFLICT,
-            response: expect.objectContaining({ code: USER_ERROR_CODES.USER_SELF_ACTION }),
+            response: expect.objectContaining({
+              code: USER_ERROR_CODES.USER_SELF_ACTION,
+            }),
           }),
         );
       });
 
       it('rejects deleting own account with 409 USER_SELF_ACTION', () => {
         expect(() => {
-          service.validateU14_SelfAction(targetUserId, targetUserId, 'delete your own account');
+          service.validateU14_SelfAction(
+            targetUserId,
+            targetUserId,
+            'delete your own account',
+          );
         }).toThrow(
           expect.objectContaining({
             status: HttpStatus.CONFLICT,
-            response: expect.objectContaining({ code: USER_ERROR_CODES.USER_SELF_ACTION }),
+            response: expect.objectContaining({
+              code: USER_ERROR_CODES.USER_SELF_ACTION,
+            }),
           }),
         );
       });
 
       it('rejects assigning roles to self with 409 USER_SELF_ACTION', () => {
         expect(() => {
-          service.validateU14_SelfAction(targetUserId, targetUserId, 'assign roles to yourself');
+          service.validateU14_SelfAction(
+            targetUserId,
+            targetUserId,
+            'assign roles to yourself',
+          );
         }).toThrow(
           expect.objectContaining({
             status: HttpStatus.CONFLICT,
-            response: expect.objectContaining({ code: USER_ERROR_CODES.USER_SELF_ACTION }),
+            response: expect.objectContaining({
+              code: USER_ERROR_CODES.USER_SELF_ACTION,
+            }),
           }),
         );
       });
 
       it('rejects assigning organizational scope to self with 409 USER_SELF_ACTION', () => {
         expect(() => {
-          service.validateU14_SelfAction(targetUserId, targetUserId, 'assign organizational scope to yourself');
+          service.validateU14_SelfAction(
+            targetUserId,
+            targetUserId,
+            'assign organizational scope to yourself',
+          );
         }).toThrow(
           expect.objectContaining({
             status: HttpStatus.CONFLICT,
-            response: expect.objectContaining({ code: USER_ERROR_CODES.USER_SELF_ACTION }),
+            response: expect.objectContaining({
+              code: USER_ERROR_CODES.USER_SELF_ACTION,
+            }),
           }),
         );
       });
 
       it('rejects managing overrides on self with 409 USER_SELF_ACTION', () => {
         expect(() => {
-          service.validateU14_SelfAction(targetUserId, targetUserId, 'grant or revoke permission overrides on your own account');
+          service.validateU14_SelfAction(
+            targetUserId,
+            targetUserId,
+            'grant or revoke permission overrides on your own account',
+          );
         }).toThrow(
           expect.objectContaining({
             status: HttpStatus.CONFLICT,
-            response: expect.objectContaining({ code: USER_ERROR_CODES.USER_SELF_ACTION }),
+            response: expect.objectContaining({
+              code: USER_ERROR_CODES.USER_SELF_ACTION,
+            }),
           }),
         );
       });
 
       it('passes when operator is distinct from target user', () => {
         expect(() => {
-          service.validateU14_SelfAction(targetUserId, operatorUserId, 'deactivate user');
+          service.validateU14_SelfAction(
+            targetUserId,
+            operatorUserId,
+            'deactivate user',
+          );
         }).not.toThrow();
       });
     });
@@ -111,10 +145,14 @@ describe('UserValidationService (Domain 3, §§5.1, 5.5, 6.1, 6.2, 7, 9.1)', () 
         // Only 1 active system admin in total
         mockUsersRepository.countActiveSystemAdmins.mockResolvedValueOnce(1);
 
-        await expect(service.validateU15_LastSystemAdmin(targetUserId)).rejects.toThrow(
+        await expect(
+          service.validateU15_LastSystemAdmin(targetUserId),
+        ).rejects.toThrow(
           expect.objectContaining({
             status: HttpStatus.CONFLICT,
-            response: expect.objectContaining({ code: USER_ERROR_CODES.USER_LAST_ADMIN }),
+            response: expect.objectContaining({
+              code: USER_ERROR_CODES.USER_LAST_ADMIN,
+            }),
           }),
         );
       });
@@ -125,34 +163,50 @@ describe('UserValidationService (Domain 3, §§5.1, 5.5, 6.1, 6.2, 7, 9.1)', () 
         // 3 active system admins exist
         mockUsersRepository.countActiveSystemAdmins.mockResolvedValueOnce(3);
 
-        await expect(service.validateU15_LastSystemAdmin(targetUserId)).resolves.not.toThrow();
+        await expect(
+          service.validateU15_LastSystemAdmin(targetUserId),
+        ).resolves.not.toThrow();
       });
 
       it('allows deactivating/deleting non-admin user even if only 1 system admin exists in the system', async () => {
         // User does not hold SYSTEM_ADMIN role
         mockDataSource.query.mockResolvedValueOnce([]);
 
-        await expect(service.validateU15_LastSystemAdmin(targetUserId)).resolves.not.toThrow();
-        expect(mockUsersRepository.countActiveSystemAdmins).not.toHaveBeenCalled();
+        await expect(
+          service.validateU15_LastSystemAdmin(targetUserId),
+        ).resolves.not.toThrow();
+        expect(
+          mockUsersRepository.countActiveSystemAdmins,
+        ).not.toHaveBeenCalled();
       });
     });
 
     describe('U16: Primary Org Unit Head Guard', () => {
       it('blocks deleting user if user is currently assigned as primary head of an active org unit with 409 USER_IS_ORG_HEAD', async () => {
-        mockUsersRepository.isUserPrimaryHeadOfAnyOrgUnit.mockResolvedValueOnce(true);
+        mockUsersRepository.isUserPrimaryHeadOfAnyOrgUnit.mockResolvedValueOnce(
+          true,
+        );
 
-        await expect(service.validateU16_PrimaryOrgUnitHead(targetUserId)).rejects.toThrow(
+        await expect(
+          service.validateU16_PrimaryOrgUnitHead(targetUserId),
+        ).rejects.toThrow(
           expect.objectContaining({
             status: HttpStatus.CONFLICT,
-            response: expect.objectContaining({ code: USER_ERROR_CODES.USER_IS_ORG_HEAD }),
+            response: expect.objectContaining({
+              code: USER_ERROR_CODES.USER_IS_ORG_HEAD,
+            }),
           }),
         );
       });
 
       it('allows deleting user if user is not a primary head of any org unit', async () => {
-        mockUsersRepository.isUserPrimaryHeadOfAnyOrgUnit.mockResolvedValueOnce(false);
+        mockUsersRepository.isUserPrimaryHeadOfAnyOrgUnit.mockResolvedValueOnce(
+          false,
+        );
 
-        await expect(service.validateU16_PrimaryOrgUnitHead(targetUserId)).resolves.not.toThrow();
+        await expect(
+          service.validateU16_PrimaryOrgUnitHead(targetUserId),
+        ).resolves.not.toThrow();
       });
     });
 
@@ -161,14 +215,22 @@ describe('UserValidationService (Domain 3, §§5.1, 5.5, 6.1, 6.2, 7, 9.1)', () 
         // Granter does not have GLOBAL scope
         mockDataSource.query.mockResolvedValueOnce([]);
         // Granter has active DEPARTMENT scope (depth 3)
-        mockDataSource.query.mockResolvedValueOnce([{ scopeCode: 'DEPARTMENT' }]);
+        mockDataSource.query.mockResolvedValueOnce([
+          { scopeCode: 'DEPARTMENT' },
+        ]);
 
         await expect(
-          service.validateS4_ScopeEscalation(SCOPE_CODES.BUSINESS_UNIT, 'bu-uuid', operatorUserId),
+          service.validateS4_ScopeEscalation(
+            SCOPE_CODES.BUSINESS_UNIT,
+            'bu-uuid',
+            operatorUserId,
+          ),
         ).rejects.toThrow(
           expect.objectContaining({
             status: HttpStatus.FORBIDDEN,
-            response: expect.objectContaining({ code: USER_ERROR_CODES.SCOPE_ESCALATION }),
+            response: expect.objectContaining({
+              code: USER_ERROR_CODES.SCOPE_ESCALATION,
+            }),
           }),
         );
       });
@@ -178,11 +240,17 @@ describe('UserValidationService (Domain 3, §§5.1, 5.5, 6.1, 6.2, 7, 9.1)', () 
         mockDataSource.query.mockResolvedValueOnce([]);
 
         await expect(
-          service.validateS4_ScopeEscalation(SCOPE_CODES.GLOBAL, null, operatorUserId),
+          service.validateS4_ScopeEscalation(
+            SCOPE_CODES.GLOBAL,
+            null,
+            operatorUserId,
+          ),
         ).rejects.toThrow(
           expect.objectContaining({
             status: HttpStatus.FORBIDDEN,
-            response: expect.objectContaining({ code: USER_ERROR_CODES.SCOPE_ESCALATION }),
+            response: expect.objectContaining({
+              code: USER_ERROR_CODES.SCOPE_ESCALATION,
+            }),
           }),
         );
       });
@@ -191,16 +259,24 @@ describe('UserValidationService (Domain 3, §§5.1, 5.5, 6.1, 6.2, 7, 9.1)', () 
         // Granter does not have GLOBAL scope
         mockDataSource.query.mockResolvedValueOnce([]);
         // Granter has active DEPARTMENT scope
-        mockDataSource.query.mockResolvedValueOnce([{ scopeCode: 'DEPARTMENT' }]);
+        mockDataSource.query.mockResolvedValueOnce([
+          { scopeCode: 'DEPARTMENT' },
+        ]);
         // Visible org units query returns 0 rows (unit is outside visible subtree)
         mockDataSource.query.mockResolvedValueOnce([]);
 
         await expect(
-          service.validateS4_ScopeEscalation(SCOPE_CODES.DEPARTMENT, 'dept-outside-uuid', operatorUserId),
+          service.validateS4_ScopeEscalation(
+            SCOPE_CODES.DEPARTMENT,
+            'dept-outside-uuid',
+            operatorUserId,
+          ),
         ).rejects.toThrow(
           expect.objectContaining({
             status: HttpStatus.FORBIDDEN,
-            response: expect.objectContaining({ code: USER_ERROR_CODES.SCOPE_ESCALATION }),
+            response: expect.objectContaining({
+              code: USER_ERROR_CODES.SCOPE_ESCALATION,
+            }),
           }),
         );
       });
@@ -210,7 +286,11 @@ describe('UserValidationService (Domain 3, §§5.1, 5.5, 6.1, 6.2, 7, 9.1)', () 
         mockDataSource.query.mockResolvedValueOnce([{ 1: 1 }]);
 
         await expect(
-          service.validateS4_ScopeEscalation(SCOPE_CODES.ORGANIZATION, 'org-uuid', operatorUserId),
+          service.validateS4_ScopeEscalation(
+            SCOPE_CODES.ORGANIZATION,
+            'org-uuid',
+            operatorUserId,
+          ),
         ).resolves.not.toThrow();
       });
     });
@@ -218,20 +298,26 @@ describe('UserValidationService (Domain 3, §§5.1, 5.5, 6.1, 6.2, 7, 9.1)', () 
     describe('V3 & V4: Vendor Role & Scope Restrictions', () => {
       it('V3: blocks assigning internal role to VENDOR user with 400 VENDOR_ROLE_INVALID', async () => {
         // Role is an internal role (e.g. HOD)
-        mockDataSource.query.mockResolvedValueOnce([{ RoleCode: 'HOD', RoleName: 'Head of Department' }]);
+        mockDataSource.query.mockResolvedValueOnce([
+          { RoleCode: 'HOD', RoleName: 'Head of Department' },
+        ]);
 
         await expect(
           service.validateV3_VendorRoles(USER_TYPES.VENDOR, 'role-hod-uuid'),
         ).rejects.toThrow(
           expect.objectContaining({
             status: HttpStatus.BAD_REQUEST,
-            response: expect.objectContaining({ code: USER_ERROR_CODES.VENDOR_ROLE_INVALID }),
+            response: expect.objectContaining({
+              code: USER_ERROR_CODES.VENDOR_ROLE_INVALID,
+            }),
           }),
         );
       });
 
       it('V3: allows assigning vendor role (VENDOR_PORTAL_USER) to VENDOR user', async () => {
-        mockDataSource.query.mockResolvedValueOnce([{ RoleCode: 'VENDOR_PORTAL_USER', RoleName: 'Vendor Portal User' }]);
+        mockDataSource.query.mockResolvedValueOnce([
+          { RoleCode: 'VENDOR_PORTAL_USER', RoleName: 'Vendor Portal User' },
+        ]);
 
         await expect(
           service.validateV3_VendorRoles(USER_TYPES.VENDOR, 'role-vendor-uuid'),
@@ -244,7 +330,9 @@ describe('UserValidationService (Domain 3, §§5.1, 5.5, 6.1, 6.2, 7, 9.1)', () 
         }).toThrow(
           expect.objectContaining({
             status: HttpStatus.BAD_REQUEST,
-            response: expect.objectContaining({ code: USER_ERROR_CODES.SCOPE_VENDOR_NOT_ALLOWED }),
+            response: expect.objectContaining({
+              code: USER_ERROR_CODES.SCOPE_VENDOR_NOT_ALLOWED,
+            }),
           }),
         );
       });
@@ -257,11 +345,15 @@ describe('UserValidationService (Domain 3, §§5.1, 5.5, 6.1, 6.2, 7, 9.1)', () 
   describe('2. Section 6.1 & 6.2 Scope Column & Type Validation', () => {
     it('S1: GLOBAL scope rejects any populated org unit column with 400 SCOPE_ASSIGNMENT_INVALID', () => {
       expect(() => {
-        service.validateS1_ScopeColumns(SCOPE_CODES.GLOBAL, { departmentId: 'dept-123' });
+        service.validateS1_ScopeColumns(SCOPE_CODES.GLOBAL, {
+          departmentId: 'dept-123',
+        });
       }).toThrow(
         expect.objectContaining({
           status: HttpStatus.BAD_REQUEST,
-          response: expect.objectContaining({ code: USER_ERROR_CODES.SCOPE_ASSIGNMENT_INVALID }),
+          response: expect.objectContaining({
+            code: USER_ERROR_CODES.SCOPE_ASSIGNMENT_INVALID,
+          }),
         }),
       );
     });
@@ -275,7 +367,9 @@ describe('UserValidationService (Domain 3, §§5.1, 5.5, 6.1, 6.2, 7, 9.1)', () 
       }).toThrow(
         expect.objectContaining({
           status: HttpStatus.BAD_REQUEST,
-          response: expect.objectContaining({ code: USER_ERROR_CODES.SCOPE_ASSIGNMENT_INVALID }),
+          response: expect.objectContaining({
+            code: USER_ERROR_CODES.SCOPE_ASSIGNMENT_INVALID,
+          }),
         }),
       );
     });
@@ -298,7 +392,9 @@ describe('UserValidationService (Domain 3, §§5.1, 5.5, 6.1, 6.2, 7, 9.1)', () 
       ).rejects.toThrow(
         expect.objectContaining({
           status: HttpStatus.BAD_REQUEST,
-          response: expect.objectContaining({ code: USER_ERROR_CODES.SCOPE_ORG_UNIT_INVALID }),
+          response: expect.objectContaining({
+            code: USER_ERROR_CODES.SCOPE_ORG_UNIT_INVALID,
+          }),
         }),
       );
     });
@@ -314,18 +410,28 @@ describe('UserValidationService (Domain 3, §§5.1, 5.5, 6.1, 6.2, 7, 9.1)', () 
       ).rejects.toThrow(
         expect.objectContaining({
           status: HttpStatus.BAD_REQUEST,
-          response: expect.objectContaining({ code: USER_ERROR_CODES.SCOPE_ORG_UNIT_INVALID }),
+          response: expect.objectContaining({
+            code: USER_ERROR_CODES.SCOPE_ORG_UNIT_INVALID,
+          }),
         }),
       );
     });
 
     it('S2: succeeds when referenced org unit exists, is active, and matches type', async () => {
       mockDataSource.query.mockResolvedValueOnce([
-        { OrgUnitId: 'dept-valid', OrgUnitTypeId: 3, IsActive: 1, IsDeleted: 0 },
+        {
+          OrgUnitId: 'dept-valid',
+          OrgUnitTypeId: 3,
+          IsActive: 1,
+          IsDeleted: 0,
+        },
       ]);
 
       await expect(
-        service.validateS2_ScopeOrgUnitType(SCOPE_CODES.DEPARTMENT, 'dept-valid'),
+        service.validateS2_ScopeOrgUnitType(
+          SCOPE_CODES.DEPARTMENT,
+          'dept-valid',
+        ),
       ).resolves.not.toThrow();
     });
   });
@@ -335,23 +441,35 @@ describe('UserValidationService (Domain 3, §§5.1, 5.5, 6.1, 6.2, 7, 9.1)', () 
   // ===========================================================================
   describe('3. Section 5.1 Creation Rules', () => {
     it('U1: rejects duplicate email (including soft deleted) with 409 USER_EMAIL_EXISTS', async () => {
-      mockDataSource.query.mockResolvedValueOnce([{ userId: 'existing-user-uuid' }]);
+      mockDataSource.query.mockResolvedValueOnce([
+        { userId: 'existing-user-uuid' },
+      ]);
 
-      await expect(service.validateU1_EmailUnique('tariq@diez.ae')).rejects.toThrow(
+      await expect(
+        service.validateU1_EmailUnique('tariq@diez.ae'),
+      ).rejects.toThrow(
         expect.objectContaining({
           status: HttpStatus.CONFLICT,
-          response: expect.objectContaining({ code: USER_ERROR_CODES.USER_EMAIL_EXISTS }),
+          response: expect.objectContaining({
+            code: USER_ERROR_CODES.USER_EMAIL_EXISTS,
+          }),
         }),
       );
     });
 
     it('U2: rejects duplicate username with 409 USER_USERNAME_EXISTS', async () => {
-      mockDataSource.query.mockResolvedValueOnce([{ userId: 'existing-user-uuid' }]);
+      mockDataSource.query.mockResolvedValueOnce([
+        { userId: 'existing-user-uuid' },
+      ]);
 
-      await expect(service.validateU2_UsernameUnique('tariq.hashimi')).rejects.toThrow(
+      await expect(
+        service.validateU2_UsernameUnique('tariq.hashimi'),
+      ).rejects.toThrow(
         expect.objectContaining({
           status: HttpStatus.CONFLICT,
-          response: expect.objectContaining({ code: USER_ERROR_CODES.USER_USERNAME_EXISTS }),
+          response: expect.objectContaining({
+            code: USER_ERROR_CODES.USER_USERNAME_EXISTS,
+          }),
         }),
       );
     });
@@ -360,7 +478,9 @@ describe('UserValidationService (Domain 3, §§5.1, 5.5, 6.1, 6.2, 7, 9.1)', () 
       await expect(service.validateU3_UserType('CONTRACTOR')).rejects.toThrow(
         expect.objectContaining({
           status: HttpStatus.BAD_REQUEST,
-          response: expect.objectContaining({ code: USER_ERROR_CODES.USER_TYPE_INVALID }),
+          response: expect.objectContaining({
+            code: USER_ERROR_CODES.USER_TYPE_INVALID,
+          }),
         }),
       );
     });
@@ -371,18 +491,26 @@ describe('UserValidationService (Domain 3, §§5.1, 5.5, 6.1, 6.2, 7, 9.1)', () 
       }).toThrow(
         expect.objectContaining({
           status: HttpStatus.BAD_REQUEST,
-          response: expect.objectContaining({ code: USER_ERROR_CODES.USER_EMPLOYEE_ID_REQUIRED }),
+          response: expect.objectContaining({
+            code: USER_ERROR_CODES.USER_EMPLOYEE_ID_REQUIRED,
+          }),
         }),
       );
     });
 
     it('U5: rejects VENDOR user with internal EmployeeID with 400 USER_VENDOR_INVALID', () => {
       expect(() => {
-        service.validateU5_VendorUserConstraints(USER_TYPES.VENDOR, 'EMP-100', 'vendor-uuid');
+        service.validateU5_VendorUserConstraints(
+          USER_TYPES.VENDOR,
+          'EMP-100',
+          'vendor-uuid',
+        );
       }).toThrow(
         expect.objectContaining({
           status: HttpStatus.BAD_REQUEST,
-          response: expect.objectContaining({ code: USER_ERROR_CODES.USER_VENDOR_INVALID }),
+          response: expect.objectContaining({
+            code: USER_ERROR_CODES.USER_VENDOR_INVALID,
+          }),
         }),
       );
     });
@@ -393,7 +521,9 @@ describe('UserValidationService (Domain 3, §§5.1, 5.5, 6.1, 6.2, 7, 9.1)', () 
       }).toThrow(
         expect.objectContaining({
           status: HttpStatus.BAD_REQUEST,
-          response: expect.objectContaining({ code: USER_ERROR_CODES.USER_VENDOR_INVALID }),
+          response: expect.objectContaining({
+            code: USER_ERROR_CODES.USER_VENDOR_INVALID,
+          }),
         }),
       );
     });
@@ -409,7 +539,9 @@ describe('UserValidationService (Domain 3, §§5.1, 5.5, 6.1, 6.2, 7, 9.1)', () 
       ).rejects.toThrow(
         expect.objectContaining({
           status: HttpStatus.BAD_REQUEST,
-          response: expect.objectContaining({ code: USER_ERROR_CODES.USER_ORG_UNIT_INVALID }),
+          response: expect.objectContaining({
+            code: USER_ERROR_CODES.USER_ORG_UNIT_INVALID,
+          }),
         }),
       );
     });
@@ -421,11 +553,16 @@ describe('UserValidationService (Domain 3, §§5.1, 5.5, 6.1, 6.2, 7, 9.1)', () 
       mockDataSource.query.mockResolvedValueOnce([]);
 
       await expect(
-        service.validateU8_CreatorScopeCoversDepartment(operatorUserId, 'dept-outside-uuid'),
+        service.validateU8_CreatorScopeCoversDepartment(
+          operatorUserId,
+          'dept-outside-uuid',
+        ),
       ).rejects.toThrow(
         expect.objectContaining({
           status: HttpStatus.FORBIDDEN,
-          response: expect.objectContaining({ code: USER_ERROR_CODES.USER_SCOPE_DENIED }),
+          response: expect.objectContaining({
+            code: USER_ERROR_CODES.USER_SCOPE_DENIED,
+          }),
         }),
       );
     });
@@ -441,7 +578,9 @@ describe('UserValidationService (Domain 3, §§5.1, 5.5, 6.1, 6.2, 7, 9.1)', () 
       }).toThrow(
         expect.objectContaining({
           status: HttpStatus.BAD_REQUEST,
-          response: expect.objectContaining({ code: USER_ERROR_CODES.USER_TYPE_INVALID }),
+          response: expect.objectContaining({
+            code: USER_ERROR_CODES.USER_TYPE_INVALID,
+          }),
         }),
       );
     });
@@ -452,18 +591,24 @@ describe('UserValidationService (Domain 3, §§5.1, 5.5, 6.1, 6.2, 7, 9.1)', () 
       }).toThrow(
         expect.objectContaining({
           status: HttpStatus.BAD_REQUEST,
-          response: expect.objectContaining({ code: USER_ERROR_CODES.VENDOR_REQUIRED }),
+          response: expect.objectContaining({
+            code: USER_ERROR_CODES.VENDOR_REQUIRED,
+          }),
         }),
       );
     });
 
     it('V5: rejects vendor user with internal org unit on profile with 400 VENDOR_ORG_UNIT_NOT_ALLOWED', () => {
       expect(() => {
-        service.validateV5_VendorOrgUnitProfile(USER_TYPES.VENDOR, { departmentId: 'dept-123' });
+        service.validateV5_VendorOrgUnitProfile(USER_TYPES.VENDOR, {
+          departmentId: 'dept-123',
+        });
       }).toThrow(
         expect.objectContaining({
           status: HttpStatus.BAD_REQUEST,
-          response: expect.objectContaining({ code: USER_ERROR_CODES.VENDOR_ORG_UNIT_NOT_ALLOWED }),
+          response: expect.objectContaining({
+            code: USER_ERROR_CODES.VENDOR_ORG_UNIT_NOT_ALLOWED,
+          }),
         }),
       );
     });

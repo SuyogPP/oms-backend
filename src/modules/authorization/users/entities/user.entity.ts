@@ -1,5 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IUserProfile, IUserWithProfile, IUserListResult } from '../interfaces/users.interface';
+import {
+  IUserProfile,
+  IUserWithProfile,
+  IUserListResult,
+} from '../interfaces/users.interface';
 import type { UserType } from '../users.constants';
 
 export class UserProfileEntity implements IUserProfile {
@@ -24,16 +28,28 @@ export class UserProfileEntity implements IUserProfile {
   @ApiProperty({ example: 'Finance Director', required: false })
   jobTitle?: string | null;
 
-  @ApiProperty({ example: '1053433E-F36B-1410-85ED-009A959FB122', required: false })
+  @ApiProperty({
+    example: '1053433E-F36B-1410-85ED-009A959FB122',
+    required: false,
+  })
   organizationId?: string | null;
 
-  @ApiProperty({ example: '1053433E-F36B-1410-85ED-009A959FB122', required: false })
+  @ApiProperty({
+    example: '1053433E-F36B-1410-85ED-009A959FB122',
+    required: false,
+  })
   businessUnitId?: string | null;
 
-  @ApiProperty({ example: '1053433E-F36B-1410-85ED-009A959FB122', required: false })
+  @ApiProperty({
+    example: '1053433E-F36B-1410-85ED-009A959FB122',
+    required: false,
+  })
   departmentId?: string | null;
 
-  @ApiProperty({ example: '1053433E-F36B-1410-85ED-009A959FB122', required: false })
+  @ApiProperty({
+    example: '1053433E-F36B-1410-85ED-009A959FB122',
+    required: false,
+  })
   sectionId?: string | null;
 
   @ApiProperty({ example: null, required: false })
@@ -65,7 +81,10 @@ export class UserEntity implements IUserWithProfile {
   @ApiProperty({ example: 'tariq.hashimi@diez.ae' })
   email!: string;
 
-  @ApiProperty({ example: 'INTERNAL', enum: ['INTERNAL', 'VENDOR', 'SYSTEM', 'SERVICE_ACCOUNT'] })
+  @ApiProperty({
+    example: 'INTERNAL',
+    enum: ['INTERNAL', 'VENDOR', 'SYSTEM', 'SERVICE_ACCOUNT'],
+  })
   userType!: UserType;
 
   @ApiProperty({ example: true })
@@ -80,7 +99,10 @@ export class UserEntity implements IUserWithProfile {
   @ApiProperty({ example: null, required: false })
   lockedUntil?: Date | null;
 
-  @ApiProperty({ example: 'ACTIVE', enum: ['ACTIVE', 'INACTIVE', 'INVITED', 'LOCKED'] })
+  @ApiProperty({
+    example: 'ACTIVE',
+    enum: ['ACTIVE', 'INACTIVE', 'INVITED', 'LOCKED'],
+  })
   status?: 'ACTIVE' | 'INACTIVE' | 'INVITED' | 'LOCKED';
 
   @ApiProperty({ type: UserProfileEntity, required: false })

@@ -1,7 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { DataSource, QueryRunner } from 'typeorm';
 import { IPasswordHistory } from '../interfaces/users.interface';
-import { PASSWORD_HISTORY_CHECK_COUNT, PASSWORD_HISTORY_MAX_COUNT } from '../users.constants';
+import {
+  PASSWORD_HISTORY_CHECK_COUNT,
+  PASSWORD_HISTORY_MAX_COUNT,
+} from '../users.constants';
 
 @Injectable()
 export class PasswordHistoryRepository {

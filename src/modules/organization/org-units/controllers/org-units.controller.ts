@@ -63,7 +63,9 @@ export class OrgUnitsController {
 
   @Get('units/tree')
   @RequirePermissions(ORG_PERMISSIONS.VIEW)
-  @ApiOperation({ summary: 'Get full visible organization hierarchy as a nested tree' })
+  @ApiOperation({
+    summary: 'Get full visible organization hierarchy as a nested tree',
+  })
   @ApiResponse({
     status: 200,
     description: 'Nested N-ary organization tree',
@@ -74,7 +76,9 @@ export class OrgUnitsController {
   }
 
   @Get('me/visible-units')
-  @ApiOperation({ summary: 'Get all organization units visible to the authenticated user' })
+  @ApiOperation({
+    summary: 'Get all organization units visible to the authenticated user',
+  })
   @ApiResponse({
     status: 200,
     description: 'List of visible organization units for user scope',
@@ -87,7 +91,8 @@ export class OrgUnitsController {
   @RequirePermissions(ORG_PERMISSIONS.EXPORT)
   @RateLimit(RateLimitTier.TIER_7_REPORTS)
   @ApiOperation({
-    summary: 'Export scope-filtered organization units to Excel (Rate Limit Tier 7: 5 req/min)',
+    summary:
+      'Export scope-filtered organization units to Excel (Rate Limit Tier 7: 5 req/min)',
   })
   @ApiResponse({
     status: 200,
@@ -129,16 +134,15 @@ export class OrgUnitsController {
 
   @Get('units/:id')
   @RequirePermissions(ORG_PERMISSIONS.VIEW)
-  @ApiOperation({ summary: 'Get organization unit details with breadcrumb path' })
+  @ApiOperation({
+    summary: 'Get organization unit details with breadcrumb path',
+  })
   @ApiResponse({
     status: 200,
     description: 'Organization unit detailed entity',
     type: OrgUnitDetailEntity,
   })
-  async findById(
-    @Param('id') id: string,
-    @CurrentUser() user: ICurrentUser,
-  ) {
+  async findById(@Param('id') id: string, @CurrentUser() user: ICurrentUser) {
     return this.orgUnitsService.findById(id, user.userId);
   }
 
@@ -159,7 +163,9 @@ export class OrgUnitsController {
 
   @Get('units/:id/ancestors')
   @RequirePermissions(ORG_PERMISSIONS.VIEW)
-  @ApiOperation({ summary: 'Get ordered ancestors of an organization unit (root to parent)' })
+  @ApiOperation({
+    summary: 'Get ordered ancestors of an organization unit (root to parent)',
+  })
   @ApiResponse({
     status: 200,
     description: 'List of ancestor organization units in hierarchical order',
@@ -174,7 +180,9 @@ export class OrgUnitsController {
 
   @Get('units/:id/descendants')
   @RequirePermissions(ORG_PERMISSIONS.VIEW)
-  @ApiOperation({ summary: 'Get flat list of all descendants of an organization unit' })
+  @ApiOperation({
+    summary: 'Get flat list of all descendants of an organization unit',
+  })
   @ApiResponse({
     status: 200,
     description: 'List of descendant organization units',
@@ -189,7 +197,9 @@ export class OrgUnitsController {
 
   @Get('units/:id/change-log')
   @RequirePermissions(ORG_PERMISSIONS.VIEW)
-  @ApiOperation({ summary: 'Get structural change history log for an organization unit' })
+  @ApiOperation({
+    summary: 'Get structural change history log for an organization unit',
+  })
   @ApiResponse({
     status: 200,
     description: 'Paginated change history log records',
@@ -199,12 +209,18 @@ export class OrgUnitsController {
     @Query('page') page = 1,
     @Query('pageSize') pageSize = 20,
   ) {
-    return this.orgUnitsService.getChangeLog(id, Number(page), Number(pageSize));
+    return this.orgUnitsService.getChangeLog(
+      id,
+      Number(page),
+      Number(pageSize),
+    );
   }
 
   @Get('units/:id/approval-chain')
   @RequirePermissions(ORG_PERMISSIONS.VIEW)
-  @ApiOperation({ summary: 'Get approval chain walking up hierarchy returning HEAD managers' })
+  @ApiOperation({
+    summary: 'Get approval chain walking up hierarchy returning HEAD managers',
+  })
   @ApiResponse({
     status: 200,
     description: 'List of hierarchical approval chain steps',
@@ -215,7 +231,9 @@ export class OrgUnitsController {
 
   @Get('units/:id/budget-owner')
   @RequirePermissions(ORG_PERMISSIONS.VIEW)
-  @ApiOperation({ summary: 'Get nearest ancestor org unit with budget capability' })
+  @ApiOperation({
+    summary: 'Get nearest ancestor org unit with budget capability',
+  })
   @ApiResponse({
     status: 200,
     description: 'Nearest ancestor unit with budget authority',
@@ -242,7 +260,9 @@ export class OrgUnitsController {
 
   @Patch('units/:id')
   @RequirePermissions(ORG_PERMISSIONS.UPDATE)
-  @ApiOperation({ summary: 'Update organization unit non-structural attributes' })
+  @ApiOperation({
+    summary: 'Update organization unit non-structural attributes',
+  })
   @ApiResponse({
     status: 200,
     description: 'Updated organization unit details',
@@ -258,7 +278,9 @@ export class OrgUnitsController {
 
   @Post('units/:id/move')
   @RequirePermissions(ORG_PERMISSIONS.MOVE)
-  @ApiOperation({ summary: 'Reparent an organization unit and its entire subtree' })
+  @ApiOperation({
+    summary: 'Reparent an organization unit and its entire subtree',
+  })
   @ApiResponse({
     status: 200,
     description: 'Updated organization unit after structural move',
@@ -280,10 +302,7 @@ export class OrgUnitsController {
     description: 'Activated organization unit',
     type: OrgUnitDetailEntity,
   })
-  async activate(
-    @Param('id') id: string,
-    @CurrentUser() user: ICurrentUser,
-  ) {
+  async activate(@Param('id') id: string, @CurrentUser() user: ICurrentUser) {
     return this.orgUnitsService.activate(id, user.userId);
   }
 
@@ -295,10 +314,7 @@ export class OrgUnitsController {
     description: 'Deactivated organization unit',
     type: OrgUnitDetailEntity,
   })
-  async deactivate(
-    @Param('id') id: string,
-    @CurrentUser() user: ICurrentUser,
-  ) {
+  async deactivate(@Param('id') id: string, @CurrentUser() user: ICurrentUser) {
     return this.orgUnitsService.deactivate(id, user.userId);
   }
 
@@ -309,11 +325,11 @@ export class OrgUnitsController {
     status: 200,
     description: 'Unit deleted successfully',
   })
-  async remove(
-    @Param('id') id: string,
-    @CurrentUser() user: ICurrentUser,
-  ) {
+  async remove(@Param('id') id: string, @CurrentUser() user: ICurrentUser) {
     await this.orgUnitsService.softDelete(id, user.userId);
-    return { success: true, message: 'Organization unit deleted successfully.' };
+    return {
+      success: true,
+      message: 'Organization unit deleted successfully.',
+    };
   }
 }

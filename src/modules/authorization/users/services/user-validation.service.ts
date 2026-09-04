@@ -1,16 +1,15 @@
-import {
-  Injectable,
-  HttpException,
-  HttpStatus,
-  Logger,
-} from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus, Logger } from '@nestjs/common';
 import { DataSource, QueryRunner } from 'typeorm';
 import { UsersRepository } from '../repositories/users.repository';
-import { USER_ERROR_CODES, USER_TYPES, UserType, SCOPE_CODES, ScopeCode } from '../users.constants';
+import {
+  USER_ERROR_CODES,
+  USER_TYPES,
+  UserType,
+  SCOPE_CODES,
+} from '../users.constants';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdateUserDto } from '../dto/update-user.dto';
 import { AssignScopeDto } from '../../user-assignments/dto/assign-scope.dto';
-import { ManageOverrideDto } from '../../user-assignments/dto/manage-override.dto';
 
 @Injectable()
 export class UserValidationService {
@@ -103,10 +102,7 @@ export class UserValidationService {
    * U3: UserType must match a seeded auth.UserTypes.UserTypeCode.
    * Failure: 400 USER_TYPE_INVALID
    */
-  async validateU3_UserType(
-    userType: string,
-    qr?: QueryRunner,
-  ): Promise<void> {
+  async validateU3_UserType(userType: string, qr?: QueryRunner): Promise<void> {
     const validCodes = Object.values(USER_TYPES);
     if (!validCodes.includes(userType as UserType)) {
       throw new HttpException(
@@ -188,7 +184,8 @@ export class UserValidationService {
           {
             code: USER_ERROR_CODES.USER_VENDOR_INVALID,
             error: USER_ERROR_CODES.USER_VENDOR_INVALID,
-            message: 'Vendor users must be linked to a valid Vendor record (VendorID).',
+            message:
+              'Vendor users must be linked to a valid Vendor record (VendorID).',
           },
           HttpStatus.BAD_REQUEST,
         );
@@ -229,7 +226,12 @@ export class UserValidationService {
           [unit.id],
         );
 
-        if (!rows || rows.length === 0 || rows[0].IsDeleted === 1 || rows[0].IsActive !== 1) {
+        if (
+          !rows ||
+          rows.length === 0 ||
+          rows[0].IsDeleted === 1 ||
+          rows[0].IsActive !== 1
+        ) {
           throw new HttpException(
             {
               code: USER_ERROR_CODES.USER_ORG_UNIT_INVALID,
@@ -365,7 +367,8 @@ export class UserValidationService {
         {
           code: USER_ERROR_CODES.USER_LAST_ADMIN,
           error: USER_ERROR_CODES.USER_LAST_ADMIN,
-          message: 'Cannot deactivate or delete the last active SYSTEM_ADMIN in the system.',
+          message:
+            'Cannot deactivate or delete the last active SYSTEM_ADMIN in the system.',
         },
         HttpStatus.CONFLICT,
       );
@@ -391,7 +394,8 @@ export class UserValidationService {
         {
           code: USER_ERROR_CODES.USER_IS_ORG_HEAD,
           error: USER_ERROR_CODES.USER_IS_ORG_HEAD,
-          message: 'Cannot delete a user who is currently assigned as the primary Head of an active organizational unit.',
+          message:
+            'Cannot delete a user who is currently assigned as the primary Head of an active organizational unit.',
         },
         HttpStatus.CONFLICT,
       );
@@ -417,12 +421,24 @@ export class UserValidationService {
       orgUnitId?: string | null;
     },
   ): string | null {
-    const { organizationId, businessUnitId, departmentId, sectionId, orgUnitId } = cols;
+    const {
+      organizationId,
+      businessUnitId,
+      departmentId,
+      sectionId,
+      orgUnitId,
+    } = cols;
 
     switch (scopeCode) {
       case SCOPE_CODES.GLOBAL:
       case SCOPE_CODES.SELF:
-        if (organizationId || businessUnitId || departmentId || sectionId || orgUnitId) {
+        if (
+          organizationId ||
+          businessUnitId ||
+          departmentId ||
+          sectionId ||
+          orgUnitId
+        ) {
           throw new HttpException(
             {
               code: USER_ERROR_CODES.SCOPE_ASSIGNMENT_INVALID,
@@ -434,13 +450,14 @@ export class UserValidationService {
         }
         return null;
 
-      case SCOPE_CODES.ORGANIZATION:
+      case SCOPE_CODES.ORGANIZATION: {
         if (businessUnitId || departmentId || sectionId) {
           throw new HttpException(
             {
               code: USER_ERROR_CODES.SCOPE_ASSIGNMENT_INVALID,
               error: USER_ERROR_CODES.SCOPE_ASSIGNMENT_INVALID,
-              message: 'ORGANIZATION scope must only populate OrganizationID/OrgUnitId, all other unit columns must be NULL.',
+              message:
+                'ORGANIZATION scope must only populate OrganizationID/OrgUnitId, all other unit columns must be NULL.',
             },
             HttpStatus.BAD_REQUEST,
           );
@@ -457,14 +474,16 @@ export class UserValidationService {
           );
         }
         return orgId;
+      }
 
-      case SCOPE_CODES.BUSINESS_UNIT:
+      case SCOPE_CODES.BUSINESS_UNIT: {
         if (organizationId || departmentId || sectionId) {
           throw new HttpException(
             {
               code: USER_ERROR_CODES.SCOPE_ASSIGNMENT_INVALID,
               error: USER_ERROR_CODES.SCOPE_ASSIGNMENT_INVALID,
-              message: 'BUSINESS_UNIT scope must only populate BusinessUnitID/OrgUnitId, all other unit columns must be NULL.',
+              message:
+                'BUSINESS_UNIT scope must only populate BusinessUnitID/OrgUnitId, all other unit columns must be NULL.',
             },
             HttpStatus.BAD_REQUEST,
           );
@@ -481,14 +500,16 @@ export class UserValidationService {
           );
         }
         return buId;
+      }
 
-      case SCOPE_CODES.DEPARTMENT:
+      case SCOPE_CODES.DEPARTMENT: {
         if (organizationId || businessUnitId || sectionId) {
           throw new HttpException(
             {
               code: USER_ERROR_CODES.SCOPE_ASSIGNMENT_INVALID,
               error: USER_ERROR_CODES.SCOPE_ASSIGNMENT_INVALID,
-              message: 'DEPARTMENT scope must only populate DepartmentID/OrgUnitId, all other unit columns must be NULL.',
+              message:
+                'DEPARTMENT scope must only populate DepartmentID/OrgUnitId, all other unit columns must be NULL.',
             },
             HttpStatus.BAD_REQUEST,
           );
@@ -505,14 +526,16 @@ export class UserValidationService {
           );
         }
         return deptId;
+      }
 
-      case SCOPE_CODES.SECTION:
+      case SCOPE_CODES.SECTION: {
         if (organizationId || businessUnitId || departmentId) {
           throw new HttpException(
             {
               code: USER_ERROR_CODES.SCOPE_ASSIGNMENT_INVALID,
               error: USER_ERROR_CODES.SCOPE_ASSIGNMENT_INVALID,
-              message: 'SECTION scope must only populate SectionID/OrgUnitId, all other unit columns must be NULL.',
+              message:
+                'SECTION scope must only populate SectionID/OrgUnitId, all other unit columns must be NULL.',
             },
             HttpStatus.BAD_REQUEST,
           );
@@ -529,6 +552,7 @@ export class UserValidationService {
           );
         }
         return secId;
+      }
 
       default:
         throw new HttpException(
@@ -572,7 +596,12 @@ export class UserValidationService {
       [orgUnitId],
     );
 
-    if (!rows || rows.length === 0 || rows[0].IsDeleted === 1 || rows[0].IsActive !== 1) {
+    if (
+      !rows ||
+      rows.length === 0 ||
+      rows[0].IsDeleted === 1 ||
+      rows[0].IsActive !== 1
+    ) {
       throw new HttpException(
         {
           code: USER_ERROR_CODES.SCOPE_ORG_UNIT_INVALID,
@@ -707,7 +736,8 @@ export class UserValidationService {
         {
           code: USER_ERROR_CODES.SCOPE_ESCALATION,
           error: USER_ERROR_CODES.SCOPE_ESCALATION,
-          message: 'Granter has no active scopes and cannot assign scopes to others.',
+          message:
+            'Granter has no active scopes and cannot assign scopes to others.',
         },
         HttpStatus.FORBIDDEN,
       );
@@ -760,7 +790,8 @@ export class UserValidationService {
         {
           code: USER_ERROR_CODES.SCOPE_VENDOR_NOT_ALLOWED,
           error: USER_ERROR_CODES.SCOPE_VENDOR_NOT_ALLOWED,
-          message: 'Vendor users cannot receive organizational scope assignments.',
+          message:
+            'Vendor users cannot receive organizational scope assignments.',
         },
         HttpStatus.BAD_REQUEST,
       );
@@ -802,7 +833,8 @@ export class UserValidationService {
         {
           code: USER_ERROR_CODES.SCOPE_DUPLICATE,
           error: USER_ERROR_CODES.SCOPE_DUPLICATE,
-          message: 'An active scope assignment for this scope definition and unit already exists for the user.',
+          message:
+            'An active scope assignment for this scope definition and unit already exists for the user.',
         },
         HttpStatus.CONFLICT,
       );
@@ -824,7 +856,8 @@ export class UserValidationService {
           {
             code: USER_ERROR_CODES.USER_SELF_ACTION,
             error: USER_ERROR_CODES.USER_SELF_ACTION,
-            message: 'Cannot remove your own last remaining organizational scope.',
+            message:
+              'Cannot remove your own last remaining organizational scope.',
           },
           HttpStatus.CONFLICT,
         );
@@ -863,7 +896,8 @@ export class UserValidationService {
         {
           code: USER_ERROR_CODES.VENDOR_REQUIRED,
           error: USER_ERROR_CODES.VENDOR_REQUIRED,
-          message: 'Vendor user must be linked to a valid Vendor record (vendorId).',
+          message:
+            'Vendor user must be linked to a valid Vendor record (vendorId).',
         },
         HttpStatus.BAD_REQUEST,
       );
@@ -947,7 +981,8 @@ export class UserValidationService {
           {
             code: USER_ERROR_CODES.VENDOR_ORG_UNIT_NOT_ALLOWED,
             error: USER_ERROR_CODES.VENDOR_ORG_UNIT_NOT_ALLOWED,
-            message: 'Vendor users must not be assigned to internal organizational units on their profile.',
+            message:
+              'Vendor users must not be assigned to internal organizational units on their profile.',
           },
           HttpStatus.BAD_REQUEST,
         );
@@ -971,10 +1006,18 @@ export class UserValidationService {
     await this.validateU2_UsernameUnique(dto.username, undefined, qr);
     await this.validateU3_UserType(dto.userType, qr);
     this.validateU4_InternalUserEmployeeId(dto.userType, dto.employeeId);
-    this.validateU5_VendorUserConstraints(dto.userType, dto.employeeId, dto.profile?.vendorId);
+    this.validateU5_VendorUserConstraints(
+      dto.userType,
+      dto.employeeId,
+      dto.profile?.vendorId,
+    );
     this.validateV5_VendorOrgUnitProfile(dto.userType, dto.profile);
     await this.validateU7_OrgUnitReferences(dto.profile, qr);
-    await this.validateU8_CreatorScopeCoversDepartment(creatorUserId, dto.profile?.departmentId, qr);
+    await this.validateU8_CreatorScopeCoversDepartment(
+      creatorUserId,
+      dto.profile?.departmentId,
+      qr,
+    );
   }
 
   /**
@@ -995,7 +1038,11 @@ export class UserValidationService {
     if (dto.userType) {
       await this.validateU3_UserType(dto.userType, qr);
       this.validateU4_InternalUserEmployeeId(dto.userType, dto.employeeId);
-      this.validateU5_VendorUserConstraints(dto.userType, dto.employeeId, dto.profile?.vendorId);
+      this.validateU5_VendorUserConstraints(
+        dto.userType,
+        dto.employeeId,
+        dto.profile?.vendorId,
+      );
       this.validateV5_VendorOrgUnitProfile(dto.userType, dto.profile);
     }
     if (dto.profile) {
@@ -1011,7 +1058,11 @@ export class UserValidationService {
     operatorUserId?: string,
     qr?: QueryRunner,
   ): Promise<void> {
-    this.validateU14_SelfAction(targetUserId, operatorUserId, 'deactivate your own account');
+    this.validateU14_SelfAction(
+      targetUserId,
+      operatorUserId,
+      'deactivate your own account',
+    );
     await this.validateU15_LastSystemAdmin(targetUserId, qr);
   }
 
@@ -1023,7 +1074,11 @@ export class UserValidationService {
     operatorUserId?: string,
     qr?: QueryRunner,
   ): Promise<void> {
-    this.validateU14_SelfAction(targetUserId, operatorUserId, 'delete your own account');
+    this.validateU14_SelfAction(
+      targetUserId,
+      operatorUserId,
+      'delete your own account',
+    );
     await this.validateU15_LastSystemAdmin(targetUserId, qr);
     await this.validateU16_PrimaryOrgUnitHead(targetUserId, qr);
   }
@@ -1037,7 +1092,11 @@ export class UserValidationService {
     operatorUserId?: string,
     qr?: QueryRunner,
   ): Promise<void> {
-    this.validateU14_SelfAction(targetUserId, operatorUserId, 'assign roles to yourself');
+    this.validateU14_SelfAction(
+      targetUserId,
+      operatorUserId,
+      'assign roles to yourself',
+    );
 
     const user = await this.usersRepository.findById(targetUserId, qr);
     if (!user) {
@@ -1057,11 +1116,12 @@ export class UserValidationService {
   /**
    * Validation for Role Revocation (§9.1).
    */
-  validateRevokeRole(
-    targetUserId: string,
-    operatorUserId?: string,
-  ): void {
-    this.validateU14_SelfAction(targetUserId, operatorUserId, 'revoke your own roles');
+  validateRevokeRole(targetUserId: string, operatorUserId?: string): void {
+    this.validateU14_SelfAction(
+      targetUserId,
+      operatorUserId,
+      'revoke your own roles',
+    );
   }
 
   /**
@@ -1073,7 +1133,11 @@ export class UserValidationService {
     operatorUserId?: string,
     qr?: QueryRunner,
   ): Promise<void> {
-    this.validateU14_SelfAction(targetUserId, operatorUserId, 'assign organizational scope to yourself');
+    this.validateU14_SelfAction(
+      targetUserId,
+      operatorUserId,
+      'assign organizational scope to yourself',
+    );
 
     const user = await this.usersRepository.findById(targetUserId, qr);
     if (!user) {
@@ -1115,12 +1179,26 @@ export class UserValidationService {
     const referencedOrgUnitId = this.validateS1_ScopeColumns(scopeCode, dto);
 
     if (referencedOrgUnitId) {
-      await this.validateS2_ScopeOrgUnitType(scopeCode, referencedOrgUnitId, qr);
+      await this.validateS2_ScopeOrgUnitType(
+        scopeCode,
+        referencedOrgUnitId,
+        qr,
+      );
     }
 
     await this.validateS3_GlobalScopeGrant(scopeCode, operatorUserId, qr);
-    await this.validateS4_ScopeEscalation(scopeCode, referencedOrgUnitId, operatorUserId, qr);
-    await this.validateS6_DuplicateScope(targetUserId, dto.scopeDefinitionId, referencedOrgUnitId, qr);
+    await this.validateS4_ScopeEscalation(
+      scopeCode,
+      referencedOrgUnitId,
+      operatorUserId,
+      qr,
+    );
+    await this.validateS6_DuplicateScope(
+      targetUserId,
+      dto.scopeDefinitionId,
+      referencedOrgUnitId,
+      qr,
+    );
   }
 
   /**
@@ -1131,17 +1209,26 @@ export class UserValidationService {
     operatorUserId?: string,
     activeScopeCount: number = 0,
   ): void {
-    this.validateU14_SelfAction(targetUserId, operatorUserId, 'revoke your own scope');
-    this.validateS8_SelfScopeRemoval(targetUserId, operatorUserId, activeScopeCount);
+    this.validateU14_SelfAction(
+      targetUserId,
+      operatorUserId,
+      'revoke your own scope',
+    );
+    this.validateS8_SelfScopeRemoval(
+      targetUserId,
+      operatorUserId,
+      activeScopeCount,
+    );
   }
 
   /**
    * Validation for Override Creation / Management (§9.1).
    */
-  validateManageOverride(
-    targetUserId: string,
-    operatorUserId?: string,
-  ): void {
-    this.validateU14_SelfAction(targetUserId, operatorUserId, 'grant or revoke permission overrides on your own account');
+  validateManageOverride(targetUserId: string, operatorUserId?: string): void {
+    this.validateU14_SelfAction(
+      targetUserId,
+      operatorUserId,
+      'grant or revoke permission overrides on your own account',
+    );
   }
 }

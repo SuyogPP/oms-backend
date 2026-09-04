@@ -29,7 +29,10 @@ describe('Vendor User Security Invariants & Internal Endpoint Rejections (Rules 
       ]);
 
       await expect(
-        validationService.validateV3_VendorRoles(USER_TYPES.VENDOR, 'internal-role-id'),
+        validationService.validateV3_VendorRoles(
+          USER_TYPES.VENDOR,
+          'internal-role-id',
+        ),
       ).rejects.toThrow(
         expect.objectContaining({
           response: expect.objectContaining({
@@ -45,7 +48,10 @@ describe('Vendor User Security Invariants & Internal Endpoint Rejections (Rules 
       ]);
 
       await expect(
-        validationService.validateV3_VendorRoles(USER_TYPES.VENDOR, 'vendor-role-id'),
+        validationService.validateV3_VendorRoles(
+          USER_TYPES.VENDOR,
+          'vendor-role-id',
+        ),
       ).resolves.not.toThrow();
     });
   });

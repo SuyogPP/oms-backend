@@ -52,22 +52,36 @@ export class UserOverridesController {
   @UseGuards(PermissionGuard)
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({
-    summary: 'Create a grant or revoke permission override (SYSTEM_ADMIN only, mandatory Reason)',
+    summary:
+      'Create a grant or revoke permission override (SYSTEM_ADMIN only, mandatory Reason)',
   })
   @ApiParam({ name: 'id', description: 'User UUID' })
   @ApiResponse({
     status: HttpStatus.CREATED,
     description: 'Permission override created successfully',
   })
-  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Missing mandatory reason or invalid permission' })
-  @ApiResponse({ status: HttpStatus.CONFLICT, description: 'Cannot grant overrides to yourself (U14/9.1)' })
-  @ApiResponse({ status: HttpStatus.FORBIDDEN, description: 'Missing USER.OVERRIDE.MANAGE permission' })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Missing mandatory reason or invalid permission',
+  })
+  @ApiResponse({
+    status: HttpStatus.CONFLICT,
+    description: 'Cannot grant overrides to yourself (U14/9.1)',
+  })
+  @ApiResponse({
+    status: HttpStatus.FORBIDDEN,
+    description: 'Missing USER.OVERRIDE.MANAGE permission',
+  })
   async createOverride(
     @Param('id') id: string,
     @Body() dto: ManageOverrideDto,
     @CurrentUser() currentUser?: ICurrentUser,
   ) {
-    return this.userOverridesService.createOverride(id, dto, currentUser?.userId);
+    return this.userOverridesService.createOverride(
+      id,
+      dto,
+      currentUser?.userId,
+    );
   }
 
   @Delete(':overrideId')
@@ -83,13 +97,22 @@ export class UserOverridesController {
     status: HttpStatus.OK,
     description: 'Permission override revoked successfully',
   })
-  @ApiResponse({ status: HttpStatus.CONFLICT, description: 'Cannot revoke overrides on your own account' })
-  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Permission override not found' })
+  @ApiResponse({
+    status: HttpStatus.CONFLICT,
+    description: 'Cannot revoke overrides on your own account',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Permission override not found',
+  })
   async revokeOverride(
     @Param('overrideId') overrideId: string,
     @CurrentUser() currentUser?: ICurrentUser,
   ) {
-    await this.userOverridesService.revokeOverride(overrideId, currentUser?.userId);
+    await this.userOverridesService.revokeOverride(
+      overrideId,
+      currentUser?.userId,
+    );
     return {
       success: true,
       message: 'Permission override revoked successfully.',

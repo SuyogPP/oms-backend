@@ -8,7 +8,6 @@ import { DelegationsRepository } from '../../delegations/repositories/delegation
 import { UserValidationService } from './user-validation.service';
 import { SecurityEventsService } from '../../../security-events/services/security-events.service';
 import { AuditService } from '../../../audit/service/audit.services';
-import { USER_TYPES } from '../users.constants';
 
 describe('UserLifecycleService (Domain 3, §§5.5, 9.1)', () => {
   let service: UserLifecycleService;
@@ -81,9 +80,15 @@ describe('UserLifecycleService (Domain 3, §§5.5, 9.1)', () => {
     service = module.get<UserLifecycleService>(UserLifecycleService);
     usersRepository = module.get<UsersRepository>(UsersRepository);
     userRolesRepository = module.get<UserRolesRepository>(UserRolesRepository);
-    delegationsRepository = module.get<DelegationsRepository>(DelegationsRepository);
-    validationService = module.get<UserValidationService>(UserValidationService);
-    securityEventsService = module.get<SecurityEventsService>(SecurityEventsService);
+    delegationsRepository = module.get<DelegationsRepository>(
+      DelegationsRepository,
+    );
+    validationService = module.get<UserValidationService>(
+      UserValidationService,
+    );
+    securityEventsService = module.get<SecurityEventsService>(
+      SecurityEventsService,
+    );
     auditService = module.get<AuditService>(AuditService);
 
     jest.clearAllMocks();
@@ -101,7 +106,10 @@ describe('UserLifecycleService (Domain 3, §§5.5, 9.1)', () => {
       await service.activate(sampleUserId, operatorUserId);
 
       expect(mockUsersRepository.activate).toHaveBeenCalledWith(sampleUserId);
-      expect(mockSecurityEventsService.log).toHaveBeenCalledWith('USER_ACTIVATED', expect.any(Object));
+      expect(mockSecurityEventsService.log).toHaveBeenCalledWith(
+        'USER_ACTIVATED',
+        expect.any(Object),
+      );
       expect(mockAuditService.logUserStatusChanged).toHaveBeenCalledWith({
         userId: sampleUserId,
         isActive: true,
@@ -124,9 +132,9 @@ describe('UserLifecycleService (Domain 3, §§5.5, 9.1)', () => {
     it('throws 404 if user does not exist or is soft-deleted', async () => {
       mockUsersRepository.findById.mockResolvedValueOnce(null);
 
-      await expect(service.activate(sampleUserId, operatorUserId)).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(
+        service.activate(sampleUserId, operatorUserId),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -142,18 +150,31 @@ describe('UserLifecycleService (Domain 3, §§5.5, 9.1)', () => {
       await service.deactivate(sampleUserId, operatorUserId);
 
       // Validations executed (U14 & U15)
-      expect(mockValidationService.validateDeactivateUser).toHaveBeenCalledWith(sampleUserId, operatorUserId);
+      expect(mockValidationService.validateDeactivateUser).toHaveBeenCalledWith(
+        sampleUserId,
+        operatorUserId,
+      );
 
       // Deactivated and sessions revoked inside transaction
-      expect(mockUsersRepository.deactivate).toHaveBeenCalledWith(sampleUserId, mockQueryRunner);
-      expect(mockUsersRepository.revokeAllUserSessions).toHaveBeenCalledWith(sampleUserId, expect.any(String), mockQueryRunner);
+      expect(mockUsersRepository.deactivate).toHaveBeenCalledWith(
+        sampleUserId,
+        mockQueryRunner,
+      );
+      expect(mockUsersRepository.revokeAllUserSessions).toHaveBeenCalledWith(
+        sampleUserId,
+        expect.any(String),
+        mockQueryRunner,
+      );
       expect(mockQueryRunner.commitTransaction).toHaveBeenCalled();
 
       // U12 Guarantee: Roles and scopes were NOT revoked
       expect(mockUserRolesRepository.revokeAllForUser).not.toHaveBeenCalled();
 
       // Security and audit events logged
-      expect(mockSecurityEventsService.log).toHaveBeenCalledWith('USER_DEACTIVATED', expect.any(Object));
+      expect(mockSecurityEventsService.log).toHaveBeenCalledWith(
+        'USER_DEACTIVATED',
+        expect.any(Object),
+      );
       expect(mockAuditService.logUserStatusChanged).toHaveBeenCalledWith({
         userId: sampleUserId,
         isActive: false,
@@ -174,18 +195,40 @@ describe('UserLifecycleService (Domain 3, §§5.5, 9.1)', () => {
       await service.softDelete(sampleUserId, operatorUserId);
 
       // Validations executed (U14, U15, U16)
-      expect(mockValidationService.validateDeleteUser).toHaveBeenCalledWith(sampleUserId, operatorUserId);
+      expect(mockValidationService.validateDeleteUser).toHaveBeenCalledWith(
+        sampleUserId,
+        operatorUserId,
+      );
 
       // Transaction steps
-      expect(mockUsersRepository.softDelete).toHaveBeenCalledWith(sampleUserId, operatorUserId, mockQueryRunner);
-      expect(mockUsersRepository.revokeAllUserSessions).toHaveBeenCalledWith(sampleUserId, expect.any(String), mockQueryRunner);
-      expect(mockUserRolesRepository.revokeAllForUser).toHaveBeenCalledWith(sampleUserId, mockQueryRunner);
-      expect(mockDelegationsRepository.endAllForUser).toHaveBeenCalledWith(sampleUserId, mockQueryRunner);
+      expect(mockUsersRepository.softDelete).toHaveBeenCalledWith(
+        sampleUserId,
+        operatorUserId,
+        mockQueryRunner,
+      );
+      expect(mockUsersRepository.revokeAllUserSessions).toHaveBeenCalledWith(
+        sampleUserId,
+        expect.any(String),
+        mockQueryRunner,
+      );
+      expect(mockUserRolesRepository.revokeAllForUser).toHaveBeenCalledWith(
+        sampleUserId,
+        mockQueryRunner,
+      );
+      expect(mockDelegationsRepository.endAllForUser).toHaveBeenCalledWith(
+        sampleUserId,
+        mockQueryRunner,
+      );
       expect(mockQueryRunner.commitTransaction).toHaveBeenCalled();
 
       // Events logged
-      expect(mockSecurityEventsService.log).toHaveBeenCalledWith('USER_DELETED', expect.any(Object));
-      expect(mockAuditService.logUserDeleted).toHaveBeenCalledWith({ userId: sampleUserId });
+      expect(mockSecurityEventsService.log).toHaveBeenCalledWith(
+        'USER_DELETED',
+        expect.any(Object),
+      );
+      expect(mockAuditService.logUserDeleted).toHaveBeenCalledWith({
+        userId: sampleUserId,
+      });
     });
 
     it('rolls back transaction if ending delegations fails during deletion', async () => {
@@ -196,9 +239,13 @@ describe('UserLifecycleService (Domain 3, §§5.5, 9.1)', () => {
         isDeleted: false,
       });
 
-      mockDelegationsRepository.endAllForUser.mockRejectedValueOnce(new Error('Delegation SQL failure'));
+      mockDelegationsRepository.endAllForUser.mockRejectedValueOnce(
+        new Error('Delegation SQL failure'),
+      );
 
-      await expect(service.softDelete(sampleUserId, operatorUserId)).rejects.toThrow('Delegation SQL failure');
+      await expect(
+        service.softDelete(sampleUserId, operatorUserId),
+      ).rejects.toThrow('Delegation SQL failure');
 
       expect(mockQueryRunner.rollbackTransaction).toHaveBeenCalled();
       expect(mockQueryRunner.commitTransaction).not.toHaveBeenCalled();

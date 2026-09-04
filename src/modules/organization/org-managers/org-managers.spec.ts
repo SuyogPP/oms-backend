@@ -1,8 +1,7 @@
-import { HttpException, HttpStatus } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { DataSource } from 'typeorm';
 import { AuditService } from '../../audit/service/audit.services';
-import { ORG_ERROR_CODES, ORG_MANAGER_ROLES } from '../org-units/org-units.constants';
+import { ORG_MANAGER_ROLES } from '../org-units/org-units.constants';
 import { OrgUnitChangeLogRepository } from '../org-units/repositories/org-unit-change-log.repository';
 import { OrgUnitsRepository } from '../org-units/repositories/org-units.repository';
 import { OrgUnitValidationService } from '../org-units/services/org-unit-validation.service';
@@ -68,7 +67,12 @@ describe('OrgManagersService (Domain 2 — Section 7.4 & 8.3 Rules G1–G7)', ()
           orgUnitCode: 'IT_OPS',
           orgUnitName: 'IT Operations',
           orgUnitDepth: 3,
-          head: { userId: 'user-ops', displayName: 'Ops Head', email: 'ops@diez.ae', managerRoleCode: 'HEAD' },
+          head: {
+            userId: 'user-ops',
+            displayName: 'Ops Head',
+            email: 'ops@diez.ae',
+            managerRoleCode: 'HEAD',
+          },
         },
         {
           step: 2,
@@ -77,18 +81,27 @@ describe('OrgManagersService (Domain 2 — Section 7.4 & 8.3 Rules G1–G7)', ()
           orgUnitCode: 'IT',
           orgUnitName: 'Information Technology',
           orgUnitDepth: 2,
-          head: { userId: 'user-it', displayName: 'IT Director', email: 'it@diez.ae', managerRoleCode: 'HEAD' },
+          head: {
+            userId: 'user-it',
+            displayName: 'IT Director',
+            email: 'it@diez.ae',
+            managerRoleCode: 'HEAD',
+          },
         },
       ]),
     };
 
     mockUnitsRepo = {
       updateHeadUser: jest.fn().mockResolvedValue(undefined),
-      findBudgetOwner: jest.fn().mockResolvedValue({ orgUnitId: 'u-budget', allowsBudget: true }),
+      findBudgetOwner: jest
+        .fn()
+        .mockResolvedValue({ orgUnitId: 'u-budget', allowsBudget: true }),
     };
 
     mockValidationService = {
-      validateAssignManager: jest.fn().mockResolvedValue({ unit: { orgUnitId: 'u-1' } }),
+      validateAssignManager: jest
+        .fn()
+        .mockResolvedValue({ unit: { orgUnitId: 'u-1' } }),
     };
 
     mockChangeLogRepo = {
@@ -220,7 +233,10 @@ describe('OrgManagersService (Domain 2 — Section 7.4 & 8.3 Rules G1–G7)', ()
       mockManagersRepo.findById.mockResolvedValue(sampleManager);
       mockManagersRepo.findCurrentHead.mockResolvedValue(null);
 
-      await service.removeManager(sampleManager.orgUnitManagerId, 'actor-admin');
+      await service.removeManager(
+        sampleManager.orgUnitManagerId,
+        'actor-admin',
+      );
 
       expect(mockManagersRepo.softDelete).toHaveBeenCalledWith(
         sampleManager.orgUnitManagerId,

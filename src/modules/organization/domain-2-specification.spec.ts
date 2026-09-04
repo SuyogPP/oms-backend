@@ -21,7 +21,6 @@ import { OrgUnitClosureRepository } from './org-units/repositories/org-unit-clos
 import { OrgUnitTypesRepository } from './org-units/repositories/org-unit-types.repository';
 import { OrgUnitsRepository } from './org-units/repositories/org-units.repository';
 import { OrgUnitTreeService } from './org-units/services/org-unit-tree.service';
-import { OrgUnitTypesService } from './org-units/services/org-unit-types.service';
 import { OrgUnitValidationService } from './org-units/services/org-unit-validation.service';
 import { OrgUnitsService } from './org-units/services/org-units.service';
 import { OrgManagersMapper } from './org-managers/org-managers.mapper';
@@ -76,28 +75,53 @@ describe('Domain 2 — Full Specification Test Plan (§12.1 – §12.4)', () => 
         findTypeById: jest.fn().mockImplementation((id: number) => {
           return Promise.resolve({
             orgUnitTypeId: id,
-            code: id === 1 ? 'ORGANIZATION' : id === 2 ? 'BUSINESS_UNIT' : id === 3 ? 'DEPARTMENT' : 'SECTION',
+            code:
+              id === 1
+                ? 'ORGANIZATION'
+                : id === 2
+                  ? 'BUSINESS_UNIT'
+                  : id === 3
+                    ? 'DEPARTMENT'
+                    : 'SECTION',
             allowsManager: true,
             isRootType: id === 1,
             isActive: true,
           });
         }),
-        findHierarchyRule: jest.fn().mockImplementation((childTypeId: number, parentTypeId: number) => {
-          // Permitted combinations per seed:
-          // ORG(1) -> BU(2), ORG(1) -> DEPT(3), BU(2) -> DEPT(3), DEPT(3) -> SECTION(4)
-          // Section(4) under Organization(1) is INVALID!
-          if (childTypeId === 4 && parentTypeId === 1) return Promise.resolve(null);
-          if (childTypeId === 3 && (parentTypeId === 1 || parentTypeId === 2)) {
-            return Promise.resolve({ childOrgUnitTypeId: childTypeId, parentOrgUnitTypeId: parentTypeId, isActive: true });
-          }
-          if (childTypeId === 2 && parentTypeId === 1) {
-            return Promise.resolve({ childOrgUnitTypeId: 2, parentOrgUnitTypeId: 1, isActive: true });
-          }
-          if (childTypeId === 4 && parentTypeId === 3) {
-            return Promise.resolve({ childOrgUnitTypeId: 4, parentOrgUnitTypeId: 3, isActive: true });
-          }
-          return Promise.resolve(null);
-        }),
+        findHierarchyRule: jest
+          .fn()
+          .mockImplementation((childTypeId: number, parentTypeId: number) => {
+            // Permitted combinations per seed:
+            // ORG(1) -> BU(2), ORG(1) -> DEPT(3), BU(2) -> DEPT(3), DEPT(3) -> SECTION(4)
+            // Section(4) under Organization(1) is INVALID!
+            if (childTypeId === 4 && parentTypeId === 1)
+              return Promise.resolve(null);
+            if (
+              childTypeId === 3 &&
+              (parentTypeId === 1 || parentTypeId === 2)
+            ) {
+              return Promise.resolve({
+                childOrgUnitTypeId: childTypeId,
+                parentOrgUnitTypeId: parentTypeId,
+                isActive: true,
+              });
+            }
+            if (childTypeId === 2 && parentTypeId === 1) {
+              return Promise.resolve({
+                childOrgUnitTypeId: 2,
+                parentOrgUnitTypeId: 1,
+                isActive: true,
+              });
+            }
+            if (childTypeId === 4 && parentTypeId === 3) {
+              return Promise.resolve({
+                childOrgUnitTypeId: 4,
+                parentOrgUnitTypeId: 3,
+                isActive: true,
+              });
+            }
+            return Promise.resolve(null);
+          }),
       };
 
       mockDataSource = {
@@ -111,17 +135,25 @@ describe('Domain 2 — Full Specification Test Plan (§12.1 – §12.4)', () => 
           { provide: OrgUnitClosureRepository, useValue: mockClosureRepo },
           { provide: OrgUnitTypesRepository, useValue: mockTypesRepo },
           { provide: DataSource, useValue: mockDataSource },
-          { provide: ORG_UNIT_REFERENCE_CHECKS, useValue: [fakeReferenceCheck] },
+          {
+            provide: ORG_UNIT_REFERENCE_CHECKS,
+            useValue: [fakeReferenceCheck],
+          },
         ],
       }).compile();
 
-      validationService = module.get<OrgUnitValidationService>(OrgUnitValidationService);
+      validationService = module.get<OrgUnitValidationService>(
+        OrgUnitValidationService,
+      );
     });
 
     it('Reject Section under Organization (no hierarchy rule)', async () => {
       // Child = SECTION (4), Parent = ORGANIZATION (1)
       await expect(
-        validationService.validateC5_HierarchyRule(ORG_UNIT_TYPE_IDS.SECTION, ORG_UNIT_TYPE_IDS.ORGANIZATION),
+        validationService.validateC5_HierarchyRule(
+          ORG_UNIT_TYPE_IDS.SECTION,
+          ORG_UNIT_TYPE_IDS.ORGANIZATION,
+        ),
       ).rejects.toMatchObject({
         status: HttpStatus.BAD_REQUEST,
         response: { code: ORG_ERROR_CODES.ORG_HIERARCHY_RULE_VIOLATION },
@@ -131,12 +163,18 @@ describe('Domain 2 — Full Specification Test Plan (§12.1 – §12.4)', () => 
     it('Accept Department under Organization and under Business Unit', async () => {
       // Department under Organization
       await expect(
-        validationService.validateC5_HierarchyRule(ORG_UNIT_TYPE_IDS.DEPARTMENT, ORG_UNIT_TYPE_IDS.ORGANIZATION),
+        validationService.validateC5_HierarchyRule(
+          ORG_UNIT_TYPE_IDS.DEPARTMENT,
+          ORG_UNIT_TYPE_IDS.ORGANIZATION,
+        ),
       ).resolves.not.toThrow();
 
       // Department under Business Unit
       await expect(
-        validationService.validateC5_HierarchyRule(ORG_UNIT_TYPE_IDS.DEPARTMENT, ORG_UNIT_TYPE_IDS.BUSINESS_UNIT),
+        validationService.validateC5_HierarchyRule(
+          ORG_UNIT_TYPE_IDS.DEPARTMENT,
+          ORG_UNIT_TYPE_IDS.BUSINESS_UNIT,
+        ),
       ).resolves.not.toThrow();
     });
 
@@ -149,7 +187,10 @@ describe('Domain 2 — Full Specification Test Plan (§12.1 – §12.4)', () => 
       });
 
       await expect(
-        validationService.validateC7_CodeUniqueAmongSiblings('parent-1', 'FINANCE'),
+        validationService.validateC7_CodeUniqueAmongSiblings(
+          'parent-1',
+          'FINANCE',
+        ),
       ).rejects.toMatchObject({
         status: HttpStatus.CONFLICT,
         response: { code: ORG_ERROR_CODES.ORG_CODE_DUPLICATE },
@@ -159,20 +200,35 @@ describe('Domain 2 — Full Specification Test Plan (§12.1 – §12.4)', () => 
       mockOrgUnitsRepo.findByCode.mockResolvedValueOnce(null);
 
       await expect(
-        validationService.validateC7_CodeUniqueAmongSiblings('parent-1', 'FINANCE'),
+        validationService.validateC7_CodeUniqueAmongSiblings(
+          'parent-1',
+          'FINANCE',
+        ),
       ).resolves.not.toThrow();
     });
 
     it('Reject code format violations', () => {
       // Valid codes
-      expect(() => validationService.validateC8_CodeFormat('IT_DEPT_01')).not.toThrow();
-      expect(() => validationService.validateC8_CodeFormat('FIN-2026')).not.toThrow();
+      expect(() =>
+        validationService.validateC8_CodeFormat('IT_DEPT_01'),
+      ).not.toThrow();
+      expect(() =>
+        validationService.validateC8_CodeFormat('FIN-2026'),
+      ).not.toThrow();
 
       // Invalid format (lowercase, spaces, special symbols, leading dash)
-      expect(() => validationService.validateC8_CodeFormat('it-dept')).toThrow(HttpException);
-      expect(() => validationService.validateC8_CodeFormat('IT DEPT')).toThrow(HttpException);
-      expect(() => validationService.validateC8_CodeFormat('-IT_DEPT')).toThrow(HttpException);
-      expect(() => validationService.validateC8_CodeFormat('IT@DEPT')).toThrow(HttpException);
+      expect(() => validationService.validateC8_CodeFormat('it-dept')).toThrow(
+        HttpException,
+      );
+      expect(() => validationService.validateC8_CodeFormat('IT DEPT')).toThrow(
+        HttpException,
+      );
+      expect(() => validationService.validateC8_CodeFormat('-IT_DEPT')).toThrow(
+        HttpException,
+      );
+      expect(() => validationService.validateC8_CodeFormat('IT@DEPT')).toThrow(
+        HttpException,
+      );
     });
 
     it('Reject second root organization', async () => {
@@ -310,7 +366,10 @@ describe('Domain 2 — Full Specification Test Plan (§12.1 – §12.4)', () => 
           { provide: OrgUnitsRepository, useValue: mockOrgUnitsRepo },
           { provide: OrgUnitClosureRepository, useValue: mockClosureRepo },
           { provide: OrgUnitChangeLogRepository, useValue: mockChangeLogRepo },
-          { provide: ConfigService, useValue: { get: jest.fn().mockReturnValue(true) } },
+          {
+            provide: ConfigService,
+            useValue: { get: jest.fn().mockReturnValue(true) },
+          },
         ],
       }).compile();
 
@@ -325,7 +384,11 @@ describe('Domain 2 — Full Specification Test Plan (§12.1 – §12.4)', () => 
       // Node 3 (Sec, Depth 3):  4 closure rows (root, bu, dept, self)
       // Sum = 1 + 2 + 3 + 4 = 10 closure rows
 
-      const insertedClosureRows: Array<{ ancestor: string; descendant: string; depth: number }> = [];
+      const insertedClosureRows: Array<{
+        ancestor: string;
+        descendant: string;
+        depth: number;
+      }> = [];
 
       mockOrgUnitsRepo.create.mockImplementation((data: any) => {
         return Promise.resolve({
@@ -337,18 +400,34 @@ describe('Domain 2 — Full Specification Test Plan (§12.1 – §12.4)', () => 
         });
       });
 
-      mockClosureRepo.insertNodeClosure.mockImplementation((newId: string, parentId?: string) => {
-        if (!parentId) {
-          insertedClosureRows.push({ ancestor: newId, descendant: newId, depth: 0 });
-        } else {
-          const parentAncestors = insertedClosureRows.filter((r) => r.descendant === parentId);
-          parentAncestors.forEach((pa) => {
-            insertedClosureRows.push({ ancestor: pa.ancestor, descendant: newId, depth: pa.depth + 1 });
-          });
-          insertedClosureRows.push({ ancestor: newId, descendant: newId, depth: 0 });
-        }
-        return Promise.resolve();
-      });
+      mockClosureRepo.insertNodeClosure.mockImplementation(
+        (newId: string, parentId?: string) => {
+          if (!parentId) {
+            insertedClosureRows.push({
+              ancestor: newId,
+              descendant: newId,
+              depth: 0,
+            });
+          } else {
+            const parentAncestors = insertedClosureRows.filter(
+              (r) => r.descendant === parentId,
+            );
+            parentAncestors.forEach((pa) => {
+              insertedClosureRows.push({
+                ancestor: pa.ancestor,
+                descendant: newId,
+                depth: pa.depth + 1,
+              });
+            });
+            insertedClosureRows.push({
+              ancestor: newId,
+              descendant: newId,
+              depth: 0,
+            });
+          }
+          return Promise.resolve();
+        },
+      );
 
       // Node 0 (Root)
       const root = await treeService.createNode(
@@ -435,8 +514,15 @@ describe('Domain 2 — Full Specification Test Plan (§12.1 – §12.4)', () => 
       );
 
       // Section 6.2 execution sequence verified
-      expect(mockClosureRepo.detachSubtree).toHaveBeenCalledWith(leafId, mockQueryRunner);
-      expect(mockClosureRepo.attachSubtree).toHaveBeenCalledWith(leafId, newParentId, mockQueryRunner);
+      expect(mockClosureRepo.detachSubtree).toHaveBeenCalledWith(
+        leafId,
+        mockQueryRunner,
+      );
+      expect(mockClosureRepo.attachSubtree).toHaveBeenCalledWith(
+        leafId,
+        newParentId,
+        mockQueryRunner,
+      );
       expect(mockChangeLogRepo.create).toHaveBeenCalledWith(
         expect.objectContaining({
           changeType: 'MOVED',
@@ -446,7 +532,8 @@ describe('Domain 2 — Full Specification Test Plan (§12.1 – §12.4)', () => 
       );
 
       // Section 6.3 integrity check returned zero discrepancies
-      const integrityIssues = await mockClosureRepo.runIntegrityCheck(mockQueryRunner);
+      const integrityIssues =
+        await mockClosureRepo.runIntegrityCheck(mockQueryRunner);
       expect(integrityIssues).toHaveLength(0);
       expect(moved).toBeDefined();
     });
@@ -498,7 +585,8 @@ describe('Domain 2 — Full Specification Test Plan (§12.1 – §12.4)', () => 
       );
 
       // §6.3 integrity check clean
-      const integrityIssues = await mockClosureRepo.runIntegrityCheck(mockQueryRunner);
+      const integrityIssues =
+        await mockClosureRepo.runIntegrityCheck(mockQueryRunner);
       expect(integrityIssues).toHaveLength(0);
       expect(moved.orgUnitId).toBe(subtreeRootId);
     });
@@ -520,10 +608,15 @@ describe('Domain 2 — Full Specification Test Plan (§12.1 – §12.4)', () => 
         ],
       }).compile();
 
-      const validation = validationModule.get<OrgUnitValidationService>(OrgUnitValidationService);
+      const validation = validationModule.get<OrgUnitValidationService>(
+        OrgUnitValidationService,
+      );
 
       await expect(
-        validation.validateM3_NotMovingToDescendant('node-parent', 'node-descendant'),
+        validation.validateM3_NotMovingToDescendant(
+          'node-parent',
+          'node-descendant',
+        ),
       ).rejects.toMatchObject({
         status: HttpStatus.BAD_REQUEST,
         response: { code: ORG_ERROR_CODES.ORG_MOVE_CYCLE },
@@ -570,12 +663,15 @@ describe('Domain 2 — Full Specification Test Plan (§12.1 – §12.4)', () => 
         rowVersion: '0x0001',
       });
 
-      const res = await treeService.createNode({
-        orgUnitTypeId: 3,
-        parentOrgUnitId: 'parent-1',
-        code: 'PREVIOUSLY_DELETED_CODE',
-        name: 'Reused Department Code',
-      }, 'admin');
+      const res = await treeService.createNode(
+        {
+          orgUnitTypeId: 3,
+          parentOrgUnitId: 'parent-1',
+          code: 'PREVIOUSLY_DELETED_CODE',
+          name: 'Reused Department Code',
+        },
+        'admin',
+      );
 
       expect(res.code).toBe('PREVIOUSLY_DELETED_CODE');
     });
@@ -642,7 +738,10 @@ describe('Domain 2 — Full Specification Test Plan (§12.1 – §12.4)', () => 
           OrgManagersMapper,
           { provide: OrgManagersRepository, useValue: mockManagersRepo },
           { provide: OrgUnitsRepository, useValue: mockUnitsRepo },
-          { provide: OrgUnitValidationService, useValue: mockValidationService },
+          {
+            provide: OrgUnitValidationService,
+            useValue: mockValidationService,
+          },
           { provide: OrgUnitChangeLogRepository, useValue: mockChangeLogRepo },
           { provide: AuditService, useValue: mockAuditService },
           { provide: DataSource, useValue: mockDataSource },
@@ -804,9 +903,24 @@ describe('Domain 2 — Full Specification Test Plan (§12.1 – §12.4)', () => 
 
     it('User with DEPARTMENT scope sees own department + its sections only', async () => {
       const deptScopeRows = [
-        { orgUnitId: 'dept-it-guid', code: 'IT', name: 'Information Technology', orgUnitTypeId: 3 },
-        { orgUnitId: 'sec-infra-guid', code: 'IT_INFRA', name: 'Infrastructure', orgUnitTypeId: 4 },
-        { orgUnitId: 'sec-app-guid', code: 'IT_APPS', name: 'Applications', orgUnitTypeId: 4 },
+        {
+          orgUnitId: 'dept-it-guid',
+          code: 'IT',
+          name: 'Information Technology',
+          orgUnitTypeId: 3,
+        },
+        {
+          orgUnitId: 'sec-infra-guid',
+          code: 'IT_INFRA',
+          name: 'Infrastructure',
+          orgUnitTypeId: 4,
+        },
+        {
+          orgUnitId: 'sec-app-guid',
+          code: 'IT_APPS',
+          name: 'Applications',
+          orgUnitTypeId: 4,
+        },
       ];
 
       mockDataSource.query.mockResolvedValueOnce(deptScopeRows);
@@ -820,7 +934,10 @@ describe('Domain 2 — Full Specification Test Plan (§12.1 – §12.4)', () => 
       // User with IT department scope queries finance department
       mockDataSource.query.mockResolvedValueOnce([]); // fn_VisibleOrgUnits returns 0 rows for sibling
 
-      const isFinanceVisible = await scopeRepo.isOrgUnitVisible('user-dept-it', 'dept-finance-guid');
+      const isFinanceVisible = await scopeRepo.isOrgUnitVisible(
+        'user-dept-it',
+        'dept-finance-guid',
+      );
       expect(isFinanceVisible).toBe(false);
     });
 

@@ -22,4 +22,3 @@ import { DelegationsMapper } from './delegations.mapper';
   exports: [DelegationsRepository, DelegationsService],
 })
 export class DelegationsModule {}
-

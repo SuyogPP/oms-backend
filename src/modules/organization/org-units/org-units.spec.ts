@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus } from '@nestjs/common';
+import { HttpStatus } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { AuditService } from '../../audit/service/audit.services';
 import { ORG_ERROR_CODES } from './org-units.constants';
@@ -44,7 +44,8 @@ describe('OrgUnitsService & OrgUnitTypesService', () => {
     code: 'IT',
     name: 'Information Technology',
     depth: 2,
-    materializedPath: '/11111111222233334444555555555555/22222222333344445555666666666666/33333333444455556666777777777777/',
+    materializedPath:
+      '/11111111222233334444555555555555/22222222333344445555666666666666/33333333444455556666777777777777/',
     sortOrder: 10,
     effectiveFrom: '2026-01-01',
     isActive: true,
@@ -93,12 +94,16 @@ describe('OrgUnitsService & OrgUnitTypesService', () => {
     mockTypesRepo = {
       findAllTypes: jest.fn().mockResolvedValue([sampleUnitType]),
       findTypeById: jest.fn().mockResolvedValue(sampleUnitType),
-      findAllHierarchyRules: jest.fn().mockResolvedValue([
-        { childOrgUnitTypeId: 3, parentOrgUnitTypeId: 2, isActive: true },
-      ]),
-      findAllowedParentTypes: jest.fn().mockResolvedValue([
-        { orgUnitTypeId: 2, code: 'BUSINESS_UNIT', name: 'Business Unit' },
-      ]),
+      findAllHierarchyRules: jest
+        .fn()
+        .mockResolvedValue([
+          { childOrgUnitTypeId: 3, parentOrgUnitTypeId: 2, isActive: true },
+        ]),
+      findAllowedParentTypes: jest
+        .fn()
+        .mockResolvedValue([
+          { orgUnitTypeId: 2, code: 'BUSINESS_UNIT', name: 'Business Unit' },
+        ]),
     };
 
     mockTreeService = {
@@ -117,7 +122,9 @@ describe('OrgUnitsService & OrgUnitTypesService', () => {
 
     mockChangeLogRepo = {
       create: jest.fn().mockResolvedValue(1),
-      findByOrgUnitId: jest.fn().mockResolvedValue([[ { orgUnitChangeLogId: 1 } ], 1]),
+      findByOrgUnitId: jest
+        .fn()
+        .mockResolvedValue([[{ orgUnitChangeLogId: 1 }], 1]),
     };
 
     mockAuditService = {
@@ -149,7 +156,10 @@ describe('OrgUnitsService & OrgUnitTypesService', () => {
 
   describe('OrgUnitsService', () => {
     it('findAll returns paginated list of units', async () => {
-      const res = await unitsService.findAll({ page: 1, pageSize: 10 }, 'user-1');
+      const res = await unitsService.findAll(
+        { page: 1, pageSize: 10 },
+        'user-1',
+      );
       expect(res.data).toHaveLength(1);
       expect(res.total).toBe(1);
       expect(res.data[0].code).toBe('IT');
@@ -160,7 +170,10 @@ describe('OrgUnitsService & OrgUnitTypesService', () => {
       expect(res.orgUnitId).toBe(sampleUnit.orgUnitId);
       expect(res.childCount).toBe(2);
       expect(res.descendantCount).toBe(5);
-      expect(mockUnitsRepo.findByIdVisible).toHaveBeenCalledWith(sampleUnit.orgUnitId, 'user-1');
+      expect(mockUnitsRepo.findByIdVisible).toHaveBeenCalledWith(
+        sampleUnit.orgUnitId,
+        'user-1',
+      );
     });
 
     it('findById throws 404 NOT_FOUND when unit is out of caller scope (Section 9.3 Non-Negotiable #2)', async () => {
@@ -188,7 +201,9 @@ describe('OrgUnitsService & OrgUnitTypesService', () => {
     it('getMyVisibleUnits delegates to OrgScopeResolverService', async () => {
       const res = await unitsService.getMyVisibleUnits('user-1');
       expect(res).toHaveLength(1);
-      expect(mockScopeResolver.getVisibleOrgUnits).toHaveBeenCalledWith('user-1');
+      expect(mockScopeResolver.getVisibleOrgUnits).toHaveBeenCalledWith(
+        'user-1',
+      );
     });
 
     it('create delegates to treeService.createNode and emits audit log', async () => {
@@ -200,7 +215,10 @@ describe('OrgUnitsService & OrgUnitTypesService', () => {
 
       const res = await unitsService.create(dto, 'user-admin');
 
-      expect(mockValidationService.validateCreate).toHaveBeenCalledWith(dto, 'user-admin');
+      expect(mockValidationService.validateCreate).toHaveBeenCalledWith(
+        dto,
+        'user-admin',
+      );
       expect(mockTreeService.createNode).toHaveBeenCalled();
       expect(mockAuditService.logOrgUnitChange).toHaveBeenCalledWith(
         expect.objectContaining({ operationType: 'INSERT' }),
@@ -227,7 +245,10 @@ describe('OrgUnitsService & OrgUnitTypesService', () => {
 
       expect(mockUnitsRepo.update).toHaveBeenCalledWith(
         sampleUnit.orgUnitId,
-        expect.objectContaining({ name: 'Updated IT Dept', updatedBy: 'user-admin' }),
+        expect.objectContaining({
+          name: 'Updated IT Dept',
+          updatedBy: 'user-admin',
+        }),
       );
       expect(mockChangeLogRepo.create).toHaveBeenCalledWith(
         expect.objectContaining({ changeType: 'UPDATED' }),
@@ -274,15 +295,22 @@ describe('OrgUnitsService & OrgUnitTypesService', () => {
 
     it('deactivate validates and sets isActive=false with effectiveTo', async () => {
       await unitsService.deactivate(sampleUnit.orgUnitId, 'user-admin');
-      expect(mockValidationService.validateDeactivate).toHaveBeenCalledWith(sampleUnit.orgUnitId);
+      expect(mockValidationService.validateDeactivate).toHaveBeenCalledWith(
+        sampleUnit.orgUnitId,
+      );
       expect(mockUnitsRepo.setActiveStatus).toHaveBeenCalled();
       expect(mockAuditService.logOrgUnitChange).toHaveBeenCalled();
     });
 
     it('softDelete validates and performs soft delete', async () => {
       await unitsService.softDelete(sampleUnit.orgUnitId, 'user-admin');
-      expect(mockValidationService.validateDelete).toHaveBeenCalledWith(sampleUnit.orgUnitId);
-      expect(mockUnitsRepo.softDelete).toHaveBeenCalledWith(sampleUnit.orgUnitId, 'user-admin');
+      expect(mockValidationService.validateDelete).toHaveBeenCalledWith(
+        sampleUnit.orgUnitId,
+      );
+      expect(mockUnitsRepo.softDelete).toHaveBeenCalledWith(
+        sampleUnit.orgUnitId,
+        'user-admin',
+      );
       expect(mockAuditService.logOrgUnitChange).toHaveBeenCalledWith(
         expect.objectContaining({ operationType: 'SOFT_DELETE' }),
       );
@@ -295,7 +323,10 @@ describe('OrgUnitsService & OrgUnitTypesService', () => {
       expect(res.buffer).toBeInstanceOf(Buffer);
       expect(res.filename).toMatch(/organization_units_export_.*\.xlsx/);
       expect(res.totalRows).toBe(1);
-      expect(mockUnitsRepo.findForExport).toHaveBeenCalledWith('user-admin', {});
+      expect(mockUnitsRepo.findForExport).toHaveBeenCalledWith(
+        'user-admin',
+        {},
+      );
       expect(mockAuditService.logOrgUnitChange).toHaveBeenCalledWith(
         expect.objectContaining({
           operationType: 'EXPORT',

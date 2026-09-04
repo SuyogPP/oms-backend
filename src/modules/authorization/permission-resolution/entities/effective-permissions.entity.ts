@@ -37,9 +37,7 @@ export class RevokedPermissionItemEntity implements RevokedPermissionItem {
   reason?: string;
 }
 
-export class EffectivePermissionsResponseEntity
-  implements EffectivePermissionsResponse
-{
+export class EffectivePermissionsResponseEntity implements EffectivePermissionsResponse {
   @ApiProperty({ type: [EffectivePermissionItemEntity] })
   permissions!: EffectivePermissionItemEntity[];
 

@@ -20,18 +20,12 @@ import {
   OrgUnitEntity,
   OrgUnitTreeItemEntity,
 } from '../entities/org-unit.entity';
-import {
-  IOrgUnit,
-  IOrgUnitType,
-} from '../interfaces/org-unit.interface';
+import { IOrgUnitType } from '../interfaces/org-unit.interface';
 import {
   ORG_UNIT_REFERENCE_CHECKS,
   OrgUnitReferenceCheck,
 } from '../interfaces/org-unit-reference-check.interface';
-import {
-  ORG_ERROR_CODES,
-  ORG_MANAGER_ROLES,
-} from '../org-units.constants';
+import { ORG_ERROR_CODES } from '../org-units.constants';
 import { OrgUnitsMapper } from '../org-units.mapper';
 import { OrgUnitChangeLogRepository } from '../repositories/org-unit-change-log.repository';
 import { OrgUnitTypesRepository } from '../repositories/org-unit-types.repository';
@@ -63,7 +57,9 @@ export class OrgUnitsService {
   /**
    * Helper: Resolves and builds breadcrumb trail from root down to parent.
    */
-  private async getBreadcrumbs(orgUnitId: string): Promise<OrgBreadcrumbItemEntity[]> {
+  private async getBreadcrumbs(
+    orgUnitId: string,
+  ): Promise<OrgBreadcrumbItemEntity[]> {
     const ancestors = await this.orgUnitsRepository.findAncestors(orgUnitId);
     return ancestors.map((a) => ({
       orgUnitId: a.orgUnitId,
@@ -79,7 +75,8 @@ export class OrgUnitsService {
     orgUnitId: string,
     headUserId?: string | null,
   ): Promise<OrgHeadSummaryEntity | null> {
-    const currentHead = await this.orgManagersRepository.findCurrentHead(orgUnitId);
+    const currentHead =
+      await this.orgManagersRepository.findCurrentHead(orgUnitId);
     if (currentHead) {
       const displayName =
         currentHead.userDisplayName?.trim() || currentHead.username || null;
@@ -94,7 +91,8 @@ export class OrgUnitsService {
 
     if (!headUserId) return null;
 
-    const userRow = await this.orgUnitsRepository.findUserDisplayName(headUserId);
+    const userRow =
+      await this.orgUnitsRepository.findUserDisplayName(headUserId);
     if (userRow) {
       const displayName =
         userRow.displayName?.trim() || userRow.username || null;
@@ -114,7 +112,13 @@ export class OrgUnitsService {
   async findAll(
     query: ListOrgUnitsDto,
     currentUserId: string,
-  ): Promise<{ data: OrgUnitEntity[]; total: number; page: number; pageSize: number; totalPages: number }> {
+  ): Promise<{
+    data: OrgUnitEntity[];
+    total: number;
+    page: number;
+    pageSize: number;
+    totalPages: number;
+  }> {
     const page = query.page || 1;
     const pageSize = query.pageSize || 20;
     const offset = (page - 1) * pageSize;
@@ -133,7 +137,9 @@ export class OrgUnitsService {
     );
 
     const types = await this.typesRepository.findAllTypes();
-    const typesMap = new Map<number, IOrgUnitType>(types.map((t) => [t.orgUnitTypeId, t]));
+    const typesMap = new Map<number, IOrgUnitType>(
+      types.map((t) => [t.orgUnitTypeId, t]),
+    );
 
     const data = rows.map((r) => {
       const type = typesMap.get(r.orgUnitTypeId)!;
@@ -158,7 +164,9 @@ export class OrgUnitsService {
       this.typesRepository.findAllTypes(),
     ]);
 
-    const typesMap = new Map<number, IOrgUnitType>(types.map((t) => [t.orgUnitTypeId, t]));
+    const typesMap = new Map<number, IOrgUnitType>(
+      types.map((t) => [t.orgUnitTypeId, t]),
+    );
     return this.mapper.toOrgUnitTree(rows, typesMap);
   }
 
@@ -166,8 +174,14 @@ export class OrgUnitsService {
    * Retrieves organization unit details including breadcrumbs and child/descendant counts.
    * §9.3 Non-Negotiable #2: Out-of-scope units return 404 NOT_FOUND.
    */
-  async findById(orgUnitId: string, currentUserId: string): Promise<OrgUnitDetailEntity> {
-    const unit = await this.orgUnitsRepository.findByIdVisible(orgUnitId, currentUserId);
+  async findById(
+    orgUnitId: string,
+    currentUserId: string,
+  ): Promise<OrgUnitDetailEntity> {
+    const unit = await this.orgUnitsRepository.findByIdVisible(
+      orgUnitId,
+      currentUserId,
+    );
     if (!unit) {
       throw new HttpException(
         {
@@ -218,8 +232,14 @@ export class OrgUnitsService {
   /**
    * Retrieves direct children of a unit within caller scope.
    */
-  async findChildren(orgUnitId: string, currentUserId: string): Promise<OrgUnitEntity[]> {
-    const parent = await this.orgUnitsRepository.findByIdVisible(orgUnitId, currentUserId);
+  async findChildren(
+    orgUnitId: string,
+    currentUserId: string,
+  ): Promise<OrgUnitEntity[]> {
+    const parent = await this.orgUnitsRepository.findByIdVisible(
+      orgUnitId,
+      currentUserId,
+    );
     if (!parent) {
       throw new HttpException(
         {
@@ -235,15 +255,25 @@ export class OrgUnitsService {
       this.typesRepository.findAllTypes(),
     ]);
 
-    const typesMap = new Map<number, IOrgUnitType>(types.map((t) => [t.orgUnitTypeId, t]));
-    return children.map((c) => this.mapper.toOrgUnitEntity(c, typesMap.get(c.orgUnitTypeId)!));
+    const typesMap = new Map<number, IOrgUnitType>(
+      types.map((t) => [t.orgUnitTypeId, t]),
+    );
+    return children.map((c) =>
+      this.mapper.toOrgUnitEntity(c, typesMap.get(c.orgUnitTypeId)!),
+    );
   }
 
   /**
    * Retrieves ordered ancestors within caller scope.
    */
-  async findAncestors(orgUnitId: string, currentUserId: string): Promise<OrgUnitEntity[]> {
-    const unit = await this.orgUnitsRepository.findByIdVisible(orgUnitId, currentUserId);
+  async findAncestors(
+    orgUnitId: string,
+    currentUserId: string,
+  ): Promise<OrgUnitEntity[]> {
+    const unit = await this.orgUnitsRepository.findByIdVisible(
+      orgUnitId,
+      currentUserId,
+    );
     if (!unit) {
       throw new HttpException(
         {
@@ -259,15 +289,25 @@ export class OrgUnitsService {
       this.typesRepository.findAllTypes(),
     ]);
 
-    const typesMap = new Map<number, IOrgUnitType>(types.map((t) => [t.orgUnitTypeId, t]));
-    return ancestors.map((a) => this.mapper.toOrgUnitEntity(a, typesMap.get(a.orgUnitTypeId)!));
+    const typesMap = new Map<number, IOrgUnitType>(
+      types.map((t) => [t.orgUnitTypeId, t]),
+    );
+    return ancestors.map((a) =>
+      this.mapper.toOrgUnitEntity(a, typesMap.get(a.orgUnitTypeId)!),
+    );
   }
 
   /**
    * Retrieves flat descendants list within caller scope.
    */
-  async findDescendants(orgUnitId: string, currentUserId: string): Promise<OrgUnitEntity[]> {
-    const unit = await this.orgUnitsRepository.findByIdVisible(orgUnitId, currentUserId);
+  async findDescendants(
+    orgUnitId: string,
+    currentUserId: string,
+  ): Promise<OrgUnitEntity[]> {
+    const unit = await this.orgUnitsRepository.findByIdVisible(
+      orgUnitId,
+      currentUserId,
+    );
     if (!unit) {
       throw new HttpException(
         {
@@ -283,8 +323,12 @@ export class OrgUnitsService {
       this.typesRepository.findAllTypes(),
     ]);
 
-    const typesMap = new Map<number, IOrgUnitType>(types.map((t) => [t.orgUnitTypeId, t]));
-    return descendants.map((d) => this.mapper.toOrgUnitEntity(d, typesMap.get(d.orgUnitTypeId)!));
+    const typesMap = new Map<number, IOrgUnitType>(
+      types.map((t) => [t.orgUnitTypeId, t]),
+    );
+    return descendants.map((d) =>
+      this.mapper.toOrgUnitEntity(d, typesMap.get(d.orgUnitTypeId)!),
+    );
   }
 
   /**
@@ -460,7 +504,10 @@ export class OrgUnitsService {
   /**
    * Activates an organization unit.
    */
-  async activate(orgUnitId: string, actorUserId: string): Promise<OrgUnitDetailEntity> {
+  async activate(
+    orgUnitId: string,
+    actorUserId: string,
+  ): Promise<OrgUnitDetailEntity> {
     const existing = await this.orgUnitsRepository.findById(orgUnitId);
     if (!existing) {
       throw new HttpException(
@@ -472,7 +519,12 @@ export class OrgUnitsService {
       );
     }
 
-    await this.orgUnitsRepository.setActiveStatus(orgUnitId, true, null, actorUserId);
+    await this.orgUnitsRepository.setActiveStatus(
+      orgUnitId,
+      true,
+      null,
+      actorUserId,
+    );
 
     await this.changeLogRepository.create({
       orgUnitId,
@@ -496,8 +548,12 @@ export class OrgUnitsService {
   /**
    * Deactivates an organization unit.
    */
-  async deactivate(orgUnitId: string, actorUserId: string): Promise<OrgUnitDetailEntity> {
-    const existing = await this.orgUnitValidationService.validateDeactivate(orgUnitId);
+  async deactivate(
+    orgUnitId: string,
+    actorUserId: string,
+  ): Promise<OrgUnitDetailEntity> {
+    const existing =
+      await this.orgUnitValidationService.validateDeactivate(orgUnitId);
 
     const today = new Date().toISOString().split('T')[0];
     const effectiveFromStr =
@@ -505,7 +561,12 @@ export class OrgUnitsService {
         ? existing.effectiveFrom.toISOString().split('T')[0]
         : String(existing.effectiveFrom);
     const effectiveTo = effectiveFromStr > today ? effectiveFromStr : today;
-    await this.orgUnitsRepository.setActiveStatus(orgUnitId, false, effectiveTo, actorUserId);
+    await this.orgUnitsRepository.setActiveStatus(
+      orgUnitId,
+      false,
+      effectiveTo,
+      actorUserId,
+    );
 
     await this.changeLogRepository.create({
       orgUnitId,
@@ -672,13 +733,22 @@ export class OrgUnitsService {
 
     // Style Header Row
     const headerRow = sheet.getRow(1);
-    headerRow.font = { name: 'Arial', size: 11, bold: true, color: { argb: 'FFFFFFFF' } };
+    headerRow.font = {
+      name: 'Arial',
+      size: 11,
+      bold: true,
+      color: { argb: 'FFFFFFFF' },
+    };
     headerRow.fill = {
       type: 'pattern',
       pattern: 'solid',
       fgColor: { argb: 'FF1E3A8A' }, // Slate dark blue
     };
-    headerRow.alignment = { vertical: 'middle', horizontal: 'center', wrapText: false };
+    headerRow.alignment = {
+      vertical: 'middle',
+      horizontal: 'center',
+      wrapText: false,
+    };
     headerRow.height = 28;
 
     // Add Data Rows

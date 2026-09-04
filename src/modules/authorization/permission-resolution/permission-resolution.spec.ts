@@ -115,7 +115,8 @@ describe('PermissionResolution Module (Domain 3, §4 & §10)', () => {
       expect(permissions).toHaveLength(1);
 
       // Test Preview Endpoint Response
-      const preview = await service.getEffectivePermissionsPreview(targetUserId);
+      const preview =
+        await service.getEffectivePermissionsPreview(targetUserId);
       expect(preview.permissions.map((p) => p.code)).toContain(
         'REQUISITION.APPROVE',
       );
@@ -324,7 +325,8 @@ describe('PermissionResolution Module (Domain 3, §4 & §10)', () => {
         },
       ]);
 
-      const roles = await repository.resolveUserRolesWithHierarchy(targetUserId);
+      const roles =
+        await repository.resolveUserRolesWithHierarchy(targetUserId);
 
       expect(roles).toHaveLength(2);
       expect(roles.map((r) => r.roleCode)).toEqual(['ROLE_A', 'ROLE_B']);
@@ -360,7 +362,8 @@ describe('PermissionResolution Module (Domain 3, §4 & §10)', () => {
         },
       ]);
 
-      const roles = await repository.resolveUserRolesWithHierarchy(targetUserId);
+      const roles =
+        await repository.resolveUserRolesWithHierarchy(targetUserId);
       expect(roles.map((r) => r.roleCode)).toEqual([
         'ROLE_A',
         'ROLE_B',
@@ -380,7 +383,8 @@ describe('PermissionResolution Module (Domain 3, §4 & §10)', () => {
         },
       ]);
 
-      const roles = await repository.resolveUserRolesWithHierarchy(targetUserId);
+      const roles =
+        await repository.resolveUserRolesWithHierarchy(targetUserId);
       expect(roles).toHaveLength(1);
       expect(roles[0].roleCode).toBe('ROLE_A');
     });
@@ -392,10 +396,7 @@ describe('PermissionResolution Module (Domain 3, §4 & §10)', () => {
   describe('3. Temporal Validity & Inactive User Evaluation', () => {
     it('3.1 Inactive User (IsActive = 0): Must resolve to ZERO permissions immediately', async () => {
       jest.spyOn(repository, 'isUserActive').mockResolvedValue(false);
-      const rolesSpy = jest.spyOn(
-        repository,
-        'resolveUserRolesWithHierarchy',
-      );
+      const rolesSpy = jest.spyOn(repository, 'resolveUserRolesWithHierarchy');
 
       const permissions = await service.getEffectivePermissions(targetUserId);
 
@@ -443,19 +444,17 @@ describe('PermissionResolution Module (Domain 3, §4 & §10)', () => {
             },
           ]);
 
-        jest
-          .spyOn(repository, 'resolvePermissionsForRoles')
-          .mockResolvedValue([
-            {
-              roleId: 'r-test',
-              roleCode: 'HR',
-              permissionId: 'p-hr-1',
-              permissionCode: 'USER.VIEW',
-              moduleName: 'USER_ADMIN',
-              actionName: 'VIEW',
-              depth: 0,
-            },
-          ]);
+        jest.spyOn(repository, 'resolvePermissionsForRoles').mockResolvedValue([
+          {
+            roleId: 'r-test',
+            roleCode: 'HR',
+            permissionId: 'p-hr-1',
+            permissionCode: 'USER.VIEW',
+            moduleName: 'USER_ADMIN',
+            actionName: 'VIEW',
+            depth: 0,
+          },
+        ]);
 
         jest.spyOn(repository, 'resolveUserOverrides').mockResolvedValue([]);
         jest.spyOn(repository, 'resolveDelegations').mockResolvedValue([]);
@@ -504,19 +503,17 @@ describe('PermissionResolution Module (Domain 3, §4 & §10)', () => {
           },
         ]);
 
-      jest
-        .spyOn(repository, 'resolvePermissionsForRoles')
-        .mockResolvedValue([
-          {
-            roleId: 'r-test',
-            roleCode: 'HR',
-            permissionId: 'p-hr-1',
-            permissionCode: 'USER.VIEW',
-            moduleName: 'USER_ADMIN',
-            actionName: 'VIEW',
-            depth: 0,
-          },
-        ]);
+      jest.spyOn(repository, 'resolvePermissionsForRoles').mockResolvedValue([
+        {
+          roleId: 'r-test',
+          roleCode: 'HR',
+          permissionId: 'p-hr-1',
+          permissionCode: 'USER.VIEW',
+          moduleName: 'USER_ADMIN',
+          actionName: 'VIEW',
+          depth: 0,
+        },
+      ]);
 
       jest.spyOn(repository, 'resolveUserOverrides').mockResolvedValue([]);
       jest.spyOn(repository, 'resolveDelegations').mockResolvedValue([]);

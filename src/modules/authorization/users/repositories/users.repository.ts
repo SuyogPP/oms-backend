@@ -8,7 +8,10 @@ import {
   IUserFilterOptions,
   IUserListResult,
 } from '../interfaces/users.interface';
-import { MAX_FAILED_LOGIN_ATTEMPTS, ACCOUNT_LOCKOUT_MINUTES } from '../users.constants';
+import {
+  MAX_FAILED_LOGIN_ATTEMPTS,
+  ACCOUNT_LOCKOUT_MINUTES,
+} from '../users.constants';
 
 @Injectable()
 export class UsersRepository {
@@ -21,7 +24,10 @@ export class UsersRepository {
   /**
    * Finds an active (non-deleted) user by unique UserID.
    */
-  async findById(userId: string, qr?: QueryRunner): Promise<IUserWithProfile | null> {
+  async findById(
+    userId: string,
+    qr?: QueryRunner,
+  ): Promise<IUserWithProfile | null> {
     const rows = await this.getExecutor(qr).query(
       `
       SELECT 
@@ -177,7 +183,10 @@ export class UsersRepository {
   /**
    * Finds a user by username across ALL users (for U2 uniqueness validation).
    */
-  async findByUsername(username: string, qr?: QueryRunner): Promise<IUser | null> {
+  async findByUsername(
+    username: string,
+    qr?: QueryRunner,
+  ): Promise<IUser | null> {
     const rows = await this.getExecutor(qr).query(
       `
       SELECT 
@@ -435,7 +444,10 @@ export class UsersRepository {
     options: IUserFilterOptions,
     qr?: QueryRunner,
   ): Promise<IUserWithProfile[]> {
-    const result = await this.findAll({ ...options, page: 1, limit: 10000 }, qr);
+    const result = await this.findAll(
+      { ...options, page: 1, limit: 10000 },
+      qr,
+    );
     return result.items;
   }
 
@@ -523,7 +535,10 @@ export class UsersRepository {
 
     const roles: string[] = r.roles
       ? typeof r.roles === 'string'
-        ? r.roles.split(',').map((s: string) => s.trim()).filter(Boolean)
+        ? r.roles
+            .split(',')
+            .map((s: string) => s.trim())
+            .filter(Boolean)
         : Array.isArray(r.roles)
           ? r.roles
           : []
@@ -540,7 +555,9 @@ export class UsersRepository {
       deletedAt: r.deletedAt ? new Date(r.deletedAt) : null,
       deletedBy: r.deletedBy,
       failedLoginCount: Number(r.failedLoginCount || 0),
-      lastFailedLoginAt: r.lastFailedLoginAt ? new Date(r.lastFailedLoginAt) : null,
+      lastFailedLoginAt: r.lastFailedLoginAt
+        ? new Date(r.lastFailedLoginAt)
+        : null,
       lockedUntil: r.lockedUntil ? new Date(r.lockedUntil) : null,
       adObjectId: r.adObjectId,
       createdAt: new Date(r.createdAt),

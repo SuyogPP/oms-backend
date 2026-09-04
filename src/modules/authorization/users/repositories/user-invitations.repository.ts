@@ -97,10 +97,7 @@ export class UserInvitationsRepository {
   /**
    * Marks an invitation as consumed.
    */
-  async markConsumed(
-    invitationId: string,
-    qr?: QueryRunner,
-  ): Promise<void> {
+  async markConsumed(invitationId: string, qr?: QueryRunner): Promise<void> {
     await this.getExecutor(qr).query(
       `
       UPDATE [auth].[UserInvitations]

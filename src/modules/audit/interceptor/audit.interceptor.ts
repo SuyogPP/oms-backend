@@ -37,8 +37,8 @@ export class AuditInterceptor implements NestInterceptor {
     const response = context.switchToHttp().getResponse();
 
     return next.handle().pipe(
-      tap(async () => {
-        await this.writeAuditLog(request, response, startedAt, true);
+      tap(() => {
+        this.writeAuditLog(request, response, startedAt, true).catch(() => {});
       }),
       catchError((error) => {
         this.writeAuditLog(request, response, startedAt, false, error).catch(

@@ -1,5 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { NotFoundException, ConflictException, BadRequestException, ForbiddenException } from '@nestjs/common';
+import {
+  NotFoundException,
+  ConflictException,
+  BadRequestException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { UserScopesService } from './user-scopes.service';
 import { UserScopesRepository } from '../repositories/user-scopes.repository';
@@ -68,10 +73,15 @@ describe('UserScopesService (Domain 3, Section 6 Rules S1-S8 & Section 8)', () =
     }).compile();
 
     service = module.get<UserScopesService>(UserScopesService);
-    userScopesRepository = module.get<UserScopesRepository>(UserScopesRepository);
+    userScopesRepository =
+      module.get<UserScopesRepository>(UserScopesRepository);
     usersRepository = module.get<UsersRepository>(UsersRepository);
-    validationService = module.get<UserValidationService>(UserValidationService);
-    securityEventsService = module.get<SecurityEventsService>(SecurityEventsService);
+    validationService = module.get<UserValidationService>(
+      UserValidationService,
+    );
+    securityEventsService = module.get<SecurityEventsService>(
+      SecurityEventsService,
+    );
     auditService = module.get<AuditService>(AuditService);
 
     jest.clearAllMocks();
@@ -117,9 +127,9 @@ describe('UserScopesService (Domain 3, Section 6 Rules S1-S8 & Section 8)', () =
       mockDataSource.query.mockResolvedValueOnce([]); // not global
       mockDataSource.query.mockResolvedValueOnce([]); // not in visible org units
 
-      await expect(service.findByUserId(sampleUserId, operatorUserId)).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(
+        service.findByUserId(sampleUserId, operatorUserId),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -144,7 +154,11 @@ describe('UserScopesService (Domain 3, Section 6 Rules S1-S8 & Section 8)', () =
         departmentId: deptOrgUnitId,
       };
 
-      const result = await service.assignScope(sampleUserId, dto, operatorUserId);
+      const result = await service.assignScope(
+        sampleUserId,
+        dto,
+        operatorUserId,
+      );
 
       // Validation suite executed
       expect(mockValidationService.validateAssignScope).toHaveBeenCalledWith(
@@ -163,8 +177,13 @@ describe('UserScopesService (Domain 3, Section 6 Rules S1-S8 & Section 8)', () =
       );
 
       // Security and audit logged
-      expect(mockSecurityEventsService.log).toHaveBeenCalledWith('SCOPE_ASSIGNED', expect.any(Object));
-      expect(mockAuditService.logUserUpdated).toHaveBeenCalledWith(expect.objectContaining({ userId: sampleUserId }));
+      expect(mockSecurityEventsService.log).toHaveBeenCalledWith(
+        'SCOPE_ASSIGNED',
+        expect.any(Object),
+      );
+      expect(mockAuditService.logUserUpdated).toHaveBeenCalledWith(
+        expect.objectContaining({ userId: sampleUserId }),
+      );
 
       expect(result.scopeCode).toBe('DEPARTMENT');
     });
@@ -178,7 +197,11 @@ describe('UserScopesService (Domain 3, Section 6 Rules S1-S8 & Section 8)', () =
       );
 
       await expect(
-        service.assignScope(operatorUserId, { scopeDefinitionId }, operatorUserId),
+        service.assignScope(
+          operatorUserId,
+          { scopeDefinitionId },
+          operatorUserId,
+        ),
       ).rejects.toThrow(ConflictException);
 
       expect(mockUserScopesRepository.assignScope).not.toHaveBeenCalled();
@@ -193,7 +216,11 @@ describe('UserScopesService (Domain 3, Section 6 Rules S1-S8 & Section 8)', () =
       );
 
       await expect(
-        service.assignScope(sampleUserId, { scopeDefinitionId }, operatorUserId),
+        service.assignScope(
+          sampleUserId,
+          { scopeDefinitionId },
+          operatorUserId,
+        ),
       ).rejects.toThrow(ForbiddenException);
     });
 
@@ -206,7 +233,11 @@ describe('UserScopesService (Domain 3, Section 6 Rules S1-S8 & Section 8)', () =
       );
 
       await expect(
-        service.assignScope(sampleUserId, { scopeDefinitionId }, operatorUserId),
+        service.assignScope(
+          sampleUserId,
+          { scopeDefinitionId },
+          operatorUserId,
+        ),
       ).rejects.toThrow(BadRequestException);
     });
   });
@@ -230,11 +261,18 @@ describe('UserScopesService (Domain 3, Section 6 Rules S1-S8 & Section 8)', () =
       );
 
       // S7: Sets EffectiveTo = now; does NOT delete
-      expect(mockUserScopesRepository.revokeScope).toHaveBeenCalledWith(scopeId);
+      expect(mockUserScopesRepository.revokeScope).toHaveBeenCalledWith(
+        scopeId,
+      );
 
       // Events logged
-      expect(mockSecurityEventsService.log).toHaveBeenCalledWith('SCOPE_REVOKED', expect.any(Object));
-      expect(mockAuditService.logUserUpdated).toHaveBeenCalledWith(expect.objectContaining({ userId: sampleUserId }));
+      expect(mockSecurityEventsService.log).toHaveBeenCalledWith(
+        'SCOPE_REVOKED',
+        expect.any(Object),
+      );
+      expect(mockAuditService.logUserUpdated).toHaveBeenCalledWith(
+        expect.objectContaining({ userId: sampleUserId }),
+      );
     });
 
     it('rejects removing your own last remaining scope with 409 USER_LAST_ADMIN / SCOPE_ASSIGNMENT_INVALID (S8)', async () => {
@@ -252,9 +290,9 @@ describe('UserScopesService (Domain 3, Section 6 Rules S1-S8 & Section 8)', () =
         });
       });
 
-      await expect(service.revokeScope(scopeId, operatorUserId)).rejects.toThrow(
-        ConflictException,
-      );
+      await expect(
+        service.revokeScope(scopeId, operatorUserId),
+      ).rejects.toThrow(ConflictException);
 
       expect(mockUserScopesRepository.revokeScope).not.toHaveBeenCalled();
     });
@@ -265,7 +303,10 @@ describe('UserScopesService (Domain 3, Section 6 Rules S1-S8 & Section 8)', () =
       mockDataSource.query.mockResolvedValueOnce([{ ScopeCode: 'DEPARTMENT' }]);
       mockUserScopesRepository.countUnitsInScope.mockResolvedValueOnce(5);
 
-      const preview = await service.countProposedScopeUnits(scopeDefinitionId, deptOrgUnitId);
+      const preview = await service.countProposedScopeUnits(
+        scopeDefinitionId,
+        deptOrgUnitId,
+      );
 
       expect(preview.accessibleOrgUnitsCount).toBe(5);
       expect(preview.scopeCode).toBe('DEPARTMENT');
@@ -276,7 +317,10 @@ describe('UserScopesService (Domain 3, Section 6 Rules S1-S8 & Section 8)', () =
       mockDataSource.query.mockResolvedValueOnce([{ ScopeCode: 'GLOBAL' }]);
       mockUserScopesRepository.countUnitsInScope.mockResolvedValueOnce(42);
 
-      const preview = await service.countProposedScopeUnits(scopeDefinitionId, null);
+      const preview = await service.countProposedScopeUnits(
+        scopeDefinitionId,
+        null,
+      );
 
       expect(preview.accessibleOrgUnitsCount).toBe(42);
       expect(preview.scopeCode).toBe('GLOBAL');

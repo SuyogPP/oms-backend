@@ -39,8 +39,14 @@ describe('UserOverridesController (Domain 3, Section 8)', () => {
   it('GET /authorization/users/:id/overrides -> delegates to service.findByUserId', async () => {
     mockService.findByUserId.mockResolvedValueOnce([]);
 
-    const result = await controller.findByUserId(sampleUserId, currentUser as any);
-    expect(service.findByUserId).toHaveBeenCalledWith(sampleUserId, currentUser.userId);
+    const result = await controller.findByUserId(
+      sampleUserId,
+      currentUser as any,
+    );
+    expect(service.findByUserId).toHaveBeenCalledWith(
+      sampleUserId,
+      currentUser.userId,
+    );
     expect(Array.isArray(result)).toBe(true);
   });
 
@@ -50,18 +56,34 @@ describe('UserOverridesController (Domain 3, Section 8)', () => {
       isGranted: true,
       reason: 'Audit authorization',
     };
-    mockService.createOverride.mockResolvedValueOnce({ userPermissionOverrideId: overrideId });
+    mockService.createOverride.mockResolvedValueOnce({
+      userPermissionOverrideId: overrideId,
+    });
 
-    const result = await controller.createOverride(sampleUserId, dto as any, currentUser as any);
-    expect(service.createOverride).toHaveBeenCalledWith(sampleUserId, dto, currentUser.userId);
+    const result = await controller.createOverride(
+      sampleUserId,
+      dto,
+      currentUser as any,
+    );
+    expect(service.createOverride).toHaveBeenCalledWith(
+      sampleUserId,
+      dto,
+      currentUser.userId,
+    );
     expect(result.userPermissionOverrideId).toBe(overrideId);
   });
 
   it('DELETE /authorization/users/:id/overrides/:overrideId -> delegates to service.revokeOverride', async () => {
     mockService.revokeOverride.mockResolvedValueOnce(undefined);
 
-    const result = await controller.revokeOverride(overrideId, currentUser as any);
-    expect(service.revokeOverride).toHaveBeenCalledWith(overrideId, currentUser.userId);
+    const result = await controller.revokeOverride(
+      overrideId,
+      currentUser as any,
+    );
+    expect(service.revokeOverride).toHaveBeenCalledWith(
+      overrideId,
+      currentUser.userId,
+    );
     expect(result.success).toBe(true);
   });
 });

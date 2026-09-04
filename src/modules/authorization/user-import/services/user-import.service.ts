@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  BadRequestException,
-  Logger,
-} from '@nestjs/common';
+import { Injectable, BadRequestException, Logger } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import * as crypto from 'crypto';
 import { UserImportRepository } from '../repositories/user-import.repository';
@@ -13,9 +9,8 @@ import {
   IImportValidationResult,
   IImportCommitResult,
   IRowValidationError,
-  IUserImportRow,
 } from '../interfaces/user-import.interface';
-import { USER_ERROR_CODES, USER_TYPES } from '../../users/users.constants';
+import { USER_ERROR_CODES } from '../../users/users.constants';
 
 interface CachedImportBatch {
   importToken: string;
@@ -133,9 +128,13 @@ export class UserImportService {
 
     const existingEmailSet = new Set(existingEmails);
     const existingUsernameSet = new Set(existingUsernames);
-    const existingEmpIdSet = new Set(existingEmployeeIds.map((id) => id.toLowerCase()));
+    const existingEmpIdSet = new Set(
+      existingEmployeeIds.map((id) => id.toLowerCase()),
+    );
 
-    const orgUnitMap = new Map(orgUnits.map((ou) => [ou.code.toUpperCase(), ou]));
+    const orgUnitMap = new Map(
+      orgUnits.map((ou) => [ou.code.toUpperCase(), ou]),
+    );
     const roleMap = new Map(roles.map((r) => [r.roleCode.toUpperCase(), r]));
     const scopeDefMap = new Map(
       scopeDefs.map((sd) => [sd.scopeCode.toUpperCase(), sd.scopeDefinitionId]),
@@ -394,7 +393,8 @@ export class UserImportService {
       }
     }
 
-    const invalidRows = errors.length > 0 ? new Set(errors.map((e) => e.rowNumber)).size : 0;
+    const invalidRows =
+      errors.length > 0 ? new Set(errors.map((e) => e.rowNumber)).size : 0;
     const validRows = dto.rows.length - invalidRows;
 
     let importToken = '';
@@ -646,7 +646,9 @@ export class UserImportService {
       };
     } catch (err) {
       await queryRunner.rollbackTransaction();
-      this.logger.error(`Bulk import commit failed; rolling back all rows: ${err}`);
+      this.logger.error(
+        `Bulk import commit failed; rolling back all rows: ${err}`,
+      );
       throw err;
     } finally {
       await queryRunner.release();

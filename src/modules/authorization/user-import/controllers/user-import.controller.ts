@@ -16,10 +16,7 @@ import {
   ApiResponse,
 } from '@nestjs/swagger';
 import { UserImportService } from '../services/user-import.service';
-import {
-  ValidateImportDto,
-  CommitImportDto,
-} from '../dto/validate-import.dto';
+import { ValidateImportDto, CommitImportDto } from '../dto/validate-import.dto';
 import { PermissionGuard } from '../../../auth/guards/permissions.guard';
 import { RequirePermissions } from '../../../auth/decorators/permissions.decorator';
 import { CurrentUser } from '../../../auth/decorators/current-user.decorator';

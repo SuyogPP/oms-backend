@@ -2,49 +2,52 @@ import { Injectable, Logger } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 
 export interface RawUserSessionRow {
-    LoginSessionID: string;
-    IPAddress: string;
-    BrowserName: string | null;
-    DeviceType: string | null;
-    LoginAt: Date;
-    LastActivityAt: Date | null;
-    ExpiresAt: Date;
-    IsActive: boolean;
+  LoginSessionID: string;
+  IPAddress: string;
+  BrowserName: string | null;
+  DeviceType: string | null;
+  LoginAt: Date;
+  LastActivityAt: Date | null;
+  ExpiresAt: Date;
+  IsActive: boolean;
 }
 
 export interface RawSessionDetailRow {
-    LoginSessionID: string;
-    UserID: string;
-    Username: string | null;
-    IPAddress: string;
-    UserAgent: string | null;
-    IsActive: boolean;
-    RevokedAt: Date | null;
-    ExpiresAt: Date;
+  LoginSessionID: string;
+  UserID: string;
+  Username: string | null;
+  IPAddress: string;
+  UserAgent: string | null;
+  IsActive: boolean;
+  RevokedAt: Date | null;
+  ExpiresAt: Date;
 }
 
 export interface CreateLogoutHistoryInput {
-    loginSessionId: string;
-    userId: string;
-    username?: string | null;
-    ipAddress?: string | null;
-    userAgent?: string | null;
-    logoutReason: string;
+  loginSessionId: string;
+  userId: string;
+  username?: string | null;
+  ipAddress?: string | null;
+  userAgent?: string | null;
+  logoutReason: string;
 }
 
-const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const UUID_REGEX =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 @Injectable()
 export class UserSessionsRepository {
-    private readonly logger = new Logger(UserSessionsRepository.name);
+  private readonly logger = new Logger(UserSessionsRepository.name);
 
-    constructor(private readonly dataSource: DataSource) {}
+  constructor(private readonly dataSource: DataSource) {}
 
-    async getActiveSessionsByUserId(userId: string): Promise<RawUserSessionRow[]> {
-        const validUserId = UUID_REGEX.test(userId) ? userId : null;
-        if (!validUserId) return [];
+  async getActiveSessionsByUserId(
+    userId: string,
+  ): Promise<RawUserSessionRow[]> {
+    const validUserId = UUID_REGEX.test(userId) ? userId : null;
+    if (!validUserId) return [];
 
-        const query = `
+    const query = `
             SELECT
                 LoginSessionID,
                 IPAddress,
@@ -62,14 +65,14 @@ export class UserSessionsRepository {
             ORDER BY LastActivityAt DESC, LoginAt DESC
         `;
 
-        return this.dataSource.query(query, [validUserId]);
-    }
+    return this.dataSource.query(query, [validUserId]);
+  }
 
-    async getSessionById(sessionId: string): Promise<RawSessionDetailRow | null> {
-        const validSessionId = UUID_REGEX.test(sessionId) ? sessionId : null;
-        if (!validSessionId) return null;
+  async getSessionById(sessionId: string): Promise<RawSessionDetailRow | null> {
+    const validSessionId = UUID_REGEX.test(sessionId) ? sessionId : null;
+    if (!validSessionId) return null;
 
-        const query = `
+    const query = `
             SELECT TOP 1
                 ls.LoginSessionID,
                 ls.UserID,
@@ -84,15 +87,15 @@ export class UserSessionsRepository {
             WHERE ls.LoginSessionID = @0
         `;
 
-        const rows = await this.dataSource.query(query, [validSessionId]);
-        return rows[0] || null;
-    }
+    const rows = await this.dataSource.query(query, [validSessionId]);
+    return rows[0] || null;
+  }
 
-    async revokeSession(sessionId: string): Promise<number> {
-        const validSessionId = UUID_REGEX.test(sessionId) ? sessionId : null;
-        if (!validSessionId) return 0;
+  async revokeSession(sessionId: string): Promise<number> {
+    const validSessionId = UUID_REGEX.test(sessionId) ? sessionId : null;
+    if (!validSessionId) return 0;
 
-        const query = `
+    const query = `
             UPDATE [auth].[LoginSessions]
             SET
                 IsActive = 0,
@@ -102,17 +105,22 @@ export class UserSessionsRepository {
             AND (IsActive = 1 OR RevokedAt IS NULL)
         `;
 
-        const result = await this.dataSource.query(query, [validSessionId]);
-        return typeof result?.[1] === 'number' ? result[1] : 1;
-    }
+    const result = await this.dataSource.query(query, [validSessionId]);
+    return typeof result?.[1] === 'number' ? result[1] : 1;
+  }
 
-    async revokeAllOtherSessions(userId: string, currentSessionId: string): Promise<RawSessionDetailRow[]> {
-        const validUserId = UUID_REGEX.test(userId) ? userId : null;
-        const validCurrentSessionId = UUID_REGEX.test(currentSessionId) ? currentSessionId : null;
-        if (!validUserId) return [];
+  async revokeAllOtherSessions(
+    userId: string,
+    currentSessionId: string,
+  ): Promise<RawSessionDetailRow[]> {
+    const validUserId = UUID_REGEX.test(userId) ? userId : null;
+    const validCurrentSessionId = UUID_REGEX.test(currentSessionId)
+      ? currentSessionId
+      : null;
+    if (!validUserId) return [];
 
-        // First find sessions to revoke so we can log history
-        const findQuery = `
+    // First find sessions to revoke so we can log history
+    const findQuery = `
             SELECT
                 ls.LoginSessionID,
                 ls.UserID,
@@ -129,9 +137,12 @@ export class UserSessionsRepository {
             AND ls.IsActive = 1
         `;
 
-        const sessionsToRevoke = await this.dataSource.query(findQuery, [validUserId, validCurrentSessionId]);
+    const sessionsToRevoke = await this.dataSource.query(findQuery, [
+      validUserId,
+      validCurrentSessionId,
+    ]);
 
-        const updateQuery = `
+    const updateQuery = `
             UPDATE [auth].[LoginSessions]
             SET
                 IsActive = 0,
@@ -142,16 +153,21 @@ export class UserSessionsRepository {
             AND IsActive = 1
         `;
 
-        await this.dataSource.query(updateQuery, [validUserId, validCurrentSessionId]);
-        return sessionsToRevoke;
-    }
+    await this.dataSource.query(updateQuery, [
+      validUserId,
+      validCurrentSessionId,
+    ]);
+    return sessionsToRevoke;
+  }
 
-    async createLogoutHistory(data: CreateLogoutHistoryInput): Promise<void> {
-        try {
-            const validUserId = UUID_REGEX.test(data.userId) ? data.userId : null;
-            const validSessionId = UUID_REGEX.test(data.loginSessionId) ? data.loginSessionId : null;
+  async createLogoutHistory(data: CreateLogoutHistoryInput): Promise<void> {
+    try {
+      const validUserId = UUID_REGEX.test(data.userId) ? data.userId : null;
+      const validSessionId = UUID_REGEX.test(data.loginSessionId)
+        ? data.loginSessionId
+        : null;
 
-            const query = `
+      const query = `
                 INSERT INTO [auth].[LogoutHistory]
                 (
                     LoginSessionID,
@@ -174,19 +190,19 @@ export class UserSessionsRepository {
                 )
             `;
 
-            await this.dataSource.query(query, [
-                validSessionId,
-                validUserId,
-                data.username ?? 'Unknown',
-                data.ipAddress ?? null,
-                data.userAgent ?? null,
-                data.logoutReason,
-            ]);
-        } catch (error) {
-            this.logger.error(
-                `Failed to write LogoutHistory for session ${data.loginSessionId}: ${(error as Error).message}`,
-                (error as Error).stack,
-            );
-        }
+      await this.dataSource.query(query, [
+        validSessionId,
+        validUserId,
+        data.username ?? 'Unknown',
+        data.ipAddress ?? null,
+        data.userAgent ?? null,
+        data.logoutReason,
+      ]);
+    } catch (error) {
+      this.logger.error(
+        `Failed to write LogoutHistory for session ${data.loginSessionId}: ${(error as Error).message}`,
+        (error as Error).stack,
+      );
     }
+  }
 }

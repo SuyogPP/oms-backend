@@ -92,7 +92,9 @@ export class UserRolesService {
     const userRoleId = await this.userRolesRepository.assignRole({
       userId,
       roleId: role.roleId,
-      effectiveFrom: dto.effectiveFrom ? new Date(dto.effectiveFrom) : new Date(),
+      effectiveFrom: dto.effectiveFrom
+        ? new Date(dto.effectiveFrom)
+        : new Date(),
       effectiveTo: dto.effectiveTo ? new Date(dto.effectiveTo) : null,
       assignedBy: operatorUserId,
     });
@@ -132,10 +134,7 @@ export class UserRolesService {
    * - Cannot revoke your own roles (9.1 / U14).
    * - Writes auth.SecurityEvents and audit logs.
    */
-  async revokeRole(
-    userRoleId: string,
-    operatorUserId?: string,
-  ): Promise<void> {
+  async revokeRole(userRoleId: string, operatorUserId?: string): Promise<void> {
     const assignment = await this.userRolesRepository.findById(userRoleId);
     if (!assignment) {
       throw new NotFoundException({

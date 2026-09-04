@@ -39,7 +39,10 @@ describe('DelegationsController (Domain 3, Section 8)', () => {
   });
 
   it('GET /authorization/me/delegations -> delegates to service.findMyDelegations', async () => {
-    mockService.findMyDelegations.mockResolvedValueOnce({ granted: [], received: [] });
+    mockService.findMyDelegations.mockResolvedValueOnce({
+      granted: [],
+      received: [],
+    });
 
     const result = await controller.getMyDelegations(currentUser as any);
     expect(service.findMyDelegations).toHaveBeenCalledWith(currentUser.userId);
@@ -50,8 +53,14 @@ describe('DelegationsController (Domain 3, Section 8)', () => {
   it('GET /authorization/users/:id/delegations -> delegates to service.findByUserId', async () => {
     mockService.findByUserId.mockResolvedValueOnce([]);
 
-    const result = await controller.findByUserId(delegatorId, currentUser as any);
-    expect(service.findByUserId).toHaveBeenCalledWith(delegatorId, currentUser.userId);
+    const result = await controller.findByUserId(
+      delegatorId,
+      currentUser as any,
+    );
+    expect(service.findByUserId).toHaveBeenCalledWith(
+      delegatorId,
+      currentUser.userId,
+    );
     expect(Array.isArray(result)).toBe(true);
   });
 
@@ -64,17 +73,36 @@ describe('DelegationsController (Domain 3, Section 8)', () => {
     };
     mockService.create.mockResolvedValueOnce({ delegationId });
 
-    const result = await controller.create(delegatorId, dto as any, currentUser as any);
-    expect(service.create).toHaveBeenCalledWith(delegatorId, dto, currentUser.userId);
+    const result = await controller.create(
+      delegatorId,
+      dto,
+      currentUser as any,
+    );
+    expect(service.create).toHaveBeenCalledWith(
+      delegatorId,
+      dto,
+      currentUser.userId,
+    );
     expect(result.delegationId).toBe(delegationId);
   });
 
   it('PATCH /authorization/delegations/:id -> delegates to service.update', async () => {
     const dto = { reason: 'Updated reason' };
-    mockService.update.mockResolvedValueOnce({ delegationId, reason: 'Updated reason' });
+    mockService.update.mockResolvedValueOnce({
+      delegationId,
+      reason: 'Updated reason',
+    });
 
-    const result = await controller.update(delegationId, dto as any, currentUser as any);
-    expect(service.update).toHaveBeenCalledWith(delegationId, dto, currentUser.userId);
+    const result = await controller.update(
+      delegationId,
+      dto,
+      currentUser as any,
+    );
+    expect(service.update).toHaveBeenCalledWith(
+      delegationId,
+      dto,
+      currentUser.userId,
+    );
     expect(result.reason).toBe('Updated reason');
   });
 
@@ -82,7 +110,10 @@ describe('DelegationsController (Domain 3, Section 8)', () => {
     mockService.cancel.mockResolvedValueOnce(undefined);
 
     const result = await controller.cancel(delegationId, currentUser as any);
-    expect(service.cancel).toHaveBeenCalledWith(delegationId, currentUser.userId);
+    expect(service.cancel).toHaveBeenCalledWith(
+      delegationId,
+      currentUser.userId,
+    );
     expect(result.success).toBe(true);
   });
 });

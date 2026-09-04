@@ -57,7 +57,10 @@ export class UserCredentialsController {
     type: InvitationDispatchResultDto,
   })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'User not found' })
-  @ApiResponse({ status: HttpStatus.FORBIDDEN, description: 'Missing USER.INVITE permission' })
+  @ApiResponse({
+    status: HttpStatus.FORBIDDEN,
+    description: 'Missing USER.INVITE permission',
+  })
   async inviteUser(
     @Param('id') id: string,
     @Body() dto?: InviteUserDto,
@@ -76,16 +79,21 @@ export class UserCredentialsController {
   @UseGuards(PermissionGuard)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
-    summary: 'Initiate password reset (Admins never set/see passwords; issues 1-hour reset token and revokes sessions)',
+    summary:
+      'Initiate password reset (Admins never set/see passwords; issues 1-hour reset token and revokes sessions)',
   })
   @ApiParam({ name: 'id', description: 'User UUID' })
   @ApiResponse({
     status: HttpStatus.OK,
-    description: 'Password reset token generated and dispatched; sessions terminated',
+    description:
+      'Password reset token generated and dispatched; sessions terminated',
     type: InvitationDispatchResultDto,
   })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'User not found' })
-  @ApiResponse({ status: HttpStatus.FORBIDDEN, description: 'Missing USER.PASSWORD.RESET permission' })
+  @ApiResponse({
+    status: HttpStatus.FORBIDDEN,
+    description: 'Missing USER.PASSWORD.RESET permission',
+  })
   async resetPassword(
     @Param('id') id: string,
     @CurrentUser() currentUser?: ICurrentUser,
@@ -98,7 +106,9 @@ export class UserCredentialsController {
   @RequirePermissions(USER_PERMISSIONS.UNLOCK)
   @UseGuards(PermissionGuard)
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Clear failed login attempts and unlock user account' })
+  @ApiOperation({
+    summary: 'Clear failed login attempts and unlock user account',
+  })
   @ApiParam({ name: 'id', description: 'User UUID' })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -106,7 +116,10 @@ export class UserCredentialsController {
     type: GenericSuccessResponseDto,
   })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'User not found' })
-  @ApiResponse({ status: HttpStatus.FORBIDDEN, description: 'Missing USER.UNLOCK permission' })
+  @ApiResponse({
+    status: HttpStatus.FORBIDDEN,
+    description: 'Missing USER.UNLOCK permission',
+  })
   async unlockUser(
     @Param('id') id: string,
     @CurrentUser() currentUser?: ICurrentUser,
@@ -123,7 +136,8 @@ export class UserCredentialsController {
   @RateLimit(RateLimitTier.TIER_1_AUTH_LOGIN)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
-    summary: 'Public endpoint: Validate onboarding or reset token without consuming it',
+    summary:
+      'Public endpoint: Validate onboarding or reset token without consuming it',
   })
   @ApiParam({ name: 'token', description: 'Raw invitation token' })
   @ApiResponse({
@@ -133,7 +147,8 @@ export class UserCredentialsController {
   })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
-    description: 'Invalid, expired, revoked, or non-existent token (generic error message)',
+    description:
+      'Invalid, expired, revoked, or non-existent token (generic error message)',
   })
   async validateInvitation(
     @Param('token') token: string,
@@ -146,7 +161,8 @@ export class UserCredentialsController {
   @RateLimit(RateLimitTier.TIER_1_AUTH_LOGIN)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
-    summary: 'Public endpoint: Set password and activate account using invitation or reset token',
+    summary:
+      'Public endpoint: Set password and activate account using invitation or reset token',
   })
   @ApiParam({ name: 'token', description: 'Raw invitation token' })
   @ApiResponse({

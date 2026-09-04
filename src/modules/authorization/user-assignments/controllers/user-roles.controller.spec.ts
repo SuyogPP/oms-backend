@@ -39,8 +39,14 @@ describe('UserRolesController (Domain 3, Section 8)', () => {
   it('GET /authorization/users/:id/roles -> delegates to service.findByUserId', async () => {
     mockService.findByUserId.mockResolvedValueOnce([]);
 
-    const result = await controller.findByUserId(sampleUserId, currentUser as any);
-    expect(service.findByUserId).toHaveBeenCalledWith(sampleUserId, currentUser.userId);
+    const result = await controller.findByUserId(
+      sampleUserId,
+      currentUser as any,
+    );
+    expect(service.findByUserId).toHaveBeenCalledWith(
+      sampleUserId,
+      currentUser.userId,
+    );
     expect(Array.isArray(result)).toBe(true);
   });
 
@@ -48,8 +54,16 @@ describe('UserRolesController (Domain 3, Section 8)', () => {
     const dto = { roleId };
     mockService.assignRole.mockResolvedValueOnce({ userRoleId, roleId });
 
-    const result = await controller.assignRole(sampleUserId, dto, currentUser as any);
-    expect(service.assignRole).toHaveBeenCalledWith(sampleUserId, dto, currentUser.userId);
+    const result = await controller.assignRole(
+      sampleUserId,
+      dto,
+      currentUser as any,
+    );
+    expect(service.assignRole).toHaveBeenCalledWith(
+      sampleUserId,
+      dto,
+      currentUser.userId,
+    );
     expect(result.userRoleId).toBe(userRoleId);
   });
 
@@ -57,7 +71,10 @@ describe('UserRolesController (Domain 3, Section 8)', () => {
     mockService.revokeRole.mockResolvedValueOnce(undefined);
 
     const result = await controller.revokeRole(userRoleId, currentUser as any);
-    expect(service.revokeRole).toHaveBeenCalledWith(userRoleId, currentUser.userId);
+    expect(service.revokeRole).toHaveBeenCalledWith(
+      userRoleId,
+      currentUser.userId,
+    );
     expect(result.success).toBe(true);
   });
 });

@@ -1,5 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { NotFoundException, ConflictException, BadRequestException } from '@nestjs/common';
+import {
+  NotFoundException,
+  ConflictException,
+  BadRequestException,
+} from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { UserOverridesService } from './user-overrides.service';
 import { UserOverridesRepository } from '../repositories/user-overrides.repository';
@@ -55,7 +59,10 @@ describe('UserOverridesService (Domain 3, Section 4.1, 4.4, 8, 9.1)', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         UserOverridesService,
-        { provide: UserOverridesRepository, useValue: mockUserOverridesRepository },
+        {
+          provide: UserOverridesRepository,
+          useValue: mockUserOverridesRepository,
+        },
         { provide: UsersRepository, useValue: mockUsersRepository },
         { provide: UserValidationService, useValue: mockValidationService },
         { provide: SecurityEventsService, useValue: mockSecurityEventsService },
@@ -65,10 +72,16 @@ describe('UserOverridesService (Domain 3, Section 4.1, 4.4, 8, 9.1)', () => {
     }).compile();
 
     service = module.get<UserOverridesService>(UserOverridesService);
-    userOverridesRepository = module.get<UserOverridesRepository>(UserOverridesRepository);
+    userOverridesRepository = module.get<UserOverridesRepository>(
+      UserOverridesRepository,
+    );
     usersRepository = module.get<UsersRepository>(UsersRepository);
-    validationService = module.get<UserValidationService>(UserValidationService);
-    securityEventsService = module.get<SecurityEventsService>(SecurityEventsService);
+    validationService = module.get<UserValidationService>(
+      UserValidationService,
+    );
+    securityEventsService = module.get<SecurityEventsService>(
+      SecurityEventsService,
+    );
     auditService = module.get<AuditService>(AuditService);
 
     jest.clearAllMocks();
@@ -111,9 +124,9 @@ describe('UserOverridesService (Domain 3, Section 4.1, 4.4, 8, 9.1)', () => {
       mockDataSource.query.mockResolvedValueOnce([]); // not global
       mockDataSource.query.mockResolvedValueOnce([]); // not visible in org tree
 
-      await expect(service.findByUserId(sampleUserId, operatorUserId)).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(
+        service.findByUserId(sampleUserId, operatorUserId),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -137,7 +150,9 @@ describe('UserOverridesService (Domain 3, Section 4.1, 4.4, 8, 9.1)', () => {
       // Before state: No active override
       mockUserOverridesRepository.findActiveByUserId.mockResolvedValueOnce([]);
 
-      mockUserOverridesRepository.createOverride.mockResolvedValueOnce(overrideId);
+      mockUserOverridesRepository.createOverride.mockResolvedValueOnce(
+        overrideId,
+      );
       mockUserOverridesRepository.findById.mockResolvedValueOnce({
         userPermissionOverrideId: overrideId,
         userId: sampleUserId,
@@ -158,7 +173,11 @@ describe('UserOverridesService (Domain 3, Section 4.1, 4.4, 8, 9.1)', () => {
         reason: 'Temporary audit approval authorization',
       };
 
-      const result = await service.createOverride(sampleUserId, dto, operatorUserId);
+      const result = await service.createOverride(
+        sampleUserId,
+        dto,
+        operatorUserId,
+      );
 
       // Validation was executed
       expect(mockValidationService.validateManageOverride).toHaveBeenCalledWith(
@@ -218,12 +237,14 @@ describe('UserOverridesService (Domain 3, Section 4.1, 4.4, 8, 9.1)', () => {
     });
 
     it('rejects creating an override for yourself with 409 USER_SELF_ACTION (§9.1 / U14)', async () => {
-      mockValidationService.validateManageOverride.mockImplementationOnce(() => {
-        throw new ConflictException({
-          code: USER_ERROR_CODES.USER_SELF_ACTION,
-          message: 'Cannot grant overrides on your own account.',
-        });
-      });
+      mockValidationService.validateManageOverride.mockImplementationOnce(
+        () => {
+          throw new ConflictException({
+            code: USER_ERROR_CODES.USER_SELF_ACTION,
+            message: 'Cannot grant overrides on your own account.',
+          });
+        },
+      );
 
       const dto = {
         permissionId,
@@ -254,7 +275,9 @@ describe('UserOverridesService (Domain 3, Section 4.1, 4.4, 8, 9.1)', () => {
 
       await service.revokeOverride(overrideId, operatorUserId);
 
-      expect(mockUserOverridesRepository.revokeOverride).toHaveBeenCalledWith(overrideId);
+      expect(mockUserOverridesRepository.revokeOverride).toHaveBeenCalledWith(
+        overrideId,
+      );
       expect(mockSecurityEventsService.log).toHaveBeenCalledWith(
         'OVERRIDE_REVOKED',
         expect.objectContaining({
@@ -266,7 +289,10 @@ describe('UserOverridesService (Domain 3, Section 4.1, 4.4, 8, 9.1)', () => {
           userId: sampleUserId,
           updatedFields: expect.objectContaining({
             beforeState: expect.objectContaining({ isGranted: true }),
-            afterState: expect.objectContaining({ isGranted: true, effectiveTo: expect.any(Date) }),
+            afterState: expect.objectContaining({
+              isGranted: true,
+              effectiveTo: expect.any(Date),
+            }),
           }),
         }),
       );
@@ -281,9 +307,9 @@ describe('UserOverridesService (Domain 3, Section 4.1, 4.4, 8, 9.1)', () => {
         isGranted: true,
       });
 
-      await expect(service.revokeOverride(overrideId, operatorUserId)).rejects.toThrow(
-        ConflictException,
-      );
+      await expect(
+        service.revokeOverride(overrideId, operatorUserId),
+      ).rejects.toThrow(ConflictException);
 
       expect(mockUserOverridesRepository.revokeOverride).not.toHaveBeenCalled();
     });
@@ -294,8 +320,16 @@ describe('UserOverridesService (Domain 3, Section 4.1, 4.4, 8, 9.1)', () => {
       // Direct demonstration of §4.1 resolution logic:
       const rolePermissions = ['PO.CREATE', 'PO.APPROVE', 'BUDGET.VIEW'];
       const overrides = [
-        { permissionCode: 'PO.APPROVE', isGranted: false, reason: 'Disciplinary suspension of approval authority' },
-        { permissionCode: 'SPECIAL.AUDIT.ACCESS', isGranted: true, reason: 'Special project' },
+        {
+          permissionCode: 'PO.APPROVE',
+          isGranted: false,
+          reason: 'Disciplinary suspension of approval authority',
+        },
+        {
+          permissionCode: 'SPECIAL.AUDIT.ACCESS',
+          isGranted: true,
+          reason: 'Special project',
+        },
       ];
 
       const revokeSet = new Set(

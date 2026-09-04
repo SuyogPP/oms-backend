@@ -61,9 +61,18 @@ export class UserScopesController {
     status: HttpStatus.CREATED,
     description: 'Scope assigned successfully',
   })
-  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Invalid scope column or org unit type mismatch (S1/S2/S5)' })
-  @ApiResponse({ status: HttpStatus.FORBIDDEN, description: 'Scope escalation or missing permission (S3/S4)' })
-  @ApiResponse({ status: HttpStatus.CONFLICT, description: 'Self-assignment or duplicate scope (S6/U14)' })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Invalid scope column or org unit type mismatch (S1/S2/S5)',
+  })
+  @ApiResponse({
+    status: HttpStatus.FORBIDDEN,
+    description: 'Scope escalation or missing permission (S3/S4)',
+  })
+  @ApiResponse({
+    status: HttpStatus.CONFLICT,
+    description: 'Self-assignment or duplicate scope (S6/U14)',
+  })
   async assignScope(
     @Param('id') id: string,
     @Body() dto: AssignScopeDto,
@@ -77,7 +86,8 @@ export class UserScopesController {
   @UseGuards(PermissionGuard)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
-    summary: 'Revoke organizational scope (S7 sets EffectiveTo=now, S8 prevents removing last scope)',
+    summary:
+      'Revoke organizational scope (S7 sets EffectiveTo=now, S8 prevents removing last scope)',
   })
   @ApiParam({ name: 'id', description: 'User UUID' })
   @ApiParam({ name: 'scopeId', description: 'UserOrganizationScope UUID' })
@@ -85,8 +95,14 @@ export class UserScopesController {
     status: HttpStatus.OK,
     description: 'Scope assignment revoked successfully',
   })
-  @ApiResponse({ status: HttpStatus.CONFLICT, description: 'Cannot revoke self scope or last remaining scope (S8/U14)' })
-  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Scope assignment not found' })
+  @ApiResponse({
+    status: HttpStatus.CONFLICT,
+    description: 'Cannot revoke self scope or last remaining scope (S8/U14)',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Scope assignment not found',
+  })
   async revokeScope(
     @Param('scopeId') scopeId: string,
     @CurrentUser() currentUser?: ICurrentUser,
@@ -102,10 +118,15 @@ export class UserScopesController {
   @RequirePermissions(USER_PERMISSIONS.VIEW)
   @UseGuards(PermissionGuard)
   @ApiOperation({
-    summary: 'Preview the count of accessible organizational units for a proposed scope',
+    summary:
+      'Preview the count of accessible organizational units for a proposed scope',
   })
   @ApiQuery({ name: 'scopeDefinitionId', description: 'ScopeDefinition UUID' })
-  @ApiQuery({ name: 'orgUnitId', required: false, description: 'Root OrgUnit UUID' })
+  @ApiQuery({
+    name: 'orgUnitId',
+    required: false,
+    description: 'Root OrgUnit UUID',
+  })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Accessible org units count calculated',

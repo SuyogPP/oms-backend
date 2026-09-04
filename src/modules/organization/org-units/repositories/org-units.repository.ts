@@ -13,7 +13,10 @@ export class OrgUnitsRepository {
   /**
    * Finds a non-deleted organization unit by its ID.
    */
-  async findById(orgUnitId: string, qr?: QueryRunner): Promise<IOrgUnit | null> {
+  async findById(
+    orgUnitId: string,
+    qr?: QueryRunner,
+  ): Promise<IOrgUnit | null> {
     const sql = `
       SELECT
         u.OrgUnitId AS orgUnitId,
@@ -643,10 +646,7 @@ export class OrgUnitsRepository {
   /**
    * Retrieves all visible org units for constructing tree hierarchy.
    */
-  async findVisibleTree(
-    userId: string,
-    qr?: QueryRunner,
-  ): Promise<IOrgUnit[]> {
+  async findVisibleTree(userId: string, qr?: QueryRunner): Promise<IOrgUnit[]> {
     const sql = `
       SELECT
         u.OrgUnitId AS orgUnitId,
@@ -1133,7 +1133,11 @@ export class OrgUnitsRepository {
   async findUserDisplayName(
     userId: string,
     qr?: QueryRunner,
-  ): Promise<{ userId: string; username: string; displayName: string | null } | null> {
+  ): Promise<{
+    userId: string;
+    username: string;
+    displayName: string | null;
+  } | null> {
     const sql = `
       SELECT
         u.UserID AS userId,

@@ -1,11 +1,4 @@
-import {
-  Controller,
-  Get,
-  Param,
-  UseGuards,
-  HttpStatus,
-  NotFoundException,
-} from '@nestjs/common';
+import { Controller, Get, Param, UseGuards, HttpStatus } from '@nestjs/common';
 import {
   ApiTags,
   ApiBearerAuth,
@@ -67,7 +60,8 @@ export class PermissionResolutionController {
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
-    description: 'User not found or target user is out of requester scope (404)',
+    description:
+      'User not found or target user is out of requester scope (404)',
   })
   async getEffectivePermissions(
     @Param() params: GetEffectivePermissionsParamDto,

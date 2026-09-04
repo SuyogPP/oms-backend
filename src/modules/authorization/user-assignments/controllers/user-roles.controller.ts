@@ -59,9 +59,18 @@ export class UserRolesController {
     status: HttpStatus.CREATED,
     description: 'Role assigned successfully',
   })
-  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Vendor user cannot receive internal roles' })
-  @ApiResponse({ status: HttpStatus.CONFLICT, description: 'Cannot assign roles to yourself (U14/9.1)' })
-  @ApiResponse({ status: HttpStatus.FORBIDDEN, description: 'Missing USER.ROLE.ASSIGN permission' })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Vendor user cannot receive internal roles',
+  })
+  @ApiResponse({
+    status: HttpStatus.CONFLICT,
+    description: 'Cannot assign roles to yourself (U14/9.1)',
+  })
+  @ApiResponse({
+    status: HttpStatus.FORBIDDEN,
+    description: 'Missing USER.ROLE.ASSIGN permission',
+  })
   async assignRole(
     @Param('id') id: string,
     @Body() dto: AssignRoleDto,
@@ -75,7 +84,8 @@ export class UserRolesController {
   @UseGuards(PermissionGuard)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
-    summary: 'Revoke a role assignment from a user (sets EffectiveTo = now, preserves IsActive per 4.2)',
+    summary:
+      'Revoke a role assignment from a user (sets EffectiveTo = now, preserves IsActive per 4.2)',
   })
   @ApiParam({ name: 'id', description: 'User UUID' })
   @ApiParam({ name: 'userRoleId', description: 'UserRole UUID' })
@@ -83,8 +93,14 @@ export class UserRolesController {
     status: HttpStatus.OK,
     description: 'Role assignment revoked successfully',
   })
-  @ApiResponse({ status: HttpStatus.CONFLICT, description: 'Cannot revoke your own roles (U14/9.1)' })
-  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Role assignment not found' })
+  @ApiResponse({
+    status: HttpStatus.CONFLICT,
+    description: 'Cannot revoke your own roles (U14/9.1)',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Role assignment not found',
+  })
   async revokeRole(
     @Param('userRoleId') userRoleId: string,
     @CurrentUser() currentUser?: ICurrentUser,

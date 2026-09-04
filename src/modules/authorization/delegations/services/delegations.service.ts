@@ -11,9 +11,16 @@ import { DelegationsRepository } from '../repositories/delegations.repository';
 import { UsersRepository } from '../../users/repositories/users.repository';
 import { SecurityEventsService } from '../../../security-events/services/security-events.service';
 import { AuditService } from '../../../audit/service/audit.services';
-import { CreateDelegationDto, UpdateDelegationDto } from '../dto/create-delegation.dto';
+import {
+  CreateDelegationDto,
+  UpdateDelegationDto,
+} from '../dto/create-delegation.dto';
 import { IDelegation } from '../interfaces/delegations.interface';
-import { USER_ERROR_CODES, USER_TYPES, USER_PERMISSIONS } from '../../users/users.constants';
+import {
+  USER_ERROR_CODES,
+  USER_TYPES,
+  USER_PERMISSIONS,
+} from '../../users/users.constants';
 
 @Injectable()
 export class DelegationsService {
@@ -89,16 +96,16 @@ export class DelegationsService {
     if (!dto.reason || dto.reason.trim() === '') {
       throw new BadRequestException({
         code: 'DELEGATION_REASON_REQUIRED',
-        message: 'A stated business justification is mandatory for creating delegations.',
+        message:
+          'A stated business justification is mandatory for creating delegations.',
       });
     }
 
     // 2. Authorization Guard: Managing own delegation vs another user's
     const isSelfManagement = operatorUserId === fromUserId;
     if (!isSelfManagement && operatorUserId) {
-      const isAuthorized = await this.hasDelegationManagePermission(
-        operatorUserId,
-      );
+      const isAuthorized =
+        await this.hasDelegationManagePermission(operatorUserId);
       if (!isAuthorized) {
         throw new ForbiddenException({
           code: 'DELEGATION_MANAGE_FORBIDDEN',
@@ -252,9 +259,8 @@ export class DelegationsService {
     // Authorization Guard
     const isOwner = operatorUserId === delegation.fromUserId;
     if (!isOwner && operatorUserId) {
-      const isAuthorized = await this.hasDelegationManagePermission(
-        operatorUserId,
-      );
+      const isAuthorized =
+        await this.hasDelegationManagePermission(operatorUserId);
       if (!isAuthorized) {
         throw new ForbiddenException({
           code: 'DELEGATION_MANAGE_FORBIDDEN',
@@ -293,7 +299,8 @@ export class DelegationsService {
       if (hasOverlap) {
         throw new ConflictException({
           code: USER_ERROR_CODES.DELEGATION_OVERLAP,
-          message: 'Updated end date creates an overlap with another active delegation.',
+          message:
+            'Updated end date creates an overlap with another active delegation.',
         });
       }
     }
@@ -342,9 +349,8 @@ export class DelegationsService {
     // Authorization Guard
     const isOwner = operatorUserId === delegation.fromUserId;
     if (!isOwner && operatorUserId) {
-      const isAuthorized = await this.hasDelegationManagePermission(
-        operatorUserId,
-      );
+      const isAuthorized =
+        await this.hasDelegationManagePermission(operatorUserId);
       if (!isAuthorized) {
         throw new ForbiddenException({
           code: 'DELEGATION_MANAGE_FORBIDDEN',

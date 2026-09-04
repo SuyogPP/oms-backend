@@ -134,10 +134,8 @@ export class EffectivePermissionsService {
       await this.repository.resolveUserRolesWithHierarchy(targetUserId);
     const rolePermissions =
       await this.repository.resolvePermissionsForRoles(roles);
-    const overrides =
-      await this.repository.resolveUserOverrides(targetUserId);
-    const delegations =
-      await this.repository.resolveDelegations(targetUserId);
+    const overrides = await this.repository.resolveUserOverrides(targetUserId);
+    const delegations = await this.repository.resolveDelegations(targetUserId);
 
     return PermissionResolutionMapper.toPreviewModel(
       rolePermissions,

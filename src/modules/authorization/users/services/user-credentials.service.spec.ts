@@ -1,6 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { NotFoundException, BadRequestException } from '@nestjs/common';
-import * as crypto from 'crypto';
+import { BadRequestException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { DataSource } from 'typeorm';
 import { UserCredentialsService } from './user-credentials.service';
@@ -69,8 +68,14 @@ describe('UserCredentialsService (Domain 3, §§5.2, 5.3, 5.4)', () => {
       providers: [
         UserCredentialsService,
         { provide: UsersRepository, useValue: mockUsersRepository },
-        { provide: UserInvitationsRepository, useValue: mockUserInvitationsRepository },
-        { provide: PasswordHistoryRepository, useValue: mockPasswordHistoryRepository },
+        {
+          provide: UserInvitationsRepository,
+          useValue: mockUserInvitationsRepository,
+        },
+        {
+          provide: PasswordHistoryRepository,
+          useValue: mockPasswordHistoryRepository,
+        },
         { provide: SecurityEventsService, useValue: mockSecurityEventsService },
         { provide: AuditService, useValue: mockAuditService },
         { provide: DataSource, useValue: mockDataSource },
@@ -79,9 +84,15 @@ describe('UserCredentialsService (Domain 3, §§5.2, 5.3, 5.4)', () => {
 
     service = module.get<UserCredentialsService>(UserCredentialsService);
     usersRepository = module.get<UsersRepository>(UsersRepository);
-    userInvitationsRepository = module.get<UserInvitationsRepository>(UserInvitationsRepository);
-    passwordHistoryRepository = module.get<PasswordHistoryRepository>(PasswordHistoryRepository);
-    securityEventsService = module.get<SecurityEventsService>(SecurityEventsService);
+    userInvitationsRepository = module.get<UserInvitationsRepository>(
+      UserInvitationsRepository,
+    );
+    passwordHistoryRepository = module.get<PasswordHistoryRepository>(
+      PasswordHistoryRepository,
+    );
+    securityEventsService = module.get<SecurityEventsService>(
+      SecurityEventsService,
+    );
 
     jest.clearAllMocks();
   });
@@ -95,7 +106,11 @@ describe('UserCredentialsService (Domain 3, §§5.2, 5.3, 5.4)', () => {
         isDeleted: false,
       });
 
-      const result = await service.inviteUser(sampleUserId, true, operatorUserId);
+      const result = await service.inviteUser(
+        sampleUserId,
+        true,
+        operatorUserId,
+      );
 
       expect(result.success).toBe(true);
       expect(result.rawToken).toBeDefined();
@@ -103,7 +118,9 @@ describe('UserCredentialsService (Domain 3, §§5.2, 5.3, 5.4)', () => {
       expect(result.expiresAt).toBeDefined();
 
       // Revokes outstanding unconsumed tokens
-      expect(mockUserInvitationsRepository.revokeOutstanding).toHaveBeenCalledWith(
+      expect(
+        mockUserInvitationsRepository.revokeOutstanding,
+      ).toHaveBeenCalledWith(
         sampleUserId,
         INVITATION_PURPOSES.INVITE,
         mockQueryRunner,
@@ -126,7 +143,8 @@ describe('UserCredentialsService (Domain 3, §§5.2, 5.3, 5.4)', () => {
           userId: sampleUserId,
         }),
       );
-      const loggedDesc = (mockSecurityEventsService.log as jest.Mock).mock.calls[0][1].description;
+      const loggedDesc =
+        mockSecurityEventsService.log.mock.calls[0][1].description;
       expect(loggedDesc).not.toContain(result.rawToken);
     });
 
@@ -138,81 +156,113 @@ describe('UserCredentialsService (Domain 3, §§5.2, 5.3, 5.4)', () => {
         isDeleted: false,
       });
 
-      await expect(service.inviteUser(sampleUserId, false, operatorUserId)).rejects.toThrow(
-        BadRequestException,
-      );
+      await expect(
+        service.inviteUser(sampleUserId, false, operatorUserId),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 
   describe('2. validateInvitationToken (Generic Error Invariance & Enumeration Defense)', () => {
     it('throws generic error when token does not exist', async () => {
-      mockUserInvitationsRepository.findByTokenHashWithUser.mockResolvedValueOnce(null);
+      mockUserInvitationsRepository.findByTokenHashWithUser.mockResolvedValueOnce(
+        null,
+      );
 
-      await expect(service.validateInvitationToken('invalid-raw-token')).rejects.toThrow(
+      await expect(
+        service.validateInvitationToken('invalid-raw-token'),
+      ).rejects.toThrow(
         expect.objectContaining({
           response: expect.objectContaining({
             code: USER_ERROR_CODES.INVITATION_INVALID_OR_EXPIRED,
-            message: 'This link is no longer valid. Ask an administrator to send a new invitation.',
+            message:
+              'This link is no longer valid. Ask an administrator to send a new invitation.',
           }),
         }),
       );
     });
 
     it('throws IDENTICAL generic error when token is expired', async () => {
-      mockUserInvitationsRepository.findByTokenHashWithUser.mockResolvedValueOnce({
-        invitation: {
-          invitationId: 'inv-1',
-          userId: sampleUserId,
-          purpose: 'INVITE',
-          expiresAt: new Date(Date.now() - 10000), // Expired
-          consumedAt: null,
+      mockUserInvitationsRepository.findByTokenHashWithUser.mockResolvedValueOnce(
+        {
+          invitation: {
+            invitationId: 'inv-1',
+            userId: sampleUserId,
+            purpose: 'INVITE',
+            expiresAt: new Date(Date.now() - 10000), // Expired
+            consumedAt: null,
+          },
+          user: {
+            userId: sampleUserId,
+            username: 'tariq',
+            email: 't@diez.ae',
+            isDeleted: false,
+          },
         },
-        user: { userId: sampleUserId, username: 'tariq', email: 't@diez.ae', isDeleted: false },
-      });
+      );
 
-      await expect(service.validateInvitationToken('expired-raw-token')).rejects.toThrow(
+      await expect(
+        service.validateInvitationToken('expired-raw-token'),
+      ).rejects.toThrow(
         expect.objectContaining({
           response: expect.objectContaining({
             code: USER_ERROR_CODES.INVITATION_INVALID_OR_EXPIRED,
-            message: 'This link is no longer valid. Ask an administrator to send a new invitation.',
+            message:
+              'This link is no longer valid. Ask an administrator to send a new invitation.',
           }),
         }),
       );
     });
 
     it('throws IDENTICAL generic error when token is already consumed', async () => {
-      mockUserInvitationsRepository.findByTokenHashWithUser.mockResolvedValueOnce({
-        invitation: {
-          invitationId: 'inv-1',
-          userId: sampleUserId,
-          purpose: 'INVITE',
-          expiresAt: new Date(Date.now() + 100000),
-          consumedAt: new Date(), // Already consumed
+      mockUserInvitationsRepository.findByTokenHashWithUser.mockResolvedValueOnce(
+        {
+          invitation: {
+            invitationId: 'inv-1',
+            userId: sampleUserId,
+            purpose: 'INVITE',
+            expiresAt: new Date(Date.now() + 100000),
+            consumedAt: new Date(), // Already consumed
+          },
+          user: {
+            userId: sampleUserId,
+            username: 'tariq',
+            email: 't@diez.ae',
+            isDeleted: false,
+          },
         },
-        user: { userId: sampleUserId, username: 'tariq', email: 't@diez.ae', isDeleted: false },
-      });
+      );
 
-      await expect(service.validateInvitationToken('consumed-raw-token')).rejects.toThrow(
+      await expect(
+        service.validateInvitationToken('consumed-raw-token'),
+      ).rejects.toThrow(
         expect.objectContaining({
           response: expect.objectContaining({
             code: USER_ERROR_CODES.INVITATION_INVALID_OR_EXPIRED,
-            message: 'This link is no longer valid. Ask an administrator to send a new invitation.',
+            message:
+              'This link is no longer valid. Ask an administrator to send a new invitation.',
           }),
         }),
       );
     });
 
     it('returns user context when token is valid', async () => {
-      mockUserInvitationsRepository.findByTokenHashWithUser.mockResolvedValueOnce({
-        invitation: {
-          invitationId: 'inv-valid',
-          userId: sampleUserId,
-          purpose: 'INVITE',
-          expiresAt: new Date(Date.now() + 100000),
-          consumedAt: null,
+      mockUserInvitationsRepository.findByTokenHashWithUser.mockResolvedValueOnce(
+        {
+          invitation: {
+            invitationId: 'inv-valid',
+            userId: sampleUserId,
+            purpose: 'INVITE',
+            expiresAt: new Date(Date.now() + 100000),
+            consumedAt: null,
+          },
+          user: {
+            userId: sampleUserId,
+            username: 'tariq.hashimi',
+            email: 'tariq@diez.ae',
+            isDeleted: false,
+          },
         },
-        user: { userId: sampleUserId, username: 'tariq.hashimi', email: 'tariq@diez.ae', isDeleted: false },
-      });
+      );
 
       const response = await service.validateInvitationToken('valid-raw-token');
       expect(response.valid).toBe(true);
@@ -225,20 +275,32 @@ describe('UserCredentialsService (Domain 3, §§5.2, 5.3, 5.4)', () => {
     it('rejects password if it matches any of the last 5 passwords in history with 400 PASSWORD_HISTORY_VIOLATION', async () => {
       const oldPasswordHash = await bcrypt.hash('OldP@ssword123!', 10);
 
-      mockUserInvitationsRepository.findByTokenHashWithUser.mockResolvedValueOnce({
-        invitation: {
-          invitationId: 'inv-1',
-          userId: sampleUserId,
-          purpose: 'INVITE',
-          expiresAt: new Date(Date.now() + 100000),
-          consumedAt: null,
+      mockUserInvitationsRepository.findByTokenHashWithUser.mockResolvedValueOnce(
+        {
+          invitation: {
+            invitationId: 'inv-1',
+            userId: sampleUserId,
+            purpose: 'INVITE',
+            expiresAt: new Date(Date.now() + 100000),
+            consumedAt: null,
+          },
+          user: {
+            userId: sampleUserId,
+            username: 'tariq',
+            email: 't@diez.ae',
+            isDeleted: false,
+          },
         },
-        user: { userId: sampleUserId, username: 'tariq', email: 't@diez.ae', isDeleted: false },
-      });
+      );
 
       // User has previous history containing OldP@ssword123!
       mockPasswordHistoryRepository.getRecent.mockResolvedValueOnce([
-        { passwordHistoryId: 'ph-1', userId: sampleUserId, passwordHash: oldPasswordHash, changedAt: new Date() },
+        {
+          passwordHistoryId: 'ph-1',
+          userId: sampleUserId,
+          passwordHash: oldPasswordHash,
+          changedAt: new Date(),
+        },
       ]);
 
       await expect(
@@ -253,20 +315,29 @@ describe('UserCredentialsService (Domain 3, §§5.2, 5.3, 5.4)', () => {
     });
 
     it('completes transactional onboarding: upserts credentials, records history, consumes token, activates user', async () => {
-      mockUserInvitationsRepository.findByTokenHashWithUser.mockResolvedValueOnce({
-        invitation: {
-          invitationId: 'inv-1',
-          userId: sampleUserId,
-          purpose: 'INVITE',
-          expiresAt: new Date(Date.now() + 100000),
-          consumedAt: null,
+      mockUserInvitationsRepository.findByTokenHashWithUser.mockResolvedValueOnce(
+        {
+          invitation: {
+            invitationId: 'inv-1',
+            userId: sampleUserId,
+            purpose: 'INVITE',
+            expiresAt: new Date(Date.now() + 100000),
+            consumedAt: null,
+          },
+          user: {
+            userId: sampleUserId,
+            username: 'tariq',
+            email: 't@diez.ae',
+            isDeleted: false,
+          },
         },
-        user: { userId: sampleUserId, username: 'tariq', email: 't@diez.ae', isDeleted: false },
-      });
+      );
 
       mockPasswordHistoryRepository.getRecent.mockResolvedValueOnce([]); // No prior history
 
-      const response = await service.acceptInvitation('raw-token', { password: 'BrandNewP@ssw0rd!' });
+      const response = await service.acceptInvitation('raw-token', {
+        password: 'BrandNewP@ssw0rd!',
+      });
 
       expect(response.success).toBe(true);
 
@@ -291,12 +362,21 @@ describe('UserCredentialsService (Domain 3, §§5.2, 5.3, 5.4)', () => {
       );
 
       // Token consumed & user activated
-      expect(mockUserInvitationsRepository.markConsumed).toHaveBeenCalledWith('inv-1', mockQueryRunner);
-      expect(mockUsersRepository.activate).toHaveBeenCalledWith(sampleUserId, mockQueryRunner);
+      expect(mockUserInvitationsRepository.markConsumed).toHaveBeenCalledWith(
+        'inv-1',
+        mockQueryRunner,
+      );
+      expect(mockUsersRepository.activate).toHaveBeenCalledWith(
+        sampleUserId,
+        mockQueryRunner,
+      );
       expect(mockQueryRunner.commitTransaction).toHaveBeenCalled();
 
       // Security event logged
-      expect(mockSecurityEventsService.log).toHaveBeenCalledWith('INVITATION_ACCEPTED', expect.any(Object));
+      expect(mockSecurityEventsService.log).toHaveBeenCalledWith(
+        'INVITATION_ACCEPTED',
+        expect.any(Object),
+      );
     });
   });
 
@@ -315,7 +395,9 @@ describe('UserCredentialsService (Domain 3, §§5.2, 5.3, 5.4)', () => {
       expect(result.rawToken).toBeDefined();
 
       // Revokes outstanding reset tokens
-      expect(mockUserInvitationsRepository.revokeOutstanding).toHaveBeenCalledWith(
+      expect(
+        mockUserInvitationsRepository.revokeOutstanding,
+      ).toHaveBeenCalledWith(
         sampleUserId,
         INVITATION_PURPOSES.PASSWORD_RESET,
         mockQueryRunner,
@@ -329,11 +411,9 @@ describe('UserCredentialsService (Domain 3, §§5.2, 5.3, 5.4)', () => {
       );
 
       // Records LogoutHistory with reason PASSWORD_RESET
-      expect(mockUsersRepository.recordLogoutHistoryForSessions).toHaveBeenCalledWith(
-        sampleUserId,
-        'PASSWORD_RESET',
-        mockQueryRunner,
-      );
+      expect(
+        mockUsersRepository.recordLogoutHistoryForSessions,
+      ).toHaveBeenCalledWith(sampleUserId, 'PASSWORD_RESET', mockQueryRunner);
 
       // Revokes all active sessions
       expect(mockUsersRepository.revokeAllUserSessions).toHaveBeenCalledWith(
@@ -343,7 +423,10 @@ describe('UserCredentialsService (Domain 3, §§5.2, 5.3, 5.4)', () => {
       );
 
       expect(mockQueryRunner.commitTransaction).toHaveBeenCalled();
-      expect(mockSecurityEventsService.log).toHaveBeenCalledWith('PASSWORD_RESET_REQUESTED', expect.any(Object));
+      expect(mockSecurityEventsService.log).toHaveBeenCalledWith(
+        'PASSWORD_RESET_REQUESTED',
+        expect.any(Object),
+      );
     });
   });
 
@@ -360,7 +443,10 @@ describe('UserCredentialsService (Domain 3, §§5.2, 5.3, 5.4)', () => {
 
       expect(response.success).toBe(true);
       expect(mockUsersRepository.unlock).toHaveBeenCalledWith(sampleUserId);
-      expect(mockSecurityEventsService.log).toHaveBeenCalledWith('USER_UNLOCKED', expect.any(Object));
+      expect(mockSecurityEventsService.log).toHaveBeenCalledWith(
+        'USER_UNLOCKED',
+        expect.any(Object),
+      );
     });
   });
 });

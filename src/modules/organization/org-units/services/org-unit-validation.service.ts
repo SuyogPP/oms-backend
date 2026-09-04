@@ -9,10 +9,7 @@ import { DataSource, QueryRunner } from 'typeorm';
 import { AssignManagerDto } from '../../org-managers/dto/assign-manager.dto';
 import { CreateOrgUnitDto } from '../dto/create-org-unit.dto';
 import { MoveOrgUnitDto } from '../dto/move-org-unit.dto';
-import {
-  IOrgUnit,
-  IOrgUnitType,
-} from '../interfaces/org-unit.interface';
+import { IOrgUnit, IOrgUnitType } from '../interfaces/org-unit.interface';
 import {
   ORG_UNIT_REFERENCE_CHECKS,
   OrgUnitReferenceCheck,
@@ -79,7 +76,8 @@ export class OrgUnitValidationService {
       throw new HttpException(
         {
           code: ORG_ERROR_CODES.ORG_PARENT_REQUIRED,
-          message: 'A parent organization unit is required for non-root unit types.',
+          message:
+            'A parent organization unit is required for non-root unit types.',
         },
         HttpStatus.BAD_REQUEST,
       );
@@ -268,7 +266,8 @@ export class OrgUnitValidationService {
       throw new HttpException(
         {
           code: ORG_ERROR_CODES.ORG_SCOPE_DENIED,
-          message: 'Access denied: You do not have authorization scope over the target parent organization unit.',
+          message:
+            'Access denied: You do not have authorization scope over the target parent organization unit.',
         },
         HttpStatus.FORBIDDEN,
       );
@@ -394,7 +393,8 @@ export class OrgUnitValidationService {
       throw new HttpException(
         {
           code: ORG_ERROR_CODES.ORG_MOVE_CYCLE,
-          message: 'Hierarchy cycle detected: Cannot move an organization unit beneath one of its own descendants.',
+          message:
+            'Hierarchy cycle detected: Cannot move an organization unit beneath one of its own descendants.',
         },
         HttpStatus.BAD_REQUEST,
       );
@@ -493,7 +493,8 @@ export class OrgUnitValidationService {
       throw new HttpException(
         {
           code: ORG_ERROR_CODES.ORG_CONCURRENCY_CONFLICT,
-          message: 'The organization unit has been modified by another transaction. Please reload and retry.',
+          message:
+            'The organization unit has been modified by another transaction. Please reload and retry.',
         },
         HttpStatus.CONFLICT,
       );
@@ -700,7 +701,8 @@ export class OrgUnitValidationService {
       throw new HttpException(
         {
           code: ORG_ERROR_CODES.ORG_ROOT_PROTECTED,
-          message: 'The root holding organization unit is protected and cannot be deleted or reparented.',
+          message:
+            'The root holding organization unit is protected and cannot be deleted or reparented.',
         },
         HttpStatus.CONFLICT,
       );
@@ -734,10 +736,7 @@ export class OrgUnitValidationService {
   /**
    * Orchestrator: Validates deletion rules (D2, D3, D4, D5).
    */
-  async validateDelete(
-    orgUnitId: string,
-    qr?: QueryRunner,
-  ): Promise<IOrgUnit> {
+  async validateDelete(orgUnitId: string, qr?: QueryRunner): Promise<IOrgUnit> {
     const unit = await this.orgUnitsRepository.findById(orgUnitId, qr);
     if (!unit) {
       throw new HttpException(
@@ -794,7 +793,8 @@ export class OrgUnitValidationService {
       throw new HttpException(
         {
           code: ORG_ERROR_CODES.ORG_PRIMARY_HEAD_EXISTS,
-          message: 'An active primary HEAD manager is already assigned to this unit during the specified date range.',
+          message:
+            'An active primary HEAD manager is already assigned to this unit during the specified date range.',
         },
         HttpStatus.CONFLICT,
       );
@@ -860,11 +860,17 @@ export class OrgUnitValidationService {
     const rows = await this.getExecutor(qr).query(sql, [userId]);
     const user = rows[0];
 
-    if (!user || !user.IsActive || user.IsDeleted || user.UserType !== 'INTERNAL') {
+    if (
+      !user ||
+      !user.IsActive ||
+      user.IsDeleted ||
+      user.UserType !== 'INTERNAL'
+    ) {
       throw new HttpException(
         {
           code: ORG_ERROR_CODES.ORG_MANAGER_INVALID_USER,
-          message: 'The selected user is invalid, inactive, or not an INTERNAL employee. External vendor users cannot be managers.',
+          message:
+            'The selected user is invalid, inactive, or not an INTERNAL employee. External vendor users cannot be managers.',
         },
         HttpStatus.BAD_REQUEST,
       );

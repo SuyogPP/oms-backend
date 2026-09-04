@@ -39,10 +39,7 @@ export class OrgScopeResolverService {
   /**
    * Checks whether a specific org unit is within the user's visible scope.
    */
-  async isOrgUnitVisible(
-    userId: string,
-    orgUnitId: string,
-  ): Promise<boolean> {
+  async isOrgUnitVisible(userId: string, orgUnitId: string): Promise<boolean> {
     return this.scopeRepository.isOrgUnitVisible(userId, orgUnitId);
   }
 }

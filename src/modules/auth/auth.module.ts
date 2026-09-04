@@ -44,11 +44,7 @@ import { SecurityModule } from '../security/security.module';
     SecurityEventsModule,
     forwardRef(() => SecurityModule),
   ],
-  controllers: [
-    AuthTestController,
-    UserSessionsController,
-    AuthCoreController,
-  ],
+  controllers: [AuthTestController, UserSessionsController, AuthCoreController],
   providers: [
     JwtStrategy,
     JwtAuthGuard,

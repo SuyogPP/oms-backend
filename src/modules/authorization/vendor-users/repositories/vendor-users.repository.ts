@@ -77,7 +77,10 @@ export class VendorUsersRepository {
   /**
    * Finds a vendor user by UserID.
    */
-  async findById(userId: string, qr?: QueryRunner): Promise<IVendorUser | null> {
+  async findById(
+    userId: string,
+    qr?: QueryRunner,
+  ): Promise<IVendorUser | null> {
     const rows = await this.getExecutor(qr).query(
       `
       SELECT 

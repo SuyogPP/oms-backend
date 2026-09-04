@@ -12,7 +12,10 @@ import {
 import { ORG_CODE_REGEX } from '../org-units.constants';
 
 export class CreateOrgUnitDto {
-  @ApiProperty({ example: 3, description: 'Org unit type ID (1=ORG, 2=BU, 3=DEPT, 4=SECTION)' })
+  @ApiProperty({
+    example: 3,
+    description: 'Org unit type ID (1=ORG, 2=BU, 3=DEPT, 4=SECTION)',
+  })
   @IsInt()
   @Min(1)
   orgUnitTypeId: number;
@@ -25,12 +28,16 @@ export class CreateOrgUnitDto {
   @IsUUID()
   parentOrgUnitId?: string | null;
 
-  @ApiProperty({ example: 'IT', description: 'Unique code among live siblings' })
+  @ApiProperty({
+    example: 'IT',
+    description: 'Unique code among live siblings',
+  })
   @IsString()
   @IsNotEmpty()
   @MaxLength(50)
   @Matches(ORG_CODE_REGEX, {
-    message: 'Code must start with alphanumeric and contain only uppercase letters, numbers, underscores, and hyphens (2-50 chars).',
+    message:
+      'Code must start with alphanumeric and contain only uppercase letters, numbers, underscores, and hyphens (2-50 chars).',
   })
   code: string;
 
