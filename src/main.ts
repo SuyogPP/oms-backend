@@ -41,6 +41,7 @@ async function bootstrap() {
     'http://localhost:4000',
     'http://127.0.0.1:3000',
     'http://127.0.0.1:4000',
+    'https://outsource-managment-aait.netlify.app'
   ];
 
   if (nextJsUrl) {
@@ -80,7 +81,7 @@ async function bootstrap() {
     ],
   });
 
-  const port = process.env.PORT || 4000;
+  const port = process.env.PORT || 3000;
   // Always bind to 0.0.0.0 for containerized / cloud hosting (Render, Docker, Railway, K8s)
   await app.listen(port, '0.0.0.0');
 
