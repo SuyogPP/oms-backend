@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { Subject } from 'rxjs';
 import { RequestContextService } from '../../../common/services/request-context.service';
 import { SecurityEventsRepository } from '../repositories/security-events.repository';
 
@@ -10,9 +11,16 @@ export interface LogSecurityEventOptions {
   userAgent?: string | null;
 }
 
+export interface SecurityEventEmitted {
+  eventType: string;
+  timestamp: Date;
+  userId?: string | null;
+}
+
 @Injectable()
 export class SecurityEventsService {
   private readonly logger = new Logger(SecurityEventsService.name);
+  public readonly events$ = new Subject<SecurityEventEmitted>();
 
   constructor(
     private readonly securityEventsRepository: SecurityEventsRepository,
@@ -43,6 +51,12 @@ export class SecurityEventsService {
       eventDescription,
       ipAddress,
       userAgent,
+    });
+
+    this.events$.next({
+      eventType,
+      timestamp: new Date(),
+      userId,
     });
   }
 }

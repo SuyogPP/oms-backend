@@ -70,7 +70,7 @@ export class AuthCoreRepository {
                 LastFailedLoginAt,
                 LockedUntil
             FROM [auth].[Users]
-            WHERE Username = @0
+            WHERE (LOWER(Username) = LOWER(@0) OR LOWER(Email) = LOWER(@0))
             AND IsDeleted = 0
         `;
     const rows = await this.dataSource.query(query, [username]);

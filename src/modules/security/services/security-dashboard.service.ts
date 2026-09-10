@@ -1,6 +1,6 @@
 import { Injectable, Logger, MessageEvent } from '@nestjs/common';
 import { Observable, interval, from, merge, of } from 'rxjs';
-import { map, switchMap, catchError } from 'rxjs/operators';
+import { map, switchMap, catchError, debounceTime } from 'rxjs/operators';
 import {
   BaseQueryDto,
   PaginatedResult,
@@ -14,6 +14,7 @@ import {
 } from '../dto/security-dashboard.dto';
 import { SecurityRepository } from '../repositories/security.repository';
 import { SecurityChartsService } from './security-charts.service';
+import { SecurityEventsService } from '../../security-events/services/security-events.service';
 
 @Injectable()
 export class SecurityDashboardService {
@@ -22,6 +23,7 @@ export class SecurityDashboardService {
   constructor(
     private readonly securityRepository: SecurityRepository,
     private readonly securityChartsService: SecurityChartsService,
+    private readonly securityEventsService: SecurityEventsService,
   ) {}
 
   async getDashboardData(): Promise<SecurityDashboardDataDto> {
@@ -128,6 +130,20 @@ export class SecurityDashboardService {
       }),
     );
 
-    return merge(initial$, periodic$);
+    const reactive$ = this.securityEventsService.events$.pipe(
+      debounceTime(300),
+      switchMap(() => from(this.getFullCompositeStreamData())),
+      map((data) => ({
+        data,
+      })),
+      catchError((err) => {
+        this.logger.error(`SSE reactive error: ${err.message}`);
+        return of({
+          data: { error: 'Failed to fetch reactive security stream data' },
+        } as MessageEvent);
+      }),
+    );
+
+    return merge(initial$, periodic$, reactive$);
   }
 }
