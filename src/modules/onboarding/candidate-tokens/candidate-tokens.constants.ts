@@ -1,0 +1,10 @@
+export const CANDIDATE_TOKEN_EXPIRY_DAYS = 14;
+
+export const CANDIDATE_TOKEN_ERROR_CODES = {
+  TOKEN_INVALID_OR_EXPIRED: 'CANDIDATE_TOKEN_INVALID_OR_EXPIRED',
+  ONBOARDING_NOT_FOUND: 'ONBOARDING_NOT_FOUND',
+  UNAUTHORIZED: 'UNAUTHORIZED',
+} as const;
+
+export const GENERIC_INVALID_CANDIDATE_TOKEN_MESSAGE =
+  'This link is no longer valid. Contact your onboarding coordinator for a new one.';

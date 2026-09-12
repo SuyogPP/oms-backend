@@ -24,6 +24,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { RetentionModule } from './modules/retention/retention.module';
 import { OrganizationModule } from './modules/organization/organization.module';
 import { AuthorizationModule } from './modules/authorization/authorization.module';
+import { CandidateTokensModule } from './modules/onboarding/candidate-tokens/candidate-tokens.module';
 
 // Guards
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
@@ -61,6 +62,7 @@ import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
     RetentionModule,
     OrganizationModule,
     AuthorizationModule,
+    CandidateTokensModule,
   ],
   providers: [
     // 1. Rate Limiting Guard (Applies before JWT auth)
