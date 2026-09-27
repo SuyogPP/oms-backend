@@ -36,6 +36,7 @@ export class AuthCoreController {
     summary: 'Authenticate user credentials and issue token pair',
   })
   async login(@Body() dto: LoginDto): Promise<LoginResponseDto> {
+    console.log('Login Payload:', dto);
     const ipAddress = this.requestContextService.getIpAddress();
     const userAgent = this.requestContextService.getUserAgent();
 
