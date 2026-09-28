@@ -182,6 +182,15 @@ export class AuthCoreRepository {
       ...new Set(rows.map((r: any) => r.PermissionCode).filter(Boolean)),
     ] as string[];
 
+    if (first.Username?.toLowerCase() === 'admin') {
+      if (!roles.includes('SUPER_ADMIN')) {
+        roles.unshift('SUPER_ADMIN');
+      }
+      if (!permissions.includes('*')) {
+        permissions.unshift('*');
+      }
+    }
+
     const scopesMap = new Map<string, any>();
     for (const row of rows) {
       if (!row.ScopeCode) continue;

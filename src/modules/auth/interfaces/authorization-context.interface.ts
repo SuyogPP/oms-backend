@@ -1,6 +1,8 @@
 export interface AuthorizationContext {
   userId: string;
 
+  username?: string;
+
   loginSessionId: string;
 
   email: string;

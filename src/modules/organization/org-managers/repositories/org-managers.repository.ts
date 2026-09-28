@@ -46,7 +46,53 @@ export class OrgManagersRepository {
       WHERE m.OrgUnitId = @0 AND m.IsDeleted = 0
       ORDER BY m.EffectiveFrom DESC, m.IsPrimary DESC, m.CreatedAt DESC;
     `;
-    return this.getExecutor(qr).query(sql, [orgUnitId]);
+    const rows = await this.getExecutor(qr).query(sql, [orgUnitId]);
+    if (rows.length > 0) {
+      return rows;
+    }
+
+    // Fallback: Check if an active user has role 'HOD' / 'SECTION_HEAD' scoped to this orgUnitId or is ou.HeadUserId
+    const fallbackSql = `
+      SELECT TOP 1
+        CAST(NULL AS UNIQUEIDENTIFIER) AS orgUnitManagerId,
+        ou.OrgUnitId AS orgUnitId,
+        u.UserID AS userId,
+        'HEAD' AS managerRoleCode,
+        CAST(1 AS BIT) AS isPrimary,
+        ou.EffectiveFrom AS effectiveFrom,
+        ou.EffectiveTo AS effectiveTo,
+        'Auto-resolved from assigned Head of Department' AS assignmentReason,
+        CAST(1 AS BIT) AS isActive,
+        CAST(0 AS BIT) AS isDeleted,
+        ou.CreatedBy AS createdBy,
+        ou.CreatedAt AS createdAt,
+        ou.UpdatedBy AS updatedBy,
+        ou.UpdatedAt AS updatedAt,
+        u.Username AS username,
+        u.Email AS userEmail,
+        CASE
+          WHEN p.FirstName IS NOT NULL OR p.LastName IS NOT NULL THEN
+            LTRIM(RTRIM(CONCAT(COALESCE(p.FirstName, ''), ' ', COALESCE(p.LastName, ''))))
+          ELSE u.Username
+        END AS userDisplayName,
+        ou.Name AS orgUnitName,
+        ou.Code AS orgUnitCode
+      FROM org.OrgUnits ou
+      INNER JOIN auth.Users u ON (
+        u.UserID = ou.HeadUserId
+        OR u.UserID IN (
+          SELECT s.UserID
+          FROM auth.UserOrganizationScopes s
+          INNER JOIN auth.UserRoles ur ON ur.UserID = s.UserID
+          INNER JOIN auth.Roles r ON r.RoleID = ur.RoleID
+          WHERE (s.DepartmentID = ou.OrgUnitId OR s.BusinessUnitID = ou.OrgUnitId OR s.SectionID = ou.OrgUnitId OR s.OrganizationID = ou.OrgUnitId)
+            AND r.RoleCode IN ('HOD', 'SECTION_HEAD')
+        )
+      )
+      LEFT JOIN auth.UserProfiles p ON p.UserID = u.UserID
+      WHERE ou.OrgUnitId = @0 AND u.IsDeleted = 0 AND u.IsActive = 1;
+    `;
+    return this.getExecutor(qr).query(fallbackSql, [orgUnitId]);
   }
 
   /**
@@ -95,7 +141,53 @@ export class OrgManagersRepository {
       ORDER BY m.EffectiveFrom DESC;
     `;
     const rows = await this.getExecutor(qr).query(sql, [orgUnitId, dateParam]);
-    return rows.length > 0 ? rows[0] : null;
+    if (rows.length > 0) {
+      return rows[0];
+    }
+
+    // Fallback: Check if an active user has role 'HOD' / 'SECTION_HEAD' scoped to this orgUnitId or is ou.HeadUserId
+    const fallbackSql = `
+      SELECT TOP 1
+        CAST(NULL AS UNIQUEIDENTIFIER) AS orgUnitManagerId,
+        ou.OrgUnitId AS orgUnitId,
+        u.UserID AS userId,
+        'HEAD' AS managerRoleCode,
+        CAST(1 AS BIT) AS isPrimary,
+        ou.EffectiveFrom AS effectiveFrom,
+        ou.EffectiveTo AS effectiveTo,
+        'Auto-resolved from assigned Head of Department' AS assignmentReason,
+        CAST(1 AS BIT) AS isActive,
+        CAST(0 AS BIT) AS isDeleted,
+        ou.CreatedBy AS createdBy,
+        ou.CreatedAt AS createdAt,
+        ou.UpdatedBy AS updatedBy,
+        ou.UpdatedAt AS updatedAt,
+        u.Username AS username,
+        u.Email AS userEmail,
+        CASE
+          WHEN p.FirstName IS NOT NULL OR p.LastName IS NOT NULL THEN
+            LTRIM(RTRIM(CONCAT(COALESCE(p.FirstName, ''), ' ', COALESCE(p.LastName, ''))))
+          ELSE u.Username
+        END AS userDisplayName,
+        ou.Name AS orgUnitName,
+        ou.Code AS orgUnitCode
+      FROM org.OrgUnits ou
+      INNER JOIN auth.Users u ON (
+        u.UserID = ou.HeadUserId
+        OR u.UserID IN (
+          SELECT s.UserID
+          FROM auth.UserOrganizationScopes s
+          INNER JOIN auth.UserRoles ur ON ur.UserID = s.UserID
+          INNER JOIN auth.Roles r ON r.RoleID = ur.RoleID
+          WHERE (s.DepartmentID = ou.OrgUnitId OR s.BusinessUnitID = ou.OrgUnitId OR s.SectionID = ou.OrgUnitId OR s.OrganizationID = ou.OrgUnitId)
+            AND r.RoleCode IN ('HOD', 'SECTION_HEAD')
+        )
+      )
+      LEFT JOIN auth.UserProfiles p ON p.UserID = u.UserID
+      WHERE ou.OrgUnitId = @0 AND u.IsDeleted = 0 AND u.IsActive = 1;
+    `;
+    const fallbackRows = await this.getExecutor(qr).query(fallbackSql, [orgUnitId]);
+    return fallbackRows.length > 0 ? fallbackRows[0] : null;
   }
 
   /**

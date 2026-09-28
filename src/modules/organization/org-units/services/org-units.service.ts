@@ -210,13 +210,14 @@ export class OrgUnitsService {
       );
     }
 
-    const [type, childCount, descendantCount, breadcrumb, head] =
+    const [type, childCount, descendantCount, breadcrumb, head, peopleCount] =
       await Promise.all([
         this.typesRepository.findTypeById(unit.orgUnitTypeId),
         this.orgUnitsRepository.countDirectChildren(orgUnitId),
         this.orgUnitsRepository.countSubtreeDescendants(orgUnitId),
         this.getBreadcrumbs(orgUnitId),
         this.getHeadSummary(orgUnitId, unit.headUserId),
+        this.orgUnitsRepository.countPeople(orgUnitId),
       ]);
 
     return this.mapper.toOrgUnitDetailEntity(
@@ -226,7 +227,32 @@ export class OrgUnitsService {
       childCount,
       descendantCount,
       breadcrumb,
+      peopleCount,
     );
+  }
+
+  /**
+   * Retrieves assigned staff and members of an organization unit within caller scope.
+   */
+  async findMembers(
+    orgUnitId: string,
+    currentUserId: string,
+  ): Promise<any[]> {
+    const unit = await this.orgUnitsRepository.findByIdVisible(
+      orgUnitId,
+      currentUserId,
+    );
+    if (!unit) {
+      throw new HttpException(
+        {
+          code: ORG_ERROR_CODES.ORG_NOT_FOUND,
+          message: `Organization unit [${orgUnitId}] was not found.`,
+        },
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    return this.orgUnitsRepository.findMembers(orgUnitId);
   }
 
   /**

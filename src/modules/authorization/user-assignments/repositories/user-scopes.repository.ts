@@ -83,7 +83,7 @@ export class UserScopesRepository {
           s.ScopeDefinitionID AS scopeDefinitionId,
           sd.ScopeCode AS scopeCode,
           sd.ScopeName AS scopeName,
-          COALESCE(s.DepartmentID, s.BusinessUnitID, s.SectionID, s.OrganizationID) AS orgUnitId,
+          COALESCE(s.DepartmentID, s.BusinessUnitID, s.SectionID, s.OrganizationID, s.OrgUnitId) AS orgUnitId,
           s.OrganizationID AS organizationId,
           s.BusinessUnitID AS businessUnitId,
           s.DepartmentID AS departmentId,
@@ -95,7 +95,7 @@ export class UserScopesRepository {
           CAST(1 AS BIT) AS isActive
       FROM [auth].[UserOrganizationScopes] s
       INNER JOIN [auth].[ScopeDefinitions] sd ON sd.ScopeDefinitionID = s.ScopeDefinitionID
-      LEFT JOIN [org].[OrgUnits] ou ON ou.OrgUnitId = COALESCE(s.DepartmentID, s.BusinessUnitID, s.SectionID, s.OrganizationID)
+      LEFT JOIN [org].[OrgUnits] ou ON ou.OrgUnitId = COALESCE(s.DepartmentID, s.BusinessUnitID, s.SectionID, s.OrganizationID, s.OrgUnitId)
       WHERE s.UserID = @0;
       `,
       [userId],
@@ -138,7 +138,7 @@ export class UserScopesRepository {
           s.ScopeDefinitionID AS scopeDefinitionId,
           sd.ScopeCode AS scopeCode,
           sd.ScopeName AS scopeName,
-          COALESCE(s.DepartmentID, s.BusinessUnitID, s.SectionID, s.OrganizationID) AS orgUnitId,
+          COALESCE(s.DepartmentID, s.BusinessUnitID, s.SectionID, s.OrganizationID, s.OrgUnitId) AS orgUnitId,
           s.OrganizationID AS organizationId,
           s.BusinessUnitID AS businessUnitId,
           s.DepartmentID AS departmentId,
@@ -150,7 +150,7 @@ export class UserScopesRepository {
           CAST(1 AS BIT) AS isActive
       FROM [auth].[UserOrganizationScopes] s
       INNER JOIN [auth].[ScopeDefinitions] sd ON sd.ScopeDefinitionID = s.ScopeDefinitionID
-      LEFT JOIN [org].[OrgUnits] ou ON ou.OrgUnitId = COALESCE(s.DepartmentID, s.BusinessUnitID, s.SectionID, s.OrganizationID)
+      LEFT JOIN [org].[OrgUnits] ou ON ou.OrgUnitId = COALESCE(s.DepartmentID, s.BusinessUnitID, s.SectionID, s.OrganizationID, s.OrgUnitId)
       WHERE s.UserOrganizationScopeID = @0;
       `,
       [userOrganizationScopeId],
@@ -196,7 +196,8 @@ export class UserScopesRepository {
           OrganizationID,
           BusinessUnitID,
           DepartmentID,
-          SectionID
+          SectionID,
+          OrgUnitId
       )
       OUTPUT INSERTED.UserOrganizationScopeID AS userOrganizationScopeId
       VALUES (
@@ -206,7 +207,8 @@ export class UserScopesRepository {
           @2,
           @3,
           @4,
-          @5
+          @5,
+          @6
       );
       `,
       [
@@ -216,6 +218,7 @@ export class UserScopesRepository {
         data.businessUnitId || null,
         data.departmentId || null,
         data.sectionId || null,
+        data.orgUnitId || data.departmentId || data.businessUnitId || data.organizationId || data.sectionId || null,
       ],
     );
 

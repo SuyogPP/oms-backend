@@ -33,6 +33,7 @@ import { UpdateOrgUnitDto } from '../dto/update-org-unit.dto';
 import {
   OrgUnitDetailEntity,
   OrgUnitEntity,
+  OrgUnitMemberEntity,
   OrgUnitTreeItemEntity,
 } from '../entities/org-unit.entity';
 import { ORG_PERMISSIONS } from '../org-units.constants';
@@ -144,6 +145,23 @@ export class OrgUnitsController {
   })
   async findById(@Param('id') id: string, @CurrentUser() user: ICurrentUser) {
     return this.orgUnitsService.findById(id, user.userId);
+  }
+
+  @Get('units/:id/members')
+  @RequirePermissions(ORG_PERMISSIONS.VIEW)
+  @ApiOperation({
+    summary: 'Get assigned members and leadership of an organization unit',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'List of members assigned or scoped to this organization unit',
+    type: [OrgUnitMemberEntity],
+  })
+  async findMembers(
+    @Param('id') id: string,
+    @CurrentUser() user: ICurrentUser,
+  ) {
+    return this.orgUnitsService.findMembers(id, user.userId);
   }
 
   @Get('units/:id/children')

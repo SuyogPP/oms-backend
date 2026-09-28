@@ -162,10 +162,12 @@ export class EffectivePermissionsService {
       return false;
     }
 
-    // Check if user holds SYSTEM_ADMIN role
+    // Check if user holds SYSTEM_ADMIN or SUPER_ADMIN role
     const roles = await this.repository.resolveUserRolesWithHierarchy(userId);
-    const isSystemAdmin = roles.some((r) => r.roleCode === 'SYSTEM_ADMIN');
-    if (isSystemAdmin) {
+    const isSystemOrSuperAdmin = roles.some(
+      (r) => r.roleCode === 'SYSTEM_ADMIN' || r.roleCode === 'SUPER_ADMIN' || r.roleCode === 'SUPERADMIN',
+    );
+    if (isSystemOrSuperAdmin) {
       return true;
     }
 

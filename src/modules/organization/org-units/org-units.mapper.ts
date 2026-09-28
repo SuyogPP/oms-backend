@@ -107,12 +107,14 @@ export class OrgUnitsMapper {
     childCount: number,
     descendantCount: number,
     breadcrumb: OrgBreadcrumbItemEntity[],
+    peopleCount?: number,
   ): OrgUnitDetailEntity {
     const base = this.toOrgUnitEntity(row, type, head);
     return {
       ...base,
       childCount,
       descendantCount,
+      peopleCount: peopleCount ?? 0,
       breadcrumb,
     };
   }

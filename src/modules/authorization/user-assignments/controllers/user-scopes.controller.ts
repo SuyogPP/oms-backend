@@ -32,6 +32,18 @@ import { USER_PERMISSIONS } from '../../users/users.constants';
 export class UserScopesController {
   constructor(private readonly userScopesService: UserScopesService) {}
 
+  @Get('scopes/definitions')
+  @RequirePermissions(USER_PERMISSIONS.VIEW)
+  @UseGuards(PermissionGuard)
+  @ApiOperation({ summary: 'Get all system scope definitions' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'List of scope definitions retrieved',
+  })
+  async getScopeDefinitions() {
+    return this.userScopesService.getScopeDefinitions();
+  }
+
   @Get(':id/scopes')
   @RequirePermissions(USER_PERMISSIONS.VIEW)
   @UseGuards(PermissionGuard)

@@ -123,7 +123,54 @@ export class UserRolesService {
       },
     });
 
+    // 4. If HOD or SECTION_HEAD role, sync with org unit managers for active scopes
+    if (['HOD', 'SECTION_HEAD'].includes(assignment.roleCode)) {
+      await this.syncLeadershipForUser(userId);
+    }
+
     return assignment;
+  }
+
+  private async syncLeadershipForUser(userId: string): Promise<void> {
+    try {
+      const scopes: any[] = await this.dataSource.query(
+        `SELECT COALESCE(DepartmentID, BusinessUnitID, SectionID, OrganizationID) AS orgUnitId
+         FROM auth.UserOrganizationScopes
+         WHERE UserID = @0`,
+        [userId],
+      );
+      for (const s of scopes) {
+        if (!s.orgUnitId) continue;
+        await this.dataSource.query(
+          `UPDATE org.OrgUnits SET HeadUserId = @0 WHERE OrgUnitId = @1`,
+          [userId, s.orgUnitId],
+        );
+        const existing: any[] = await this.dataSource.query(
+          `SELECT OrgUnitManagerId FROM org.OrgUnitManagers 
+           WHERE OrgUnitId = @0 AND UserId = @1 AND ManagerRoleCode = 'HEAD' AND IsDeleted = 0`,
+          [s.orgUnitId, userId],
+        );
+        if (existing.length === 0) {
+          await this.dataSource.query(
+            `INSERT INTO org.OrgUnitManagers (
+               OrgUnitManagerId, OrgUnitId, UserId, ManagerRoleCode, IsPrimary, 
+               EffectiveFrom, AssignmentReason, IsActive, IsDeleted, CreatedBy, CreatedAt
+             ) VALUES (
+               NEWID(), @0, @1, 'HEAD', 1, 
+               CAST(GETDATE() AS DATE), 'Auto-synced from User Administration HOD assignment', 1, 0, 'SYSTEM', GETUTCDATE()
+             )`,
+            [s.orgUnitId, userId],
+          );
+        } else {
+          await this.dataSource.query(
+            `UPDATE org.OrgUnitManagers SET IsActive = 1, IsPrimary = 1 WHERE OrgUnitManagerId = @0`,
+            [existing[0].OrgUnitManagerId],
+          );
+        }
+      }
+    } catch (err) {
+      this.logger.error(`Failed to sync leadership for user [${userId}]:`, err);
+    }
   }
 
   /**

@@ -226,12 +226,9 @@ export class UserValidationService {
           [unit.id],
         );
 
-        if (
-          !rows ||
-          rows.length === 0 ||
-          rows[0].IsDeleted === 1 ||
-          rows[0].IsActive !== 1
-        ) {
+        const isDeleted = rows[0]?.IsDeleted === 1 || rows[0]?.IsDeleted === true;
+        const isActive = rows[0]?.IsActive === 1 || rows[0]?.IsActive === true;
+        if (!rows || rows.length === 0 || isDeleted || !isActive) {
           throw new HttpException(
             {
               code: USER_ERROR_CODES.USER_ORG_UNIT_INVALID,
@@ -596,12 +593,9 @@ export class UserValidationService {
       [orgUnitId],
     );
 
-    if (
-      !rows ||
-      rows.length === 0 ||
-      rows[0].IsDeleted === 1 ||
-      rows[0].IsActive !== 1
-    ) {
+    const isDeleted = rows[0]?.IsDeleted === 1 || rows[0]?.IsDeleted === true;
+    const isActive = rows[0]?.IsActive === 1 || rows[0]?.IsActive === true;
+    if (!rows || rows.length === 0 || isDeleted || !isActive) {
       throw new HttpException(
         {
           code: USER_ERROR_CODES.SCOPE_ORG_UNIT_INVALID,
@@ -640,7 +634,7 @@ export class UserValidationService {
         FROM [auth].[UserRoles] ur
         INNER JOIN [auth].[Roles] r ON r.RoleID = ur.RoleID
         WHERE ur.UserID = @0
-          AND r.RoleCode = 'SYSTEM_ADMIN'
+          AND (r.RoleCode = 'SYSTEM_ADMIN' OR r.RoleCode = 'SUPER_ADMIN' OR r.RoleCode = 'SUPERADMIN')
           AND ur.IsActive = 1
           AND ur.EffectiveFrom <= SYSUTCDATETIME()
           AND (ur.EffectiveTo IS NULL OR ur.EffectiveTo > SYSUTCDATETIME());
@@ -1155,14 +1149,43 @@ export class UserValidationService {
     this.validateV4_VendorScope(user.userType);
 
     // Look up ScopeCode from ScopeDefinitionID
-    const scopeDefRows = await this.getExecutor(qr).query(
+    let scopeDefRows = await this.getExecutor(qr).query(
       `
-      SELECT ScopeCode
+      SELECT ScopeDefinitionID, ScopeCode
       FROM [auth].[ScopeDefinitions]
       WHERE ScopeDefinitionID = @0;
       `,
       [dto.scopeDefinitionId],
     );
+
+    // Fallback: If not found, resolve from known legacy placeholder UUIDs or scope code directly
+    if (!scopeDefRows || scopeDefRows.length === 0) {
+      const PLACEHOLDER_MAP: Record<string, string> = {
+        '3053433E-F36B-1410-85ED-009A959FB341': 'GLOBAL',
+        '3053433E-F36B-1410-85ED-009A959FB342': 'BUSINESS_UNIT',
+        '3053433E-F36B-1410-85ED-009A959FB343': 'DEPARTMENT',
+        '3053433E-F36B-1410-85ED-009A959FB344': 'SECTION',
+        'GLOBAL': 'GLOBAL',
+        'ORGANIZATION': 'ORGANIZATION',
+        'BUSINESS_UNIT': 'BUSINESS_UNIT',
+        'DEPARTMENT': 'DEPARTMENT',
+        'SECTION': 'SECTION',
+      };
+      const candidateCode = PLACEHOLDER_MAP[dto.scopeDefinitionId?.trim().toUpperCase()];
+      if (candidateCode) {
+        scopeDefRows = await this.getExecutor(qr).query(
+          `
+          SELECT ScopeDefinitionID, ScopeCode
+          FROM [auth].[ScopeDefinitions]
+          WHERE UPPER(ScopeCode) = @0;
+          `,
+          [candidateCode],
+        );
+        if (scopeDefRows && scopeDefRows.length > 0) {
+          dto.scopeDefinitionId = scopeDefRows[0].ScopeDefinitionID;
+        }
+      }
+    }
 
     if (!scopeDefRows || scopeDefRows.length === 0) {
       throw new HttpException(

@@ -69,14 +69,39 @@ export class UserScopesService {
     );
 
     // 2. Persist temporal scope assignment
+    // Map generic orgUnitId to the specific column if not already populated
+    const scopeRows = await this.dataSource.query(
+      `SELECT ScopeCode FROM [auth].[ScopeDefinitions] WHERE ScopeDefinitionID = @0`,
+      [dto.scopeDefinitionId],
+    );
+    const scopeCode = scopeRows?.[0]?.ScopeCode;
+
+    const effectiveOrgUnitId =
+      dto.orgUnitId ||
+      dto.departmentId ||
+      dto.businessUnitId ||
+      dto.organizationId ||
+      dto.sectionId ||
+      undefined;
+
+    let organizationId: string | undefined = dto.organizationId;
+    let businessUnitId: string | undefined = dto.businessUnitId;
+    let departmentId: string | undefined = dto.departmentId;
+    let sectionId: string | undefined = dto.sectionId;
+
+    if (scopeCode === 'ORGANIZATION') organizationId = organizationId || effectiveOrgUnitId;
+    if (scopeCode === 'BUSINESS_UNIT') businessUnitId = businessUnitId || effectiveOrgUnitId;
+    if (scopeCode === 'DEPARTMENT') departmentId = departmentId || effectiveOrgUnitId;
+    if (scopeCode === 'SECTION') sectionId = sectionId || effectiveOrgUnitId;
+
     const userOrgScopeId = await this.userScopesRepository.assignScope({
       userId,
       scopeDefinitionId: dto.scopeDefinitionId,
-      orgUnitId: dto.orgUnitId,
-      organizationId: dto.organizationId,
-      businessUnitId: dto.businessUnitId,
-      departmentId: dto.departmentId,
-      sectionId: dto.sectionId,
+      orgUnitId: effectiveOrgUnitId,
+      organizationId,
+      businessUnitId,
+      departmentId,
+      sectionId,
       effectiveFrom: dto.effectiveFrom
         ? new Date(dto.effectiveFrom)
         : new Date(),
@@ -108,7 +133,77 @@ export class UserScopesService {
       },
     });
 
+    // 4. Synchronize leadership manager and profile department for organizational alignment
+    await this.syncLeadershipManager(userId, effectiveOrgUnitId);
+
     return assignment;
+  }
+
+  private async syncLeadershipManager(
+    userId: string,
+    orgUnitId?: string,
+  ): Promise<void> {
+    if (!orgUnitId) return;
+    try {
+      const roles: any[] = await this.dataSource.query(
+        `SELECT r.RoleCode 
+         FROM auth.UserRoles ur 
+         INNER JOIN auth.Roles r ON r.RoleID = ur.RoleID 
+         WHERE ur.UserID = @0 AND r.RoleCode IN ('HOD', 'SECTION_HEAD')`,
+        [userId],
+      );
+      if (roles.length > 0) {
+        await this.dataSource.query(
+          `UPDATE org.OrgUnits SET HeadUserId = @0 WHERE OrgUnitId = @1`,
+          [userId, orgUnitId],
+        );
+        const existing: any[] = await this.dataSource.query(
+          `SELECT OrgUnitManagerId FROM org.OrgUnitManagers 
+           WHERE OrgUnitId = @0 AND UserId = @1 AND ManagerRoleCode = 'HEAD' AND IsDeleted = 0`,
+          [orgUnitId, userId],
+        );
+        if (existing.length === 0) {
+          await this.dataSource.query(
+            `INSERT INTO org.OrgUnitManagers (
+               OrgUnitManagerId, OrgUnitId, UserId, ManagerRoleCode, IsPrimary, 
+               EffectiveFrom, AssignmentReason, IsActive, IsDeleted, CreatedBy, CreatedAt
+             ) VALUES (
+               NEWID(), @0, @1, 'HEAD', 1, 
+               CAST(GETDATE() AS DATE), 'Auto-synced from User Administration HOD assignment', 1, 0, 'SYSTEM', GETUTCDATE()
+             )`,
+            [orgUnitId, userId],
+          );
+        } else {
+          await this.dataSource.query(
+            `UPDATE org.OrgUnitManagers SET IsActive = 1, IsPrimary = 1 WHERE OrgUnitManagerId = @0`,
+            [existing[0].OrgUnitManagerId],
+          );
+        }
+      }
+      const unitTypes: any[] = await this.dataSource.query(
+        `SELECT t.Code FROM org.OrgUnits u INNER JOIN org.OrgUnitTypes t ON t.OrgUnitTypeId = u.OrgUnitTypeId WHERE u.OrgUnitId = @0`,
+        [orgUnitId],
+      );
+      const typeCode = unitTypes?.[0]?.Code;
+      if (typeCode === 'DEPARTMENT') {
+        await this.dataSource.query(
+          `UPDATE auth.UserProfiles SET DepartmentID = @0 WHERE UserID = @1`,
+          [orgUnitId, userId],
+        );
+      } else if (typeCode === 'BUSINESS_UNIT') {
+        await this.dataSource.query(
+          `UPDATE auth.UserProfiles SET BusinessUnitID = @0 WHERE UserID = @1`,
+          [orgUnitId, userId],
+        );
+      } else if (typeCode === 'SECTION') {
+        await this.dataSource.query(
+          `UPDATE auth.UserProfiles SET SectionID = @0 WHERE UserID = @1`,
+          [orgUnitId, userId],
+        );
+      }
+    } catch (err) {
+      this.logger.error(`Failed to sync leadership manager for user [${userId}] on org unit [${orgUnitId}]:`, err);
+    }
   }
 
   /**
@@ -171,7 +266,7 @@ export class UserScopesService {
     scopeDefinitionId: string,
     orgUnitId?: string | null,
   ): Promise<ScopeCountResponseDto> {
-    const rows = await this.dataSource.query(
+    let rows = await this.dataSource.query(
       `
       SELECT ScopeCode
       FROM [auth].[ScopeDefinitions]
@@ -179,6 +274,31 @@ export class UserScopesService {
       `,
       [scopeDefinitionId],
     );
+
+    if (!rows || rows.length === 0) {
+      const PLACEHOLDER_MAP: Record<string, string> = {
+        '3053433E-F36B-1410-85ED-009A959FB341': 'GLOBAL',
+        '3053433E-F36B-1410-85ED-009A959FB342': 'BUSINESS_UNIT',
+        '3053433E-F36B-1410-85ED-009A959FB343': 'DEPARTMENT',
+        '3053433E-F36B-1410-85ED-009A959FB344': 'SECTION',
+        'GLOBAL': 'GLOBAL',
+        'ORGANIZATION': 'ORGANIZATION',
+        'BUSINESS_UNIT': 'BUSINESS_UNIT',
+        'DEPARTMENT': 'DEPARTMENT',
+        'SECTION': 'SECTION',
+      };
+      const candidateCode = PLACEHOLDER_MAP[scopeDefinitionId?.trim().toUpperCase()];
+      if (candidateCode) {
+        rows = await this.dataSource.query(
+          `
+          SELECT ScopeCode
+          FROM [auth].[ScopeDefinitions]
+          WHERE UPPER(ScopeCode) = @0;
+          `,
+          [candidateCode],
+        );
+      }
+    }
 
     if (!rows || rows.length === 0) {
       throw new NotFoundException({
@@ -198,6 +318,21 @@ export class UserScopesService {
       scopeCode,
       orgUnitId: orgUnitId || null,
     };
+  }
+
+  /**
+   * Retrieves all system scope definitions.
+   */
+  async getScopeDefinitions(): Promise<
+    Array<{ scopeDefinitionId: string; scopeCode: string; scopeName: string }>
+  > {
+    return this.dataSource.query(`
+      SELECT 
+        ScopeDefinitionID AS scopeDefinitionId,
+        ScopeCode AS scopeCode,
+        ScopeName AS scopeName
+      FROM [auth].[ScopeDefinitions]
+    `);
   }
 
   /**

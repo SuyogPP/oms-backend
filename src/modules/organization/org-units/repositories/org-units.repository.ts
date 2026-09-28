@@ -1185,4 +1185,99 @@ export class OrgUnitsRepository {
     const rows = await this.getExecutor(qr).query(sql, [userId]);
     return rows.length > 0 ? rows[0] : null;
   }
+
+  /**
+   * Counts active people assigned or scoped to this organization unit.
+   */
+  async countPeople(orgUnitId: string, qr?: QueryRunner): Promise<number> {
+    const sql = `
+      SELECT COUNT(DISTINCT u.UserID) AS total
+      FROM auth.Users u
+      LEFT JOIN auth.UserProfiles p ON p.UserID = u.UserID
+      LEFT JOIN auth.UserOrganizationScopes s ON s.UserID = u.UserID
+      LEFT JOIN org.OrgUnitManagers m ON m.UserId = u.UserID AND m.OrgUnitId = @0 AND m.IsActive = 1 AND m.IsDeleted = 0
+      LEFT JOIN org.OrgUnits ou ON ou.OrgUnitId = @0 AND ou.HeadUserId = u.UserID
+      WHERE u.IsDeleted = 0
+        AND (
+          s.DepartmentID = @0 OR s.BusinessUnitID = @0 OR s.SectionID = @0 OR s.OrganizationID = @0
+          OR p.DepartmentID = @0 OR p.BusinessUnitID = @0 OR p.SectionID = @0
+          OR m.OrgUnitId = @0
+          OR ou.OrgUnitId = @0
+        );
+    `;
+    const rows = await this.getExecutor(qr).query(sql, [orgUnitId]);
+    return Number(rows[0]?.total ?? 0);
+  }
+
+  /**
+   * Finds all active members and leadership assigned or scoped to this organization unit.
+   */
+  async findMembers(
+    orgUnitId: string,
+    qr?: QueryRunner,
+  ): Promise<any[]> {
+    const sql = `
+      WITH UnitMembers AS (
+        SELECT DISTINCT
+          u.UserID AS userId,
+          u.Username AS username,
+          u.Email AS email,
+          u.IsActive AS isActive,
+          CASE
+            WHEN p.FirstName IS NOT NULL OR p.LastName IS NOT NULL THEN
+              LTRIM(RTRIM(CONCAT(COALESCE(p.FirstName, ''), ' ', COALESCE(p.LastName, ''))))
+            ELSE u.Username
+          END AS displayName,
+          p.JobTitle AS jobTitle,
+          p.MobileNo AS mobileNo,
+          CASE 
+            WHEN ouHead.OrgUnitId IS NOT NULL OR mgr.ManagerRoleCode = 'HEAD' OR EXISTS (
+              SELECT 1 FROM auth.UserRoles ur 
+              INNER JOIN auth.Roles r ON r.RoleID = ur.RoleID 
+              WHERE ur.UserID = u.UserID AND r.RoleCode IN ('HOD', 'SECTION_HEAD')
+            ) THEN 1 
+            ELSE 0 
+          END AS isHead,
+          mgr.ManagerRoleCode AS managerRoleCode,
+          (
+            SELECT STRING_AGG(r.RoleName, ', ')
+            FROM auth.UserRoles ur
+            INNER JOIN auth.Roles r ON r.RoleID = ur.RoleID
+            WHERE ur.UserID = u.UserID
+          ) AS rolesString
+        FROM auth.Users u
+        LEFT JOIN auth.UserProfiles p ON p.UserID = u.UserID
+        LEFT JOIN auth.UserOrganizationScopes s ON s.UserID = u.UserID
+        LEFT JOIN (
+          SELECT m.UserId, m.ManagerRoleCode
+          FROM org.OrgUnitManagers m
+          WHERE m.OrgUnitId = @0 AND m.IsActive = 1 AND m.IsDeleted = 0
+        ) mgr ON mgr.UserId = u.UserID
+        LEFT JOIN org.OrgUnits ouHead ON ouHead.OrgUnitId = @0 AND ouHead.HeadUserId = u.UserID
+        WHERE u.IsDeleted = 0
+          AND (
+            s.DepartmentID = @0 OR s.BusinessUnitID = @0 OR s.SectionID = @0 OR s.OrganizationID = @0
+            OR p.DepartmentID = @0 OR p.BusinessUnitID = @0 OR p.SectionID = @0
+            OR mgr.UserId IS NOT NULL
+            OR ouHead.OrgUnitId IS NOT NULL
+          )
+      )
+      SELECT *
+      FROM UnitMembers
+      ORDER BY isHead DESC, displayName ASC;
+    `;
+    const rows = await this.getExecutor(qr).query(sql, [orgUnitId]);
+    return rows.map((r: any) => ({
+      userId: r.userId,
+      username: r.username,
+      displayName: r.displayName || r.username,
+      email: r.email,
+      jobTitle: r.jobTitle,
+      mobileNo: r.mobileNo,
+      isHead: Boolean(r.isHead),
+      managerRoleCode: r.managerRoleCode || (Boolean(r.isHead) ? 'HEAD' : null),
+      roles: r.rolesString ? r.rolesString.split(', ') : [],
+      isActive: Boolean(r.isActive),
+    }));
+  }
 }

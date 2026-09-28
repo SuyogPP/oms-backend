@@ -98,6 +98,9 @@ export class OrgUnitDetailEntity extends OrgUnitEntity {
   @ApiProperty({ example: 11, description: 'Total descendants in subtree' })
   descendantCount: number;
 
+  @ApiPropertyOptional({ example: 8, description: 'Total assigned people in unit' })
+  peopleCount?: number;
+
   @ApiProperty({
     type: () => [OrgBreadcrumbItemEntity],
     description: 'Ancestral path from root to parent',
@@ -141,4 +144,36 @@ export class OrgUnitTreeItemEntity {
 
   @ApiPropertyOptional({ type: () => [OrgUnitTreeItemEntity] })
   children?: OrgUnitTreeItemEntity[];
+}
+
+export class OrgUnitMemberEntity {
+  @ApiProperty({ example: '3039C733-B657-4116-937A-4C4E28D2D7B5' })
+  userId: string;
+
+  @ApiProperty({ example: 'youssef.alblooshi' })
+  username: string;
+
+  @ApiProperty({ example: 'Youssef Al Blooshi' })
+  displayName: string;
+
+  @ApiPropertyOptional({ example: 'youssef.alblooshi@diez.ae' })
+  email?: string | null;
+
+  @ApiPropertyOptional({ example: 'Head of Department' })
+  jobTitle?: string | null;
+
+  @ApiPropertyOptional({ example: '+971501234567' })
+  mobileNo?: string | null;
+
+  @ApiProperty({ example: ['HOD'], type: [String] })
+  roles: string[];
+
+  @ApiProperty({ example: true })
+  isHead: boolean;
+
+  @ApiPropertyOptional({ example: 'HEAD' })
+  managerRoleCode?: string | null;
+
+  @ApiProperty({ example: true })
+  isActive: boolean;
 }
