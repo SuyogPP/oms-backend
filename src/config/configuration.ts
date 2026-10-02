@@ -16,6 +16,14 @@ export default (): AppConfig => ({
     database: process.env.DB_DATABASE || '',
   },
 
+  auditDatabase: {
+    host: process.env.AUDIT_DB_HOST || process.env.DB_HOST || 'localhost',
+    port: parseInt(process.env.AUDIT_DB_PORT || process.env.DB_PORT || '1433', 10),
+    username: process.env.AUDIT_DB_USERNAME || process.env.DB_USERNAME || '',
+    password: process.env.AUDIT_DB_PASSWORD || process.env.DB_PASSWORD || '',
+    database: process.env.AUDIT_DB_DATABASE || 'DIEZ-AUDIT-DB',
+  },
+
   jwt: {
     secret: process.env.JWT_SECRET || 'secretKey',
   },
