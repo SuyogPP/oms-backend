@@ -65,7 +65,7 @@ export class UserRolesService {
    * - Cannot assign roles to yourself (9.1 / U14).
    * - Vendor users cannot receive internal roles (V3).
    * - Future-dated assignments are allowed (EffectiveFrom > now).
-   * - Writes auth.SecurityEvents and audit logs.
+   * - Writes auth.tbl_Security_Events and audit logs.
    */
   async assignRole(
     userId: string,
@@ -136,7 +136,7 @@ export class UserRolesService {
       const scopes: any[] = await this.dataSource.query(
         `SELECT COALESCE(DepartmentID, BusinessUnitID, SectionID, OrganizationID) AS orgUnitId
          FROM auth.UserOrganizationScopes
-         WHERE UserID = @0`,
+         WHERE user_id = @0`,
         [userId],
       );
       for (const s of scopes) {
@@ -147,7 +147,7 @@ export class UserRolesService {
         );
         const existing: any[] = await this.dataSource.query(
           `SELECT OrgUnitManagerId FROM org.OrgUnitManagers 
-           WHERE OrgUnitId = @0 AND UserId = @1 AND ManagerRoleCode = 'HEAD' AND IsDeleted = 0`,
+           WHERE OrgUnitId = @0 AND UserId = @1 AND manager_role_code = 'HEAD' AND IsDeleted = 0`,
           [s.orgUnitId, userId],
         );
         if (existing.length === 0) {
@@ -163,7 +163,7 @@ export class UserRolesService {
           );
         } else {
           await this.dataSource.query(
-            `UPDATE org.OrgUnitManagers SET IsActive = 1, IsPrimary = 1 WHERE OrgUnitManagerId = @0`,
+            `UPDATE org.OrgUnitManagers SET is_active = 1, IsPrimary = 1 WHERE OrgUnitManagerId = @0`,
             [existing[0].OrgUnitManagerId],
           );
         }
@@ -179,7 +179,7 @@ export class UserRolesService {
    * Invariants:
    * - Sets EffectiveTo = now. Does NOT set IsActive = 0 per section 4.2.
    * - Cannot revoke your own roles (9.1 / U14).
-   * - Writes auth.SecurityEvents and audit logs.
+   * - Writes auth.tbl_Security_Events and audit logs.
    */
   async revokeRole(userRoleId: string, operatorUserId?: string): Promise<void> {
     const assignment = await this.userRolesRepository.findById(userRoleId);
@@ -232,11 +232,11 @@ export class UserRolesService {
       `
       SELECT 1 FROM [auth].[UserOrganizationScopes] s
       INNER JOIN [auth].[ScopeDefinitions] sd ON sd.ScopeDefinitionID = s.ScopeDefinitionID
-      WHERE s.UserID = @0
+      WHERE s.user_id = @0
         AND sd.ScopeCode = 'GLOBAL'
-        AND (s.IsActive = 1 OR s.IsActive IS NULL)
-        AND (s.EffectiveFrom IS NULL OR s.EffectiveFrom <= SYSUTCDATETIME())
-        AND (s.EffectiveTo IS NULL OR s.EffectiveTo > SYSUTCDATETIME());
+        AND (s.is_active = 1 OR s.is_active IS NULL)
+        AND (s.effective_from IS NULL OR s.effective_from <= SYSUTCDATETIME())
+        AND (s.effective_to IS NULL OR s.effective_to > SYSUTCDATETIME());
       `,
       [requesterUserId],
     );

@@ -35,7 +35,7 @@ export enum FilterOperator {
 export class FilterCondition {
   @ApiPropertyOptional({
     description: 'Database field or property name to filter on',
-    example: 'EventType',
+    example: 'event_type',
   })
   @IsString()
   @IsNotEmpty()
@@ -66,7 +66,7 @@ export class FilterCondition {
 
 /**
  * Helper to parse various query-string filter formats:
- * 1. JSON array string: `?filters=[{"field":"EventType","operator":"EQ","value":"LOGIN_SUCCESS"}]`
+ * 1. JSON array string: `?filters=[{"field":"event_type","operator":"EQ","value":"LOGIN_SUCCESS"}]`
  * 2. Comma/colon shorthand: `?filter=EventType:EQ:LOGIN_SUCCESS,CreatedAt:GTE:2026-08-01`
  * 3. Array of objects directly from body or parsed query
  */

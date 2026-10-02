@@ -32,62 +32,62 @@ export class SecurityRepository {
             SELECT
                 (
                     SELECT COUNT(*)
-                    FROM [auth].[LoginSessions]
-                    WHERE IsActive = 1
-                    AND RevokedAt IS NULL
+                    FROM [auth].tbl_Login_Sessions]
+                    WHERE is_active = 1
+                    AND revoked_at IS NULL
                 ) AS ActiveSessions,
 
                 (
                     SELECT COUNT(*)
-                    FROM [auth].[Users]
-                    WHERE LockedUntil IS NOT NULL
-                    AND LockedUntil > SYSUTCDATETIME()
+                    FROM [auth].tbl_Users]
+                    WHERE locked_until IS NOT NULL
+                    AND locked_until > SYSUTCDATETIME()
                 ) AS LockedUsers,
 
                 (
                     SELECT COUNT(*)
-                    FROM [auth].[FailedLoginAttempts]
-                    WHERE AttemptedAt >= DATEADD(HOUR, -24, SYSUTCDATETIME())
+                    FROM [auth].tbl_Failed_Login_Attempts]
+                    WHERE attempted_at >= DATEADD(HOUR, -24, SYSUTCDATETIME())
                 ) AS FailedLogins24Hours,
 
                 (
                     SELECT COUNT(*)
-                    FROM [auth].[LoginHistory]
-                    WHERE LoginResult = 'SUCCESS'
-                    AND LoginAt >= DATEADD(HOUR, -24, SYSUTCDATETIME())
+                    FROM [auth].tbl_Login_History]
+                    WHERE login_result = 'SUCCESS'
+                    AND login_at >= DATEADD(HOUR, -24, SYSUTCDATETIME())
                 ) AS SuccessfulLogins24Hours,
 
                 (
                     SELECT COUNT(*)
-                    FROM [auth].[SecurityEvents]
-                    WHERE CreatedAt >= DATEADD(HOUR, -24, SYSUTCDATETIME())
+                    FROM [auth].tbl_Security_Events]
+                    WHERE created_at >= DATEADD(HOUR, -24, SYSUTCDATETIME())
                 ) AS SecurityEvents24Hours,
 
                 (
                     SELECT COUNT(*)
-                    FROM [auth].[RateLimitEvents]
-                    WHERE CreatedAt >= DATEADD(HOUR, -24, SYSUTCDATETIME())
+                    FROM [auth].tbl_Rate_Limit_Events]
+                    WHERE created_at >= DATEADD(HOUR, -24, SYSUTCDATETIME())
                 ) AS RateLimitEvents24Hours,
 
                 (
                     SELECT COUNT(DISTINCT UserID)
-                    FROM [auth].[LoginHistory]
-                    WHERE LoginResult = 'SUCCESS'
-                    AND LoginAt >= DATEADD(DAY, -1, SYSUTCDATETIME())
+                    FROM [auth].tbl_Login_History]
+                    WHERE login_result = 'SUCCESS'
+                    AND login_at >= DATEADD(DAY, -1, SYSUTCDATETIME())
                 ) AS ActiveUsersToday,
 
                 (
                     SELECT COUNT(*)
-                    FROM [auth].[LoginSessions]
-                    WHERE RevokedAt IS NOT NULL
-                    AND RevokedAt >= DATEADD(HOUR, -24, SYSUTCDATETIME())
+                    FROM [auth].tbl_Login_Sessions]
+                    WHERE revoked_at IS NOT NULL
+                    AND revoked_at >= DATEADD(HOUR, -24, SYSUTCDATETIME())
                 ) AS RevokedSessions24Hours,
 
                 (
                     SELECT COUNT(*)
-                    FROM [auth].[SecurityEvents]
-                    WHERE EventType = 'REFRESH_TOKEN_REPLAY'
-                    AND CreatedAt >= DATEADD(HOUR, -24, SYSUTCDATETIME())
+                    FROM [auth].tbl_Security_Events]
+                    WHERE event_type = 'REFRESH_TOKEN_REPLAY'
+                    AND created_at >= DATEADD(HOUR, -24, SYSUTCDATETIME())
                 ) AS RefreshTokenReplayEvents24Hours
         `;
 
@@ -114,60 +114,60 @@ export class SecurityRepository {
             SELECT
                 (
                     SELECT COUNT(*)
-                    FROM [auth].[LoginSessions]
-                    WHERE UserID = @0
-                    AND IsActive = 1
-                    AND RevokedAt IS NULL
+                    FROM [auth].tbl_Login_Sessions]
+                    WHERE user_id = @0
+                    AND is_active = 1
+                    AND revoked_at IS NULL
                 ) AS ActiveSessions,
 
                 (
                     SELECT COUNT(*)
-                    FROM [auth].[FailedLoginAttempts]
-                    WHERE UserID = @0
-                    AND AttemptedAt >= DATEADD(DAY, -30, SYSUTCDATETIME())
+                    FROM [auth].tbl_Failed_Login_Attempts]
+                    WHERE user_id = @0
+                    AND attempted_at >= DATEADD(DAY, -30, SYSUTCDATETIME())
                 ) AS FailedLoginsLast30Days,
 
                 (
                     SELECT COUNT(*)
-                    FROM [auth].[LoginHistory]
-                    WHERE UserID = @0
-                    AND LoginResult = 'SUCCESS'
-                    AND LoginAt >= DATEADD(DAY, -30, SYSUTCDATETIME())
+                    FROM [auth].tbl_Login_History]
+                    WHERE user_id = @0
+                    AND login_result = 'SUCCESS'
+                    AND login_at >= DATEADD(DAY, -30, SYSUTCDATETIME())
                 ) AS SuccessfulLoginsLast30Days,
 
                 (
                     SELECT COUNT(*)
-                    FROM [auth].[SecurityEvents]
-                    WHERE UserID = @0
-                    AND CreatedAt >= DATEADD(DAY, -30, SYSUTCDATETIME())
+                    FROM [auth].tbl_Security_Events]
+                    WHERE user_id = @0
+                    AND created_at >= DATEADD(DAY, -30, SYSUTCDATETIME())
                 ) AS SecurityEventsLast30Days,
 
                 (
                     SELECT TOP 1 LoginAt
-                    FROM [auth].[LoginHistory]
-                    WHERE UserID = @0
-                    AND LoginResult = 'SUCCESS'
-                    ORDER BY LoginAt DESC
-                ) AS LastLoginAt,
+                    FROM [auth].tbl_Login_History]
+                    WHERE user_id = @0
+                    AND login_result = 'SUCCESS'
+                    ORDER BY login_at DESC
+                ) AS last_login_at,
 
                 (
                     SELECT TOP 1 LogoutAt
-                    FROM [auth].[LogoutHistory]
-                    WHERE UserID = @0
-                    ORDER BY LogoutAt DESC
+                    FROM [auth].tbl_Logout_History]
+                    WHERE user_id = @0
+                    ORDER BY logout_at DESC
                 ) AS LastLogoutAt,
 
-                u.LockedUntil,
+                u.locked_until,
 
                 CASE
-                    WHEN u.LockedUntil IS NOT NULL
-                     AND u.LockedUntil > SYSUTCDATETIME()
+                    WHEN u.locked_until IS NOT NULL
+                     AND u.locked_until > SYSUTCDATETIME()
                     THEN CAST(1 AS BIT)
                     ELSE CAST(0 AS BIT)
                 END AS AccountLocked
 
-            FROM [auth].[Users] u
-            WHERE u.UserID = @0
+            FROM [auth].tbl_Users] u
+            WHERE u.user_id = @0
         `;
 
     const result = await this.dataSource.query(query, [userId]);
@@ -178,15 +178,15 @@ export class SecurityRepository {
       failedLoginsLast30Days: Number(row.FailedLoginsLast30Days ?? 0),
       successfulLoginsLast30Days: Number(row.SuccessfulLoginsLast30Days ?? 0),
       securityEventsLast30Days: Number(row.SecurityEventsLast30Days ?? 0),
-      lastLoginAt: row.LastLoginAt
-        ? new Date(row.LastLoginAt).toISOString()
+      lastLoginAt: row.last_login_at
+        ? new Date(row.last_login_at).toISOString()
         : null,
       lastLogoutAt: row.LastLogoutAt
         ? new Date(row.LastLogoutAt).toISOString()
         : null,
       accountLocked: Boolean(row.AccountLocked),
-      lockedUntil: row.LockedUntil
-        ? new Date(row.LockedUntil).toISOString()
+      lockedUntil: row.locked_until
+        ? new Date(row.locked_until).toISOString()
         : null,
     };
   }
@@ -194,53 +194,53 @@ export class SecurityRepository {
   async getActiveSessionsDashboard(): Promise<ActiveSessionDto[]> {
     const query = `
             SELECT
-                ls.LoginSessionID,
-                ls.UserID,
+                ls.login_session_id,
+                ls.user_id,
                 u.Username,
                 ls.IPAddress,
-                ls.DeviceInfo,
-                ls.BrowserName,
-                ls.DeviceType,
-                ls.LastActivityAt,
-                ls.LoginAt,
-                ls.ExpiresAt,
-                ls.IsActive
-            FROM [auth].[LoginSessions] ls
-            INNER JOIN [auth].[Users] u
-                ON u.UserID = ls.UserID
-            WHERE ls.IsActive = 1
-            AND ls.RevokedAt IS NULL
-            ORDER BY ls.LoginAt DESC
+                ls.device_info,
+                ls.browser_name,
+                ls.device_type,
+                ls.last_activity_at,
+                ls.login_at,
+                ls.expires_at,
+                ls.is_active
+            FROM [auth].tbl_Login_Sessions] ls
+            INNER JOIN [auth].tbl_Users] u
+                ON u.user_id = ls.user_id
+            WHERE ls.is_active = 1
+            AND ls.revoked_at IS NULL
+            ORDER BY ls.login_at DESC
         `;
 
     const result = await this.dataSource.query(query);
     return result.map((row: any) => ({
-      loginSessionId: row.LoginSessionID,
-      LoginSessionID: row.LoginSessionID,
-      userId: row.UserID,
-      UserID: row.UserID,
+      loginSessionId: row.login_session_id,
+      LoginSessionID: row.login_session_id,
+      userId: row.user_id,
+      UserID: row.user_id,
       username: row.Username,
       Username: row.Username,
       ipAddress: row.IPAddress,
       IPAddress: row.IPAddress,
-      deviceInfo: row.DeviceInfo || null,
-      DeviceInfo: row.DeviceInfo || null,
-      browserName: row.BrowserName || null,
-      BrowserName: row.BrowserName || null,
-      deviceType: row.DeviceType || null,
-      DeviceType: row.DeviceType || null,
-      lastActivityAt: row.LastActivityAt
-        ? new Date(row.LastActivityAt).toISOString()
+      deviceInfo: row.device_info || null,
+      DeviceInfo: row.device_info || null,
+      browserName: row.browser_name || null,
+      BrowserName: row.browser_name || null,
+      deviceType: row.device_type || null,
+      DeviceType: row.device_type || null,
+      lastActivityAt: row.last_activity_at
+        ? new Date(row.last_activity_at).toISOString()
         : null,
-      LastActivityAt: row.LastActivityAt
-        ? new Date(row.LastActivityAt).toISOString()
+      LastActivityAt: row.last_activity_at
+        ? new Date(row.last_activity_at).toISOString()
         : null,
-      loginAt: new Date(row.LoginAt).toISOString(),
-      LoginAt: new Date(row.LoginAt).toISOString(),
-      expiresAt: new Date(row.ExpiresAt).toISOString(),
-      ExpiresAt: new Date(row.ExpiresAt).toISOString(),
-      isActive: Boolean(row.IsActive ?? 1),
-      IsActive: Boolean(row.IsActive ?? 1),
+      loginAt: new Date(row.login_at).toISOString(),
+      LoginAt: new Date(row.login_at).toISOString(),
+      expiresAt: new Date(row.expires_at).toISOString(),
+      ExpiresAt: new Date(row.expires_at).toISOString(),
+      isActive: Boolean(row.is_active ?? 1),
+      IsActive: Boolean(row.is_active ?? 1),
     }));
   }
 
@@ -248,20 +248,20 @@ export class SecurityRepository {
     query: BaseQueryDto,
   ): Promise<PaginatedResult<SecurityEventDto>> {
     const allowedColumns = {
-      securityEventId: 'SecurityEventID',
-      userId: 'UserID',
-      loginSessionId: 'LoginSessionID',
-      eventType: 'EventType',
-      eventDescription: 'EventDescription',
+      securityEventId: 'security_event_id',
+      userId: 'user_id',
+      loginSessionId: 'login_session_id',
+      eventType: 'event_type',
+      eventDescription: 'event_description',
       ipAddress: 'IPAddress',
-      userAgent: 'UserAgent',
-      createdAt: 'CreatedAt',
+      userAgent: 'user_agent',
+      createdAt: 'created_at',
     };
 
     const sortColumn = sanitizeSortColumn(
       query.sortBy,
       Object.values(allowedColumns),
-      'CreatedAt',
+      'created_at',
     );
     const sortOrder = query.sortOrder === SortOrder.ASC ? 'ASC' : 'DESC';
 
@@ -277,7 +277,7 @@ export class SecurityRepository {
 
     if (query.search) {
       const searchParamIndex = allParams.length;
-      const searchClause = `(EventType LIKE @${searchParamIndex} OR EventDescription LIKE @${searchParamIndex} OR IPAddress LIKE @${searchParamIndex})`;
+      const searchClause = `(EventType LIKE @${searchParamIndex} OR event_description LIKE @${searchParamIndex} OR IPAddress LIKE @${searchParamIndex})`;
       allParams.push(`%${query.search}%`);
       finalWhere = finalWhere
         ? `${finalWhere} AND ${searchClause}`
@@ -286,7 +286,7 @@ export class SecurityRepository {
 
     const countQuery = `
             SELECT COUNT(*) AS Total
-            FROM [auth].[SecurityEvents]
+            FROM [auth].tbl_Security_Events]
             ${finalWhere}
         `;
 
@@ -309,7 +309,7 @@ export class SecurityRepository {
                     UserAgent,
                     CreatedAt,
                     ROW_NUMBER() OVER (ORDER BY ${sortColumn} ${sortOrder}) AS RowNum
-                FROM [auth].[SecurityEvents]
+                FROM [auth].tbl_Security_Events]
                 ${finalWhere}
             )
             SELECT
@@ -328,22 +328,22 @@ export class SecurityRepository {
 
     const rows = await this.dataSource.query(dataQuery, dataParams);
     const items: SecurityEventDto[] = rows.map((row: any) => ({
-      securityEventId: row.SecurityEventID,
-      SecurityEventID: row.SecurityEventID,
-      userId: row.UserID,
-      UserID: row.UserID,
-      loginSessionId: row.LoginSessionID,
-      LoginSessionID: row.LoginSessionID,
-      eventType: row.EventType,
-      EventType: row.EventType,
-      eventDescription: row.EventDescription,
-      EventDescription: row.EventDescription,
+      securityEventId: row.security_event_id,
+      SecurityEventID: row.security_event_id,
+      userId: row.user_id,
+      UserID: row.user_id,
+      loginSessionId: row.login_session_id,
+      LoginSessionID: row.login_session_id,
+      eventType: row.event_type,
+      EventType: row.event_type,
+      eventDescription: row.event_description,
+      EventDescription: row.event_description,
       ipAddress: row.IPAddress,
       IPAddress: row.IPAddress,
-      userAgent: row.UserAgent,
-      UserAgent: row.UserAgent,
-      createdAt: new Date(row.CreatedAt).toISOString(),
-      CreatedAt: new Date(row.CreatedAt).toISOString(),
+      userAgent: row.user_agent,
+      UserAgent: row.user_agent,
+      createdAt: new Date(row.created_at).toISOString(),
+      CreatedAt: new Date(row.created_at).toISOString(),
     }));
 
     return new PaginatedResult<SecurityEventDto>(
@@ -358,20 +358,20 @@ export class SecurityRepository {
     query: BaseQueryDto,
   ): Promise<PaginatedResult<FailedLoginAttemptDto>> {
     const allowedColumns = {
-      failedLoginAttemptId: 'FailedLoginAttemptID',
-      userId: 'UserID',
+      failedLoginAttemptId: 'failed_login_attempt_id',
+      userId: 'user_id',
       username: 'Username',
       ipAddress: 'IPAddress',
-      failureReason: 'FailureReason',
-      attemptedAt: 'AttemptedAt',
-      browserName: 'BrowserName',
-      deviceType: 'DeviceType',
+      failureReason: 'failure_reason',
+      attemptedAt: 'attempted_at',
+      browserName: 'browser_name',
+      deviceType: 'device_type',
     };
 
     const sortColumn = sanitizeSortColumn(
       query.sortBy,
       Object.values(allowedColumns),
-      'AttemptedAt',
+      'attempted_at',
     );
     const sortOrder = query.sortOrder === SortOrder.ASC ? 'ASC' : 'DESC';
 
@@ -386,7 +386,7 @@ export class SecurityRepository {
 
     if (query.search) {
       const searchParamIndex = allParams.length;
-      const searchClause = `(Username LIKE @${searchParamIndex} OR IPAddress LIKE @${searchParamIndex} OR FailureReason LIKE @${searchParamIndex})`;
+      const searchClause = `(Username LIKE @${searchParamIndex} OR IPAddress LIKE @${searchParamIndex} OR failure_reason LIKE @${searchParamIndex})`;
       allParams.push(`%${query.search}%`);
       finalWhere = finalWhere
         ? `${finalWhere} AND ${searchClause}`
@@ -395,7 +395,7 @@ export class SecurityRepository {
 
     const countQuery = `
             SELECT COUNT(*) AS Total
-            FROM [auth].[FailedLoginAttempts]
+            FROM [auth].tbl_Failed_Login_Attempts]
             ${finalWhere}
         `;
 
@@ -418,7 +418,7 @@ export class SecurityRepository {
                     BrowserName,
                     DeviceType,
                     ROW_NUMBER() OVER (ORDER BY ${sortColumn} ${sortOrder}) AS RowNum
-                FROM [auth].[FailedLoginAttempts]
+                FROM [auth].tbl_Failed_Login_Attempts]
                 ${finalWhere}
             )
             SELECT
@@ -437,22 +437,22 @@ export class SecurityRepository {
 
     const rows = await this.dataSource.query(dataQuery, dataParams);
     const items: FailedLoginAttemptDto[] = rows.map((row: any) => ({
-      failedLoginAttemptId: row.FailedLoginAttemptID,
-      FailedLoginAttemptID: row.FailedLoginAttemptID,
-      userId: row.UserID,
-      UserID: row.UserID,
+      failedLoginAttemptId: row.failed_login_attempt_id,
+      FailedLoginAttemptID: row.failed_login_attempt_id,
+      userId: row.user_id,
+      UserID: row.user_id,
       username: row.Username,
       Username: row.Username,
       ipAddress: row.IPAddress,
       IPAddress: row.IPAddress,
-      failureReason: row.FailureReason,
-      FailureReason: row.FailureReason,
-      attemptedAt: new Date(row.AttemptedAt).toISOString(),
-      AttemptedAt: new Date(row.AttemptedAt).toISOString(),
-      browserName: row.BrowserName,
-      BrowserName: row.BrowserName,
-      deviceType: row.DeviceType,
-      DeviceType: row.DeviceType,
+      failureReason: row.failure_reason,
+      FailureReason: row.failure_reason,
+      attemptedAt: new Date(row.attempted_at).toISOString(),
+      AttemptedAt: new Date(row.attempted_at).toISOString(),
+      browserName: row.browser_name,
+      BrowserName: row.browser_name,
+      deviceType: row.device_type,
+      DeviceType: row.device_type,
     }));
 
     return new PaginatedResult<FailedLoginAttemptDto>(
@@ -468,8 +468,8 @@ export class SecurityRepository {
             SELECT
                 CAST(AttemptedAt AS DATE) AS [Date],
                 COUNT(*) AS Total
-            FROM [auth].[FailedLoginAttempts]
-            WHERE AttemptedAt >= DATEADD(DAY, -30, SYSUTCDATETIME())
+            FROM [auth].tbl_Failed_Login_Attempts]
+            WHERE attempted_at >= DATEADD(DAY, -30, SYSUTCDATETIME())
             GROUP BY CAST(AttemptedAt AS DATE)
             ORDER BY [Date]
         `;
@@ -489,14 +489,14 @@ export class SecurityRepository {
             SELECT
                 EventType,
                 COUNT(*) AS Total
-            FROM [auth].[SecurityEvents]
-            GROUP BY EventType
+            FROM [auth].tbl_Security_Events]
+            GROUP BY event_type
             ORDER BY Total DESC
         `;
 
     const rows = await this.dataSource.query(query);
     return rows.map((row: any) => ({
-      eventType: row.EventType,
+      eventType: row.event_type,
       count: Number(row.Total),
     }));
   }
@@ -506,15 +506,15 @@ export class SecurityRepository {
             SELECT
                 DeviceInfo,
                 COUNT(*) AS Total
-            FROM [auth].[LoginSessions]
-            WHERE IsActive = 1
-            AND RevokedAt IS NULL
-            GROUP BY DeviceInfo
+            FROM [auth].tbl_Login_Sessions]
+            WHERE is_active = 1
+            AND revoked_at IS NULL
+            GROUP BY device_info
         `;
 
     const rows = await this.dataSource.query(query);
     return rows.map((row: any) => ({
-      device: row.DeviceInfo || 'Unknown',
+      device: row.device_info || 'Unknown',
       count: Number(row.Total),
     }));
   }
@@ -522,22 +522,22 @@ export class SecurityRepository {
   async sessionsByRoleChartData(): Promise<SessionsByRoleDto[]> {
     const query = `
             SELECT
-                r.RoleCode,
-                COUNT(DISTINCT ls.LoginSessionID) AS Total
-            FROM [auth].[LoginSessions] ls
-            INNER JOIN [auth].[UserRoles] ur
-                ON ur.UserID = ls.UserID
-            INNER JOIN [auth].[Roles] r
-                ON r.RoleID = ur.RoleID
-            WHERE ls.IsActive = 1
-            AND ls.RevokedAt IS NULL
-            GROUP BY r.RoleCode
+                r.role_code,
+                COUNT(DISTINCT ls.login_session_id) AS Total
+            FROM [auth].tbl_Login_Sessions] ls
+            INNER JOIN [auth].tbl_User_Roles] ur
+                ON ur.user_id = ls.user_id
+            INNER JOIN [auth].tbl_Roles] r
+                ON r.role_id = ur.role_id
+            WHERE ls.is_active = 1
+            AND ls.revoked_at IS NULL
+            GROUP BY r.role_code
             ORDER BY Total DESC
         `;
 
     const rows = await this.dataSource.query(query);
     return rows.map((row: any) => ({
-      role: row.RoleCode,
+      role: row.role_code,
       count: Number(row.Total),
     }));
   }
@@ -560,7 +560,7 @@ export class SecurityRepository {
                         ELSE 0
                     END
                 ) AS Failures
-            FROM [auth].[LoginHistory]
+            FROM [auth].tbl_Login_History]
             GROUP BY CAST(LoginAt AS DATE)
             ORDER BY [Date]
         `;
@@ -581,8 +581,8 @@ export class SecurityRepository {
             SELECT
                 CAST(CreatedAt AS DATE) AS [Date],
                 COUNT(*) AS Total
-            FROM [auth].[SecurityEvents]
-            WHERE EventType = 'REFRESH_TOKEN_REPLAY'
+            FROM [auth].tbl_Security_Events]
+            WHERE event_type = 'REFRESH_TOKEN_REPLAY'
             GROUP BY CAST(CreatedAt AS DATE)
             ORDER BY [Date]
         `;
@@ -602,15 +602,15 @@ export class SecurityRepository {
             SELECT
                 Username,
                 FailedLoginCount
-            FROM [auth].[Users]
-            WHERE LockedUntil > SYSUTCDATETIME()
-            ORDER BY FailedLoginCount DESC
+            FROM [auth].tbl_Users]
+            WHERE locked_until > SYSUTCDATETIME()
+            ORDER BY failed_login_count DESC
         `;
 
     const rows = await this.dataSource.query(query);
     return rows.map((row: any) => ({
       username: row.Username,
-      lockouts: Number(row.FailedLoginCount),
+      lockouts: Number(row.failed_login_count),
     }));
   }
 
@@ -619,7 +619,7 @@ export class SecurityRepository {
             SELECT
                 CAST(LoginAt AS DATE) AS [Date],
                 COUNT(*) AS Total
-            FROM [auth].[LoginSessions]
+            FROM [auth].tbl_Login_Sessions]
             GROUP BY CAST(LoginAt AS DATE)
             ORDER BY [Date]
         `;

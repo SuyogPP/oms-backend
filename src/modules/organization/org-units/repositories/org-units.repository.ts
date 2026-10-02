@@ -29,7 +29,7 @@ export class OrgUnitsRepository {
         u.Description AS description,
         u.MaterializedPath AS materializedPath,
         u.Depth AS depth,
-        u.CostCenterCode AS costCenterCode,
+        u.cost_center_code AS costCenterCode,
         u.ADObjectGuid AS adObjectGuid,
         u.ADDistinguishedName AS adDistinguishedName,
         u.OracleOrgCode AS oracleOrgCode,
@@ -37,14 +37,14 @@ export class OrgUnitsRepository {
         u.EmailAddress AS emailAddress,
         u.PhoneNumber AS phoneNumber,
         u.SortOrder AS sortOrder,
-        u.EffectiveFrom AS effectiveFrom,
-        u.EffectiveTo AS effectiveTo,
-        u.IsActive AS isActive,
+        u.effective_from AS effectiveFrom,
+        u.effective_to AS effectiveTo,
+        u.is_active AS isActive,
         u.IsDeleted AS isDeleted,
-        u.CreatedBy AS createdBy,
-        u.CreatedAt AS createdAt,
-        u.UpdatedBy AS updatedBy,
-        u.UpdatedAt AS updatedAt,
+        u.created_by AS createdBy,
+        u.created_at AS createdAt,
+        u.updated_by AS updatedBy,
+        u.updated_at AS updatedAt,
         u.DeletedBy AS deletedBy,
         u.DeletedAt AS deletedAt,
         CONVERT(VARCHAR(34), CAST(u.RowVersion AS VARBINARY(8)), 1) AS rowVersion
@@ -77,7 +77,7 @@ export class OrgUnitsRepository {
         u.Description AS description,
         u.MaterializedPath AS materializedPath,
         u.Depth AS depth,
-        u.CostCenterCode AS costCenterCode,
+        u.cost_center_code AS costCenterCode,
         u.ADObjectGuid AS adObjectGuid,
         u.ADDistinguishedName AS adDistinguishedName,
         u.OracleOrgCode AS oracleOrgCode,
@@ -85,14 +85,14 @@ export class OrgUnitsRepository {
         u.EmailAddress AS emailAddress,
         u.PhoneNumber AS phoneNumber,
         u.SortOrder AS sortOrder,
-        u.EffectiveFrom AS effectiveFrom,
-        u.EffectiveTo AS effectiveTo,
-        u.IsActive AS isActive,
+        u.effective_from AS effectiveFrom,
+        u.effective_to AS effectiveTo,
+        u.is_active AS isActive,
         u.IsDeleted AS isDeleted,
-        u.CreatedBy AS createdBy,
-        u.CreatedAt AS createdAt,
-        u.UpdatedBy AS updatedBy,
-        u.UpdatedAt AS updatedAt,
+        u.created_by AS createdBy,
+        u.created_at AS createdAt,
+        u.updated_by AS updatedBy,
+        u.updated_at AS updatedAt,
         CONVERT(VARCHAR(34), CAST(u.RowVersion AS VARBINARY(8)), 1) AS rowVersion
       FROM org.OrgUnits u
       INNER JOIN org.fn_VisibleOrgUnits(@1) v ON v.OrgUnitId = u.OrgUnitId
@@ -121,7 +121,7 @@ export class OrgUnitsRepository {
         u.Description AS description,
         u.MaterializedPath AS materializedPath,
         u.Depth AS depth,
-        u.CostCenterCode AS costCenterCode,
+        u.cost_center_code AS costCenterCode,
         u.ADObjectGuid AS adObjectGuid,
         u.ADDistinguishedName AS adDistinguishedName,
         u.OracleOrgCode AS oracleOrgCode,
@@ -129,14 +129,14 @@ export class OrgUnitsRepository {
         u.EmailAddress AS emailAddress,
         u.PhoneNumber AS phoneNumber,
         u.SortOrder AS sortOrder,
-        u.EffectiveFrom AS effectiveFrom,
-        u.EffectiveTo AS effectiveTo,
-        u.IsActive AS isActive,
+        u.effective_from AS effectiveFrom,
+        u.effective_to AS effectiveTo,
+        u.is_active AS isActive,
         u.IsDeleted AS isDeleted,
-        u.CreatedBy AS createdBy,
-        u.CreatedAt AS createdAt,
-        u.UpdatedBy AS updatedBy,
-        u.UpdatedAt AS updatedAt,
+        u.created_by AS createdBy,
+        u.created_at AS createdAt,
+        u.updated_by AS updatedBy,
+        u.updated_at AS updatedAt,
         u.DeletedBy AS deletedBy,
         u.DeletedAt AS deletedAt,
         CONVERT(VARCHAR(34), CAST(u.RowVersion AS VARBINARY(8)), 1) AS rowVersion
@@ -167,7 +167,7 @@ export class OrgUnitsRepository {
         u.Description AS description,
         u.MaterializedPath AS materializedPath,
         u.Depth AS depth,
-        u.CostCenterCode AS costCenterCode,
+        u.cost_center_code AS costCenterCode,
         u.ADObjectGuid AS adObjectGuid,
         u.ADDistinguishedName AS adDistinguishedName,
         u.OracleOrgCode AS oracleOrgCode,
@@ -175,14 +175,14 @@ export class OrgUnitsRepository {
         u.EmailAddress AS emailAddress,
         u.PhoneNumber AS phoneNumber,
         u.SortOrder AS sortOrder,
-        u.EffectiveFrom AS effectiveFrom,
-        u.EffectiveTo AS effectiveTo,
-        u.IsActive AS isActive,
+        u.effective_from AS effectiveFrom,
+        u.effective_to AS effectiveTo,
+        u.is_active AS isActive,
         u.IsDeleted AS isDeleted,
-        u.CreatedBy AS createdBy,
-        u.CreatedAt AS createdAt,
-        u.UpdatedBy AS updatedBy,
-        u.UpdatedAt AS updatedAt,
+        u.created_by AS createdBy,
+        u.created_at AS createdAt,
+        u.updated_by AS updatedBy,
+        u.updated_at AS updatedAt,
         u.DeletedBy AS deletedBy,
         u.DeletedAt AS deletedAt,
         CONVERT(VARCHAR(34), CAST(u.RowVersion AS VARBINARY(8)), 1) AS rowVersion
@@ -211,7 +211,7 @@ export class OrgUnitsRepository {
         u.Description AS description,
         u.MaterializedPath AS materializedPath,
         u.Depth AS depth,
-        u.CostCenterCode AS costCenterCode,
+        u.cost_center_code AS costCenterCode,
         u.ADObjectGuid AS adObjectGuid,
         u.ADDistinguishedName AS adDistinguishedName,
         u.OracleOrgCode AS oracleOrgCode,
@@ -219,14 +219,14 @@ export class OrgUnitsRepository {
         u.EmailAddress AS emailAddress,
         u.PhoneNumber AS phoneNumber,
         u.SortOrder AS sortOrder,
-        u.EffectiveFrom AS effectiveFrom,
-        u.EffectiveTo AS effectiveTo,
-        u.IsActive AS isActive,
+        u.effective_from AS effectiveFrom,
+        u.effective_to AS effectiveTo,
+        u.is_active AS isActive,
         u.IsDeleted AS isDeleted,
-        u.CreatedBy AS createdBy,
-        u.CreatedAt AS createdAt,
-        u.UpdatedBy AS updatedBy,
-        u.UpdatedAt AS updatedAt,
+        u.created_by AS createdBy,
+        u.created_at AS createdAt,
+        u.updated_by AS updatedBy,
+        u.updated_at AS updatedAt,
         u.DeletedBy AS deletedBy,
         u.DeletedAt AS deletedAt,
         CONVERT(VARCHAR(34), CAST(u.RowVersion AS VARBINARY(8)), 1) AS rowVersion
@@ -234,7 +234,7 @@ export class OrgUnitsRepository {
       WHERE u.ParentOrgUnitId IS NULL 
         AND u.OrgUnitTypeId = 1
         AND u.IsDeleted = 0 
-        AND u.IsActive = 1;
+        AND u.is_active = 1;
     `;
     const rows = await this.getExecutor(qr).query(sql);
     return rows.length > 0 ? rows[0] : null;
@@ -259,7 +259,7 @@ export class OrgUnitsRepository {
         u.Description AS description,
         u.MaterializedPath AS materializedPath,
         u.Depth AS depth,
-        u.CostCenterCode AS costCenterCode,
+        u.cost_center_code AS costCenterCode,
         u.ADObjectGuid AS adObjectGuid,
         u.ADDistinguishedName AS adDistinguishedName,
         u.OracleOrgCode AS oracleOrgCode,
@@ -267,14 +267,14 @@ export class OrgUnitsRepository {
         u.EmailAddress AS emailAddress,
         u.PhoneNumber AS phoneNumber,
         u.SortOrder AS sortOrder,
-        u.EffectiveFrom AS effectiveFrom,
-        u.EffectiveTo AS effectiveTo,
-        u.IsActive AS isActive,
+        u.effective_from AS effectiveFrom,
+        u.effective_to AS effectiveTo,
+        u.is_active AS isActive,
         u.IsDeleted AS isDeleted,
-        u.CreatedBy AS createdBy,
-        u.CreatedAt AS createdAt,
-        u.UpdatedBy AS updatedBy,
-        u.UpdatedAt AS updatedAt,
+        u.created_by AS createdBy,
+        u.created_at AS createdAt,
+        u.updated_by AS updatedBy,
+        u.updated_at AS updatedAt,
         CONVERT(VARCHAR(34), CAST(u.RowVersion AS VARBINARY(8)), 1) AS rowVersion
       FROM org.OrgUnits u
       WHERE u.ParentOrgUnitId = @0 AND u.IsDeleted = 0
@@ -303,7 +303,7 @@ export class OrgUnitsRepository {
         u.Description AS description,
         u.MaterializedPath AS materializedPath,
         u.Depth AS depth,
-        u.CostCenterCode AS costCenterCode,
+        u.cost_center_code AS costCenterCode,
         u.ADObjectGuid AS adObjectGuid,
         u.ADDistinguishedName AS adDistinguishedName,
         u.OracleOrgCode AS oracleOrgCode,
@@ -311,14 +311,14 @@ export class OrgUnitsRepository {
         u.EmailAddress AS emailAddress,
         u.PhoneNumber AS phoneNumber,
         u.SortOrder AS sortOrder,
-        u.EffectiveFrom AS effectiveFrom,
-        u.EffectiveTo AS effectiveTo,
-        u.IsActive AS isActive,
+        u.effective_from AS effectiveFrom,
+        u.effective_to AS effectiveTo,
+        u.is_active AS isActive,
         u.IsDeleted AS isDeleted,
-        u.CreatedBy AS createdBy,
-        u.CreatedAt AS createdAt,
-        u.UpdatedBy AS updatedBy,
-        u.UpdatedAt AS updatedAt,
+        u.created_by AS createdBy,
+        u.created_at AS createdAt,
+        u.updated_by AS updatedBy,
+        u.updated_at AS updatedAt,
         CONVERT(VARCHAR(34), CAST(u.RowVersion AS VARBINARY(8)), 1) AS rowVersion
       FROM org.OrgUnits u
       INNER JOIN org.fn_VisibleOrgUnits(@1) v ON v.OrgUnitId = u.OrgUnitId
@@ -347,7 +347,7 @@ export class OrgUnitsRepository {
         u.Description AS description,
         u.MaterializedPath AS materializedPath,
         u.Depth AS depth,
-        u.CostCenterCode AS costCenterCode,
+        u.cost_center_code AS costCenterCode,
         u.ADObjectGuid AS adObjectGuid,
         u.ADDistinguishedName AS adDistinguishedName,
         u.OracleOrgCode AS oracleOrgCode,
@@ -355,14 +355,14 @@ export class OrgUnitsRepository {
         u.EmailAddress AS emailAddress,
         u.PhoneNumber AS phoneNumber,
         u.SortOrder AS sortOrder,
-        u.EffectiveFrom AS effectiveFrom,
-        u.EffectiveTo AS effectiveTo,
-        u.IsActive AS isActive,
+        u.effective_from AS effectiveFrom,
+        u.effective_to AS effectiveTo,
+        u.is_active AS isActive,
         u.IsDeleted AS isDeleted,
-        u.CreatedBy AS createdBy,
-        u.CreatedAt AS createdAt,
-        u.UpdatedBy AS updatedBy,
-        u.UpdatedAt AS updatedAt,
+        u.created_by AS createdBy,
+        u.created_at AS createdAt,
+        u.updated_by AS updatedBy,
+        u.updated_at AS updatedAt,
         CONVERT(VARCHAR(34), CAST(u.RowVersion AS VARBINARY(8)), 1) AS rowVersion
       FROM org.OrgUnits u
       INNER JOIN org.OrgUnitClosure c ON c.AncestorOrgUnitId = u.OrgUnitId
@@ -394,7 +394,7 @@ export class OrgUnitsRepository {
         u.Description AS description,
         u.MaterializedPath AS materializedPath,
         u.Depth AS depth,
-        u.CostCenterCode AS costCenterCode,
+        u.cost_center_code AS costCenterCode,
         u.ADObjectGuid AS adObjectGuid,
         u.ADDistinguishedName AS adDistinguishedName,
         u.OracleOrgCode AS oracleOrgCode,
@@ -402,14 +402,14 @@ export class OrgUnitsRepository {
         u.EmailAddress AS emailAddress,
         u.PhoneNumber AS phoneNumber,
         u.SortOrder AS sortOrder,
-        u.EffectiveFrom AS effectiveFrom,
-        u.EffectiveTo AS effectiveTo,
-        u.IsActive AS isActive,
+        u.effective_from AS effectiveFrom,
+        u.effective_to AS effectiveTo,
+        u.is_active AS isActive,
         u.IsDeleted AS isDeleted,
-        u.CreatedBy AS createdBy,
-        u.CreatedAt AS createdAt,
-        u.UpdatedBy AS updatedBy,
-        u.UpdatedAt AS updatedAt,
+        u.created_by AS createdBy,
+        u.created_at AS createdAt,
+        u.updated_by AS updatedBy,
+        u.updated_at AS updatedAt,
         CONVERT(VARCHAR(34), CAST(u.RowVersion AS VARBINARY(8)), 1) AS rowVersion
       FROM org.OrgUnits u
       INNER JOIN org.OrgUnitClosure c ON c.AncestorOrgUnitId = u.OrgUnitId
@@ -441,7 +441,7 @@ export class OrgUnitsRepository {
         u.Description AS description,
         u.MaterializedPath AS materializedPath,
         u.Depth AS depth,
-        u.CostCenterCode AS costCenterCode,
+        u.cost_center_code AS costCenterCode,
         u.ADObjectGuid AS adObjectGuid,
         u.ADDistinguishedName AS adDistinguishedName,
         u.OracleOrgCode AS oracleOrgCode,
@@ -449,14 +449,14 @@ export class OrgUnitsRepository {
         u.EmailAddress AS emailAddress,
         u.PhoneNumber AS phoneNumber,
         u.SortOrder AS sortOrder,
-        u.EffectiveFrom AS effectiveFrom,
-        u.EffectiveTo AS effectiveTo,
-        u.IsActive AS isActive,
+        u.effective_from AS effectiveFrom,
+        u.effective_to AS effectiveTo,
+        u.is_active AS isActive,
         u.IsDeleted AS isDeleted,
-        u.CreatedBy AS createdBy,
-        u.CreatedAt AS createdAt,
-        u.UpdatedBy AS updatedBy,
-        u.UpdatedAt AS updatedAt,
+        u.created_by AS createdBy,
+        u.created_at AS createdAt,
+        u.updated_by AS updatedBy,
+        u.updated_at AS updatedAt,
         CONVERT(VARCHAR(34), CAST(u.RowVersion AS VARBINARY(8)), 1) AS rowVersion
       FROM org.OrgUnits u
       INNER JOIN org.OrgUnitClosure c ON c.DescendantOrgUnitId = u.OrgUnitId
@@ -488,7 +488,7 @@ export class OrgUnitsRepository {
         u.Description AS description,
         u.MaterializedPath AS materializedPath,
         u.Depth AS depth,
-        u.CostCenterCode AS costCenterCode,
+        u.cost_center_code AS costCenterCode,
         u.ADObjectGuid AS adObjectGuid,
         u.ADDistinguishedName AS adDistinguishedName,
         u.OracleOrgCode AS oracleOrgCode,
@@ -496,14 +496,14 @@ export class OrgUnitsRepository {
         u.EmailAddress AS emailAddress,
         u.PhoneNumber AS phoneNumber,
         u.SortOrder AS sortOrder,
-        u.EffectiveFrom AS effectiveFrom,
-        u.EffectiveTo AS effectiveTo,
-        u.IsActive AS isActive,
+        u.effective_from AS effectiveFrom,
+        u.effective_to AS effectiveTo,
+        u.is_active AS isActive,
         u.IsDeleted AS isDeleted,
-        u.CreatedBy AS createdBy,
-        u.CreatedAt AS createdAt,
-        u.UpdatedBy AS updatedBy,
-        u.UpdatedAt AS updatedAt,
+        u.created_by AS createdBy,
+        u.created_at AS createdAt,
+        u.updated_by AS updatedBy,
+        u.updated_at AS updatedAt,
         CONVERT(VARCHAR(34), CAST(u.RowVersion AS VARBINARY(8)), 1) AS rowVersion
       FROM org.OrgUnits u
       INNER JOIN org.OrgUnitClosure c ON c.DescendantOrgUnitId = u.OrgUnitId
@@ -529,7 +529,7 @@ export class OrgUnitsRepository {
       FROM org.OrgUnits
       WHERE ParentOrgUnitId = @0 
         AND IsDeleted = 0
-        ${onlyActive ? 'AND IsActive = 1' : ''};
+        ${onlyActive ? 'AND is_active = 1' : ''};
     `;
     const res = await this.getExecutor(qr).query(sql, [orgUnitId]);
     return Number(res[0]?.total || 0);
@@ -581,7 +581,7 @@ export class OrgUnitsRepository {
         AND (@1 IS NULL OR u.OrgUnitTypeId = @1)
         AND (@2 IS NULL OR u.ParentOrgUnitId = @2)
         AND (@3 IS NULL OR (u.Name LIKE '%' + @3 + '%' OR u.Code LIKE '%' + @3 + '%'))
-        AND (@4 IS NULL OR u.IsActive = @4)
+        AND (@4 IS NULL OR u.is_active = @4)
         AND (@5 IS NULL OR u.Depth = @5);
     `;
 
@@ -610,7 +610,7 @@ export class OrgUnitsRepository {
           u.Description AS description,
           u.MaterializedPath AS materializedPath,
           u.Depth AS depth,
-          u.CostCenterCode AS costCenterCode,
+          u.cost_center_code AS costCenterCode,
           u.ADObjectGuid AS adObjectGuid,
           u.ADDistinguishedName AS adDistinguishedName,
           u.OracleOrgCode AS oracleOrgCode,
@@ -618,14 +618,14 @@ export class OrgUnitsRepository {
           u.EmailAddress AS emailAddress,
           u.PhoneNumber AS phoneNumber,
           u.SortOrder AS sortOrder,
-          u.EffectiveFrom AS effectiveFrom,
-          u.EffectiveTo AS effectiveTo,
-          u.IsActive AS isActive,
+          u.effective_from AS effectiveFrom,
+          u.effective_to AS effectiveTo,
+          u.is_active AS isActive,
           u.IsDeleted AS isDeleted,
-          u.CreatedBy AS createdBy,
-          u.CreatedAt AS createdAt,
-          u.UpdatedBy AS updatedBy,
-          u.UpdatedAt AS updatedAt,
+          u.created_by AS createdBy,
+          u.created_at AS createdAt,
+          u.updated_by AS updatedBy,
+          u.updated_at AS updatedAt,
           CONVERT(VARCHAR(34), CAST(u.RowVersion AS VARBINARY(8)), 1) AS rowVersion,
           ROW_NUMBER() OVER (ORDER BY u.Depth ASC, u.SortOrder ASC, u.Name ASC) AS RowNum
         FROM org.OrgUnits u
@@ -634,7 +634,7 @@ export class OrgUnitsRepository {
           AND (@1 IS NULL OR u.OrgUnitTypeId = @1)
           AND (@2 IS NULL OR u.ParentOrgUnitId = @2)
           AND (@3 IS NULL OR (u.Name LIKE '%' + @3 + '%' OR u.Code LIKE '%' + @3 + '%'))
-          AND (@4 IS NULL OR u.IsActive = @4)
+          AND (@4 IS NULL OR u.is_active = @4)
           AND (@5 IS NULL OR u.Depth = @5)
       )
       SELECT
@@ -690,7 +690,7 @@ export class OrgUnitsRepository {
         u.ShortName AS shortName,
         u.Depth AS depth,
         u.SortOrder AS sortOrder,
-        u.IsActive AS isActive,
+        u.is_active AS isActive,
         u.HeadUserId AS headUserId,
         CONVERT(VARCHAR(34), CAST(u.RowVersion AS VARBINARY(8)), 1) AS rowVersion
       FROM org.OrgUnits u
@@ -758,7 +758,7 @@ export class OrgUnitsRepository {
         INSERTED.Description AS description,
         INSERTED.MaterializedPath AS materializedPath,
         INSERTED.Depth AS depth,
-        INSERTED.CostCenterCode AS costCenterCode,
+        INSERTED.cost_center_code AS costCenterCode,
         INSERTED.ADObjectGuid AS adObjectGuid,
         INSERTED.ADDistinguishedName AS adDistinguishedName,
         INSERTED.OracleOrgCode AS oracleOrgCode,
@@ -766,14 +766,14 @@ export class OrgUnitsRepository {
         INSERTED.EmailAddress AS emailAddress,
         INSERTED.PhoneNumber AS phoneNumber,
         INSERTED.SortOrder AS sortOrder,
-        INSERTED.EffectiveFrom AS effectiveFrom,
-        INSERTED.EffectiveTo AS effectiveTo,
-        INSERTED.IsActive AS isActive,
+        INSERTED.effective_from AS effectiveFrom,
+        INSERTED.effective_to AS effectiveTo,
+        INSERTED.is_active AS isActive,
         INSERTED.IsDeleted AS isDeleted,
-        INSERTED.CreatedBy AS createdBy,
-        INSERTED.CreatedAt AS createdAt,
-        INSERTED.UpdatedBy AS updatedBy,
-        INSERTED.UpdatedAt AS updatedAt,
+        INSERTED.created_by AS createdBy,
+        INSERTED.created_at AS createdAt,
+        INSERTED.updated_by AS updatedBy,
+        INSERTED.updated_at AS updatedAt,
         CONVERT(VARCHAR(34), CAST(INSERTED.RowVersion AS VARBINARY(8)), 1) AS rowVersion
       VALUES (
         @0, @1, @2, @3, @4, @5, @6, @7, @8, @9, @10, @11, @12, @13, @14, 1, 0, @15, SYSUTCDATETIME()
@@ -851,7 +851,7 @@ export class OrgUnitsRepository {
         INSERTED.Description AS description,
         INSERTED.MaterializedPath AS materializedPath,
         INSERTED.Depth AS depth,
-        INSERTED.CostCenterCode AS costCenterCode,
+        INSERTED.cost_center_code AS costCenterCode,
         INSERTED.ADObjectGuid AS adObjectGuid,
         INSERTED.ADDistinguishedName AS adDistinguishedName,
         INSERTED.OracleOrgCode AS oracleOrgCode,
@@ -859,14 +859,14 @@ export class OrgUnitsRepository {
         INSERTED.EmailAddress AS emailAddress,
         INSERTED.PhoneNumber AS phoneNumber,
         INSERTED.SortOrder AS sortOrder,
-        INSERTED.EffectiveFrom AS effectiveFrom,
-        INSERTED.EffectiveTo AS effectiveTo,
-        INSERTED.IsActive AS isActive,
+        INSERTED.effective_from AS effectiveFrom,
+        INSERTED.effective_to AS effectiveTo,
+        INSERTED.is_active AS isActive,
         INSERTED.IsDeleted AS isDeleted,
-        INSERTED.CreatedBy AS createdBy,
-        INSERTED.CreatedAt AS createdAt,
-        INSERTED.UpdatedBy AS updatedBy,
-        INSERTED.UpdatedAt AS updatedAt,
+        INSERTED.created_by AS createdBy,
+        INSERTED.created_at AS createdAt,
+        INSERTED.updated_by AS updatedBy,
+        INSERTED.updated_at AS updatedAt,
         CONVERT(VARCHAR(34), CAST(INSERTED.RowVersion AS VARBINARY(8)), 1) AS rowVersion
       WHERE OrgUnitId = @0 AND IsDeleted = 0;
     `;
@@ -994,7 +994,7 @@ export class OrgUnitsRepository {
   ): Promise<void> {
     const sql = `
       UPDATE org.OrgUnits
-      SET IsActive = @1,
+      SET is_active = @1,
           EffectiveTo = CASE
             WHEN @1 = 1 THEN NULL
             WHEN @2 IS NOT NULL AND CAST(@2 AS DATE) >= EffectiveFrom THEN CAST(@2 AS DATE)
@@ -1050,21 +1050,21 @@ export class OrgUnitsRepository {
         u.Description AS description,
         u.MaterializedPath AS materializedPath,
         u.Depth AS depth,
-        u.CostCenterCode AS costCenterCode,
+        u.cost_center_code AS costCenterCode,
         u.HeadUserId AS headUserId,
         u.SortOrder AS sortOrder,
-        u.EffectiveFrom AS effectiveFrom,
-        u.EffectiveTo AS effectiveTo,
-        u.IsActive AS isActive,
+        u.effective_from AS effectiveFrom,
+        u.effective_to AS effectiveTo,
+        u.is_active AS isActive,
         u.IsDeleted AS isDeleted,
         CONVERT(VARCHAR(34), CAST(u.RowVersion AS VARBINARY(8)), 1) AS rowVersion
       FROM org.OrgUnits u
       INNER JOIN org.OrgUnitTypes t ON t.OrgUnitTypeId = u.OrgUnitTypeId
       INNER JOIN org.OrgUnitClosure c ON c.AncestorOrgUnitId = u.OrgUnitId
       WHERE c.DescendantOrgUnitId = @0
-        AND t.AllowsBudget = 1
+        AND t.allows_budget = 1
         AND u.IsDeleted = 0
-        AND u.IsActive = 1
+        AND u.is_active = 1
       ORDER BY c.Depth ASC; -- Nearest ancestor first (smallest depth distance)
     `;
     const rows = await this.getExecutor(qr).query(sql, [orgUnitId]);
@@ -1092,7 +1092,7 @@ export class OrgUnitsRepository {
         AND (@1 IS NULL OR u.OrgUnitTypeId = @1)
         AND (@2 IS NULL OR u.ParentOrgUnitId = @2)
         AND (@3 IS NULL OR (u.Code LIKE '%' + @3 + '%' OR u.Name LIKE '%' + @3 + '%'))
-        AND (@4 IS NULL OR u.IsActive = @4);
+        AND (@4 IS NULL OR u.is_active = @4);
     `;
     const rows = await this.getExecutor(qr).query(sql, [
       userId,
@@ -1128,26 +1128,26 @@ export class OrgUnitsRepository {
         p.Code AS parentCode,
         p.Name AS parentName,
         u.Depth AS depth,
-        u.CostCenterCode AS costCenterCode,
+        u.cost_center_code AS costCenterCode,
         CASE
-          WHEN up.FirstName IS NOT NULL THEN CONCAT(up.FirstName, ' ', up.LastName)
+          WHEN up.first_name IS NOT NULL THEN CONCAT(up.first_name, ' ', up.last_name)
           WHEN usr.Username IS NOT NULL THEN usr.Username
           ELSE NULL
         END AS headDisplayName,
-        u.IsActive AS isActive,
-        CONVERT(VARCHAR(10), u.EffectiveFrom, 120) AS effectiveFrom,
-        CONVERT(VARCHAR(10), u.EffectiveTo, 120) AS effectiveTo
+        u.is_active AS isActive,
+        CONVERT(VARCHAR(10), u.effective_from, 120) AS effectiveFrom,
+        CONVERT(VARCHAR(10), u.effective_to, 120) AS effectiveTo
       FROM org.OrgUnits u
       INNER JOIN org.fn_VisibleOrgUnits(@0) v ON v.OrgUnitId = u.OrgUnitId
       INNER JOIN org.OrgUnitTypes t ON t.OrgUnitTypeId = u.OrgUnitTypeId
       LEFT JOIN org.OrgUnits p ON p.OrgUnitId = u.ParentOrgUnitId AND p.IsDeleted = 0
-      LEFT JOIN auth.Users usr ON usr.UserID = u.HeadUserId
-      LEFT JOIN auth.UserProfiles up ON up.UserID = usr.UserID
+      LEFT JOIN auth.tbl_Users usr ON usr.user_id = u.HeadUserId
+      LEFT JOIN auth.UserProfiles up ON up.user_id = usr.user_id
       WHERE u.IsDeleted = 0
         AND (@1 IS NULL OR u.OrgUnitTypeId = @1)
         AND (@2 IS NULL OR u.ParentOrgUnitId = @2)
         AND (@3 IS NULL OR (u.Code LIKE '%' + @3 + '%' OR u.Name LIKE '%' + @3 + '%'))
-        AND (@4 IS NULL OR u.IsActive = @4)
+        AND (@4 IS NULL OR u.is_active = @4)
       ORDER BY u.Depth ASC, u.SortOrder ASC, u.Name ASC;
     `;
     return this.getExecutor(qr).query(sql, [
@@ -1160,7 +1160,7 @@ export class OrgUnitsRepository {
   }
 
   /**
-   * Resolves a user's display name from auth.Users and auth.UserProfiles.
+   * Resolves a user's display name from auth.tbl_Users and auth.UserProfiles.
    */
   async findUserDisplayName(
     userId: string,
@@ -1172,15 +1172,15 @@ export class OrgUnitsRepository {
   } | null> {
     const sql = `
       SELECT
-        u.UserID AS userId,
+        u.user_id AS userId,
         u.Username AS username,
         CASE
-          WHEN p.FirstName IS NOT NULL THEN CONCAT(p.FirstName, ' ', p.LastName)
+          WHEN p.first_name IS NOT NULL THEN CONCAT(p.first_name, ' ', p.last_name)
           ELSE u.Username
         END AS displayName
-      FROM auth.Users u
-      LEFT JOIN auth.UserProfiles p ON p.UserID = u.UserID
-      WHERE u.UserID = @0;
+      FROM auth.tbl_Users u
+      LEFT JOIN auth.UserProfiles p ON p.user_id = u.user_id
+      WHERE u.user_id = @0;
     `;
     const rows = await this.getExecutor(qr).query(sql, [userId]);
     return rows.length > 0 ? rows[0] : null;
@@ -1191,12 +1191,12 @@ export class OrgUnitsRepository {
    */
   async countPeople(orgUnitId: string, qr?: QueryRunner): Promise<number> {
     const sql = `
-      SELECT COUNT(DISTINCT u.UserID) AS total
-      FROM auth.Users u
-      LEFT JOIN auth.UserProfiles p ON p.UserID = u.UserID
-      LEFT JOIN auth.UserOrganizationScopes s ON s.UserID = u.UserID
-      LEFT JOIN org.OrgUnitManagers m ON m.UserId = u.UserID AND m.OrgUnitId = @0 AND m.IsActive = 1 AND m.IsDeleted = 0
-      LEFT JOIN org.OrgUnits ou ON ou.OrgUnitId = @0 AND ou.HeadUserId = u.UserID
+      SELECT COUNT(DISTINCT u.user_id) AS total
+      FROM auth.tbl_Users u
+      LEFT JOIN auth.UserProfiles p ON p.user_id = u.user_id
+      LEFT JOIN auth.UserOrganizationScopes s ON s.user_id = u.user_id
+      LEFT JOIN org.OrgUnitManagers m ON m.UserId = u.user_id AND m.OrgUnitId = @0 AND m.is_active = 1 AND m.IsDeleted = 0
+      LEFT JOIN org.OrgUnits ou ON ou.OrgUnitId = @0 AND ou.HeadUserId = u.user_id
       WHERE u.IsDeleted = 0
         AND (
           s.DepartmentID = @0 OR s.BusinessUnitID = @0 OR s.SectionID = @0 OR s.OrganizationID = @0
@@ -1219,41 +1219,41 @@ export class OrgUnitsRepository {
     const sql = `
       WITH UnitMembers AS (
         SELECT DISTINCT
-          u.UserID AS userId,
+          u.user_id AS userId,
           u.Username AS username,
           u.Email AS email,
-          u.IsActive AS isActive,
+          u.is_active AS isActive,
           CASE
-            WHEN p.FirstName IS NOT NULL OR p.LastName IS NOT NULL THEN
-              LTRIM(RTRIM(CONCAT(COALESCE(p.FirstName, ''), ' ', COALESCE(p.LastName, ''))))
+            WHEN p.first_name IS NOT NULL OR p.last_name IS NOT NULL THEN
+              LTRIM(RTRIM(CONCAT(COALESCE(p.first_name, ''), ' ', COALESCE(p.last_name, ''))))
             ELSE u.Username
           END AS displayName,
-          p.JobTitle AS jobTitle,
-          p.MobileNo AS mobileNo,
+          p.job_title AS jobTitle,
+          p.mobile_no AS mobileNo,
           CASE 
-            WHEN ouHead.OrgUnitId IS NOT NULL OR mgr.ManagerRoleCode = 'HEAD' OR EXISTS (
-              SELECT 1 FROM auth.UserRoles ur 
-              INNER JOIN auth.Roles r ON r.RoleID = ur.RoleID 
-              WHERE ur.UserID = u.UserID AND r.RoleCode IN ('HOD', 'SECTION_HEAD')
+            WHEN ouHead.OrgUnitId IS NOT NULL OR mgr.manager_role_code = 'HEAD' OR EXISTS (
+              SELECT 1 FROM auth.tbl_User_Roles ur 
+              INNER JOIN auth.tbl_Roles r ON r.role_id = ur.role_id 
+              WHERE ur.user_id = u.user_id AND r.role_code IN ('HOD', 'SECTION_HEAD')
             ) THEN 1 
             ELSE 0 
           END AS isHead,
-          mgr.ManagerRoleCode AS managerRoleCode,
+          mgr.manager_role_code AS managerRoleCode,
           (
-            SELECT STRING_AGG(r.RoleName, ', ')
-            FROM auth.UserRoles ur
-            INNER JOIN auth.Roles r ON r.RoleID = ur.RoleID
-            WHERE ur.UserID = u.UserID
+            SELECT STRING_AGG(r.role_name, ', ')
+            FROM auth.tbl_User_Roles ur
+            INNER JOIN auth.tbl_Roles r ON r.role_id = ur.role_id
+            WHERE ur.user_id = u.user_id
           ) AS rolesString
-        FROM auth.Users u
-        LEFT JOIN auth.UserProfiles p ON p.UserID = u.UserID
-        LEFT JOIN auth.UserOrganizationScopes s ON s.UserID = u.UserID
+        FROM auth.tbl_Users u
+        LEFT JOIN auth.UserProfiles p ON p.user_id = u.user_id
+        LEFT JOIN auth.UserOrganizationScopes s ON s.user_id = u.user_id
         LEFT JOIN (
-          SELECT m.UserId, m.ManagerRoleCode
+          SELECT m.UserId, m.manager_role_code
           FROM org.OrgUnitManagers m
-          WHERE m.OrgUnitId = @0 AND m.IsActive = 1 AND m.IsDeleted = 0
-        ) mgr ON mgr.UserId = u.UserID
-        LEFT JOIN org.OrgUnits ouHead ON ouHead.OrgUnitId = @0 AND ouHead.HeadUserId = u.UserID
+          WHERE m.OrgUnitId = @0 AND m.is_active = 1 AND m.IsDeleted = 0
+        ) mgr ON mgr.UserId = u.user_id
+        LEFT JOIN org.OrgUnits ouHead ON ouHead.OrgUnitId = @0 AND ouHead.HeadUserId = u.user_id
         WHERE u.IsDeleted = 0
           AND (
             s.DepartmentID = @0 OR s.BusinessUnitID = @0 OR s.SectionID = @0 OR s.OrganizationID = @0

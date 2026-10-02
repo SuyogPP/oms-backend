@@ -650,7 +650,7 @@ export class OrgUnitValidationService {
       SELECT COUNT(*) AS total
       FROM (
         SELECT UserOrgUnitAssignmentId FROM org.UserOrgUnitAssignments
-        WHERE OrgUnitId = @0 AND IsDeleted = 0 AND IsActive = 1
+        WHERE OrgUnitId = @0 AND IsDeleted = 0 AND is_active = 1
         UNION ALL
         SELECT UserProfileID FROM auth.UserProfiles
         WHERE (DepartmentID = @0 OR BusinessUnitID = @0 OR SectionID = @0)
@@ -775,13 +775,13 @@ export class OrgUnitValidationService {
       SELECT 1 AS existsPrimary
       FROM org.OrgUnitManagers
       WHERE OrgUnitId = @0
-        AND ManagerRoleCode = '${ORG_MANAGER_ROLES.HEAD}'
-        AND IsPrimary = 1
-        AND IsActive = 1
+        AND manager_role_code = '${ORG_MANAGER_ROLES.HEAD}'
+        AND is_primary = 1
+        AND is_active = 1
         AND IsDeleted = 0
         AND (@1 IS NULL OR OrgUnitManagerId <> @1)
-        AND (@2 IS NULL OR EffectiveFrom <= CAST(@2 AS DATE))
-        AND (EffectiveTo IS NULL OR EffectiveTo >= CAST(@3 AS DATE));
+        AND (@2 IS NULL OR effective_from <= CAST(@2 AS DATE))
+        AND (EffectiveTo IS NULL OR effective_to >= CAST(@3 AS DATE));
     `;
     const rows = await this.getExecutor(qr).query(sql, [
       orgUnitId,
@@ -819,11 +819,11 @@ export class OrgUnitValidationService {
       FROM org.OrgUnitManagers
       WHERE OrgUnitId = @0
         AND UserId = @1
-        AND ManagerRoleCode = @2
+        AND manager_role_code = @2
         AND IsDeleted = 0
         AND (@3 IS NULL OR OrgUnitManagerId <> @3)
-        AND (@4 IS NULL OR EffectiveFrom <= CAST(@4 AS DATE))
-        AND (EffectiveTo IS NULL OR EffectiveTo >= CAST(@5 AS DATE));
+        AND (@4 IS NULL OR effective_from <= CAST(@4 AS DATE))
+        AND (EffectiveTo IS NULL OR effective_to >= CAST(@5 AS DATE));
     `;
     const rows = await this.getExecutor(qr).query(sql, [
       orgUnitId,
@@ -853,16 +853,16 @@ export class OrgUnitValidationService {
     qr?: QueryRunner,
   ): Promise<void> {
     const sql = `
-      SELECT UserID, UserType, IsActive, IsDeleted
-      FROM auth.Users
-      WHERE UserID = @0;
+      SELECT user_id, UserType, IsActive, IsDeleted
+      FROM auth.tbl_Users
+      WHERE user_id = @0;
     `;
     const rows = await this.getExecutor(qr).query(sql, [userId]);
     const user = rows[0];
 
     if (
       !user ||
-      !user.IsActive ||
+      !user.is_active ||
       user.IsDeleted ||
       user.UserType !== 'INTERNAL'
     ) {

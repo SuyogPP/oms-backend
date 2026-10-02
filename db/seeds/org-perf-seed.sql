@@ -239,7 +239,7 @@ BEGIN TRY
     UPDATE org.OrgUnits SET HeadUserId = '1853433E-F36B-1410-85ED-009A959FB122' WHERE OrgUnitId = @FirstDeptId;
 
     -- Assign Scope for finance.manager (1853433E-F36B-1410-85ED-009A959FB122) to FirstDeptId
-    DELETE FROM auth.UserOrganizationScopes WHERE UserID = '1853433E-F36B-1410-85ED-009A959FB122';
+    DELETE FROM auth.UserOrganizationScopes WHERE user_id = '1853433E-F36B-1410-85ED-009A959FB122';
     INSERT INTO auth.UserOrganizationScopes (
         UserID, ScopeDefinitionID, OrgUnitId
     ) VALUES (
@@ -249,7 +249,7 @@ BEGIN TRY
     );
 
     -- Assign Scope for hod.operations (2053433E-F36B-1410-85ED-009A959FB122) to FirstBUId
-    DELETE FROM auth.UserOrganizationScopes WHERE UserID = '2053433E-F36B-1410-85ED-009A959FB122';
+    DELETE FROM auth.UserOrganizationScopes WHERE user_id = '2053433E-F36B-1410-85ED-009A959FB122';
     INSERT INTO auth.UserOrganizationScopes (
         UserID, ScopeDefinitionID, OrgUnitId
     ) VALUES (
@@ -259,7 +259,7 @@ BEGIN TRY
     );
 
     -- Assign GLOBAL scope for admin (1053433E-F36B-1410-85ED-009A959FB122)
-    DELETE FROM auth.UserOrganizationScopes WHERE UserID = '1053433E-F36B-1410-85ED-009A959FB122';
+    DELETE FROM auth.UserOrganizationScopes WHERE user_id = '1053433E-F36B-1410-85ED-009A959FB122';
     INSERT INTO auth.UserOrganizationScopes (
         UserID, ScopeDefinitionID, OrgUnitId
     ) VALUES (

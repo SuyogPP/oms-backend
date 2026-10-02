@@ -3,7 +3,6 @@ import { NotFoundException } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { UsersService } from './users.service';
 import { UsersRepository } from '../repositories/users.repository';
-import { UserProfilesRepository } from '../repositories/user-profiles.repository';
 import { UserInvitationsRepository } from '../repositories/user-invitations.repository';
 import { UserValidationService } from './user-validation.service';
 import { SecurityEventsService } from '../../../security-events/services/security-events.service';
@@ -39,12 +38,6 @@ describe('UsersService (Domain 3, §§5.1, 5.2, 8, 9.2)', () => {
     exportUsers: jest.fn(),
     getUserActivity: jest.fn(),
   };
-
-  const mockUserProfilesRepository = {
-    create: jest.fn(),
-    update: jest.fn(),
-  };
-
   const mockUserInvitationsRepository = {
     create: jest.fn(),
   };
@@ -70,12 +63,7 @@ describe('UsersService (Domain 3, §§5.1, 5.2, 8, 9.2)', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         UsersService,
-        { provide: UsersRepository, useValue: mockUsersRepository },
-        {
-          provide: UserProfilesRepository,
-          useValue: mockUserProfilesRepository,
-        },
-        {
+        { provide: UsersRepository, useValue: mockUsersRepository },        {
           provide: UserInvitationsRepository,
           useValue: mockUserInvitationsRepository,
         },
@@ -109,12 +97,11 @@ describe('UsersService (Domain 3, §§5.1, 5.2, 8, 9.2)', () => {
             email: 'tariq@diez.ae',
             userType: USER_TYPES.INTERNAL,
             isActive: true,
-            isDeleted: false,
-            failedLoginCount: 0,
+                        failedLoginCount: 0,
             status: 'ACTIVE',
             createdAt: new Date(),
             updatedAt: new Date(),
-            profile: null,
+            
           },
         ],
         total: 1,
@@ -166,10 +153,7 @@ describe('UsersService (Domain 3, §§5.1, 5.2, 8, 9.2)', () => {
         email: 'outside@diez.ae',
         userType: USER_TYPES.INTERNAL,
         isActive: true,
-        isDeleted: false,
-        profile: {
-          departmentId: 'dept-other-branch',
-        },
+                orgUnitId: 'dept-other-branch',
       });
 
       // Requester has no GLOBAL scope
@@ -189,10 +173,7 @@ describe('UsersService (Domain 3, §§5.1, 5.2, 8, 9.2)', () => {
         email: 'any@diez.ae',
         userType: USER_TYPES.INTERNAL,
         isActive: true,
-        isDeleted: false,
-        profile: {
-          departmentId: 'dept-any',
-        },
+                orgUnitId: 'dept-any',
       });
 
       // Requester holds GLOBAL scope
@@ -211,16 +192,13 @@ describe('UsersService (Domain 3, §§5.1, 5.2, 8, 9.2)', () => {
         username: 'layla.mansoori',
         email: 'layla@diez.ae',
         userType: USER_TYPES.INTERNAL,
-        profile: {
-          firstName: 'Layla',
+        firstName: 'Layla',
           lastName: 'Al Mansoori',
-          departmentId: '1053433E-F36B-1410-85ED-009A959FB122',
-        },
+          orgUnitId: '1053433E-F36B-1410-85ED-009A959FB122',
       };
 
       mockUsersRepository.create.mockResolvedValueOnce(sampleUserId);
-      mockUserProfilesRepository.create.mockResolvedValueOnce('prof-123');
-      mockUserInvitationsRepository.create.mockResolvedValueOnce('inv-123');
+            mockUserInvitationsRepository.create.mockResolvedValueOnce('inv-123');
       mockUsersRepository.findById.mockResolvedValueOnce({
         userId: sampleUserId,
         employeeId: 'EMP-0123',
@@ -228,11 +206,8 @@ describe('UsersService (Domain 3, §§5.1, 5.2, 8, 9.2)', () => {
         email: 'layla@diez.ae',
         userType: USER_TYPES.INTERNAL,
         isActive: false,
-        isDeleted: false,
-        profile: {
-          firstName: 'Layla',
-          lastName: 'Al Mansoori',
-        },
+                firstName: 'Layla',
+        lastName: 'Al Mansoori',
       });
 
       const result = await service.create(dto, requesterUserId);
@@ -255,15 +230,7 @@ describe('UsersService (Domain 3, §§5.1, 5.2, 8, 9.2)', () => {
         }),
         mockQueryRunner,
       );
-      expect(mockUserProfilesRepository.create).toHaveBeenCalledWith(
-        sampleUserId,
-        expect.objectContaining({
-          firstName: 'Layla',
-          lastName: 'Al Mansoori',
-        }),
-        mockQueryRunner,
-      );
-      expect(mockUserInvitationsRepository.create).toHaveBeenCalledWith(
+            expect(mockUserInvitationsRepository.create).toHaveBeenCalledWith(
         sampleUserId,
         expect.any(String),
         'INVITE',
@@ -286,19 +253,16 @@ describe('UsersService (Domain 3, §§5.1, 5.2, 8, 9.2)', () => {
       expect(result.user.username).toBe('layla.mansoori');
     });
 
-    it('rolls back transaction if profile insertion fails', async () => {
+    it('rolls back transaction if user creation fails', async () => {
       const dto = {
         username: 'fail.user',
         email: 'fail@diez.ae',
         userType: USER_TYPES.INTERNAL,
-        profile: { firstName: 'Fail', lastName: 'User' },
+        firstName: 'Fail', lastName: 'User',
       };
 
-      mockUsersRepository.create.mockResolvedValueOnce(sampleUserId);
-      mockUserProfilesRepository.create.mockRejectedValueOnce(
-        new Error('DB Constraint Violation'),
-      );
-
+      mockUsersRepository.create.mockRejectedValueOnce(new Error(new Error('DB Constraint Violation')));
+      
       await expect(service.create(dto, requesterUserId)).rejects.toThrow(
         'DB Constraint Violation',
       );
@@ -317,8 +281,7 @@ describe('UsersService (Domain 3, §§5.1, 5.2, 8, 9.2)', () => {
         email: 'tariq@diez.ae',
         userType: USER_TYPES.INTERNAL,
         isActive: true,
-        isDeleted: false,
-        profile: null,
+                
       });
 
       // Requester has global scope
@@ -326,7 +289,7 @@ describe('UsersService (Domain 3, §§5.1, 5.2, 8, 9.2)', () => {
 
       const dto = {
         email: 'tariq.new@diez.ae',
-        profile: { jobTitle: 'Chief Financial Officer' },
+        jobTitle: 'Chief Financial Officer',
       };
 
       const result = await service.update(sampleUserId, dto, requesterUserId);
@@ -341,12 +304,7 @@ describe('UsersService (Domain 3, §§5.1, 5.2, 8, 9.2)', () => {
         expect.objectContaining({ email: 'tariq.new@diez.ae' }),
         mockQueryRunner,
       );
-      expect(mockUserProfilesRepository.update).toHaveBeenCalledWith(
-        sampleUserId,
-        expect.objectContaining({ jobTitle: 'Chief Financial Officer' }),
-        mockQueryRunner,
-      );
-      expect(mockQueryRunner.commitTransaction).toHaveBeenCalled();
+            expect(mockQueryRunner.commitTransaction).toHaveBeenCalled();
       expect(mockSecurityEventsService.log).toHaveBeenCalledWith(
         'USER_UPDATED',
         expect.any(Object),
@@ -366,8 +324,7 @@ describe('UsersService (Domain 3, §§5.1, 5.2, 8, 9.2)', () => {
           email: 'export@diez.ae',
           userType: USER_TYPES.INTERNAL,
           isActive: true,
-          isDeleted: false,
-          profile: null,
+                    
         },
       ]);
 
@@ -392,8 +349,7 @@ describe('UsersService (Domain 3, §§5.1, 5.2, 8, 9.2)', () => {
         email: 'act@diez.ae',
         userType: USER_TYPES.INTERNAL,
         isActive: true,
-        isDeleted: false,
-        profile: null,
+                
       });
 
       mockDataSource.query.mockResolvedValueOnce([{ 1: 1 }]); // global scope

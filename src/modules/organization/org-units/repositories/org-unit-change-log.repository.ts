@@ -125,7 +125,7 @@ export class OrgUnitChangeLogRepository {
           UserAgent AS userAgent,
           PerformedBy AS performedBy,
           PerformedAt AS performedAt,
-          ROW_NUMBER() OVER (ORDER BY PerformedAt DESC, OrgUnitChangeLogId DESC) AS RowNum
+          ROW_NUMBER() OVER (ORDER BY performed_at DESC, OrgUnitChangeLogId DESC) AS RowNum
         FROM org.OrgUnitChangeLog
         WHERE OrgUnitId = @0
       )
@@ -192,7 +192,7 @@ export class OrgUnitChangeLogRepository {
           UserAgent AS userAgent,
           PerformedBy AS performedBy,
           PerformedAt AS performedAt,
-          ROW_NUMBER() OVER (ORDER BY PerformedAt DESC, OrgUnitChangeLogId DESC) AS RowNum
+          ROW_NUMBER() OVER (ORDER BY performed_at DESC, OrgUnitChangeLogId DESC) AS RowNum
         FROM org.OrgUnitChangeLog
       )
       SELECT

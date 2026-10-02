@@ -8,7 +8,6 @@ import { UserLifecycleService } from './services/user-lifecycle.service';
 import { UserCredentialsService } from './services/user-credentials.service';
 import { UserValidationService } from './services/user-validation.service';
 import { UsersRepository } from './repositories/users.repository';
-import { UserProfilesRepository } from './repositories/user-profiles.repository';
 import { UserInvitationsRepository } from './repositories/user-invitations.repository';
 import { PasswordHistoryRepository } from './repositories/password-history.repository';
 import { UsersMapper } from './users.mapper';
@@ -31,7 +30,6 @@ import { AuditModule } from '../../audit/audit.module';
   providers: [
     // Repositories
     UsersRepository,
-    UserProfilesRepository,
     UserInvitationsRepository,
     PasswordHistoryRepository,
 
@@ -46,7 +44,6 @@ import { AuditModule } from '../../audit/audit.module';
   ],
   exports: [
     UsersRepository,
-    UserProfilesRepository,
     UserInvitationsRepository,
     PasswordHistoryRepository,
     UsersService,

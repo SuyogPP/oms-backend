@@ -126,7 +126,7 @@ export class OrgUnitTypesRepository {
         CreatedBy AS createdBy,
         CreatedAt AS createdAt
       FROM org.OrgUnitTypeHierarchyRules
-      WHERE IsActive = 1
+      WHERE is_active = 1
       ORDER BY ChildOrgUnitTypeId ASC, ParentOrgUnitTypeId ASC;
     `;
     return this.getExecutor(qr).query(sql);
@@ -150,7 +150,7 @@ export class OrgUnitTypesRepository {
       FROM org.OrgUnitTypeHierarchyRules
       WHERE ChildOrgUnitTypeId = @0 
         AND ParentOrgUnitTypeId = @1 
-        AND IsActive = 1;
+        AND is_active = 1;
     `;
     const rows = await this.getExecutor(qr).query(sql, [
       childTypeId,
@@ -175,24 +175,24 @@ export class OrgUnitTypesRepository {
         t.Description AS description,
         t.CanonicalLevel AS canonicalLevel,
         t.ScopeLevelCode AS scopeLevelCode,
-        t.AllowsBudget AS allowsBudget,
-        t.AllowsRequisition AS allowsRequisition,
+        t.allows_budget AS allowsBudget,
+        t.allows_requisition AS allowsRequisition,
         t.AllowsManager AS allowsManager,
         t.IsRootType AS isRootType,
         t.SortOrder AS sortOrder,
-        t.IsActive AS isActive,
+        t.is_active AS isActive,
         t.IsDeleted AS isDeleted,
-        t.CreatedBy AS createdBy,
-        t.CreatedAt AS createdAt,
-        t.UpdatedBy AS updatedBy,
-        t.UpdatedAt AS updatedAt
+        t.created_by AS createdBy,
+        t.created_at AS createdAt,
+        t.updated_by AS updatedBy,
+        t.updated_at AS updatedAt
       FROM org.OrgUnitTypes t
       INNER JOIN org.OrgUnitTypeHierarchyRules r 
               ON r.ParentOrgUnitTypeId = t.OrgUnitTypeId
       WHERE r.ChildOrgUnitTypeId = @0
-        AND r.IsActive = 1
+        AND r.is_active = 1
         AND t.IsDeleted = 0
-        AND t.IsActive = 1
+        AND t.is_active = 1
       ORDER BY t.SortOrder ASC, t.OrgUnitTypeId ASC;
     `;
     return this.getExecutor(qr).query(sql, [childTypeId]);

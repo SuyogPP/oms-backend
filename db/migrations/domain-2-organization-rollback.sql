@@ -22,14 +22,14 @@ PRINT '>>> Starting Domain 2 Organization Structure Rollback...';
 -- ====================================================================================================
 PRINT '    [-] Removing Domain 2 Role Permissions...';
 DELETE rp
-FROM [auth].[RolePermissions] rp
-INNER JOIN [auth].[Permissions] p ON p.PermissionID = rp.PermissionID
-WHERE p.ModuleName = 'Organization' OR p.PermissionCode LIKE 'ORG.%';
+FROM [auth].tbl_Role_Permissions] rp
+INNER JOIN [auth].tbl_Permissions] p ON p.permission_id = rp.permission_id
+WHERE p.module_name = 'Organization' OR p.permission_code LIKE 'ORG.%';
 GO
 
 PRINT '    [-] Removing Domain 2 Permissions...';
-DELETE FROM [auth].[Permissions]
-WHERE ModuleName = 'Organization' OR PermissionCode LIKE 'ORG.%';
+DELETE FROM [auth].tbl_Permissions]
+WHERE module_name = 'Organization' OR permission_code LIKE 'ORG.%';
 GO
 
 -- ====================================================================================================

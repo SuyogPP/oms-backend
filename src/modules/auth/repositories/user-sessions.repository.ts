@@ -57,12 +57,12 @@ export class UserSessionsRepository {
                 LastActivityAt,
                 ExpiresAt,
                 IsActive
-            FROM [auth].[LoginSessions]
-            WHERE UserID = @0
-            AND IsActive = 1
-            AND RevokedAt IS NULL
-            AND ExpiresAt > SYSUTCDATETIME()
-            ORDER BY LastActivityAt DESC, LoginAt DESC
+            FROM [auth].tbl_Login_Sessions]
+            WHERE user_id = @0
+            AND is_active = 1
+            AND revoked_at IS NULL
+            AND expires_at > SYSUTCDATETIME()
+            ORDER BY last_activity_at DESC, LoginAt DESC
         `;
 
     return this.dataSource.query(query, [validUserId]);
@@ -74,17 +74,17 @@ export class UserSessionsRepository {
 
     const query = `
             SELECT TOP 1
-                ls.LoginSessionID,
-                ls.UserID,
+                ls.login_session_id,
+                ls.user_id,
                 u.Username,
                 ls.IPAddress,
-                ls.UserAgent,
-                ls.IsActive,
-                ls.RevokedAt,
-                ls.ExpiresAt
-            FROM [auth].[LoginSessions] ls
-            LEFT JOIN [auth].[Users] u ON u.UserID = ls.UserID
-            WHERE ls.LoginSessionID = @0
+                ls.user_agent,
+                ls.is_active,
+                ls.revoked_at,
+                ls.expires_at
+            FROM [auth].tbl_Login_Sessions] ls
+            LEFT JOIN [auth].tbl_Users] u ON u.user_id = ls.user_id
+            WHERE ls.login_session_id = @0
         `;
 
     const rows = await this.dataSource.query(query, [validSessionId]);
@@ -96,13 +96,13 @@ export class UserSessionsRepository {
     if (!validSessionId) return 0;
 
     const query = `
-            UPDATE [auth].[LoginSessions]
+            UPDATE [auth].tbl_Login_Sessions]
             SET
                 IsActive = 0,
                 RevokedAt = SYSUTCDATETIME(),
                 RefreshTokenRevokedAt = SYSUTCDATETIME()
-            WHERE LoginSessionID = @0
-            AND (IsActive = 1 OR RevokedAt IS NULL)
+            WHERE login_session_id = @0
+            AND (IsActive = 1 OR revoked_at IS NULL)
         `;
 
     const result = await this.dataSource.query(query, [validSessionId]);
@@ -122,19 +122,19 @@ export class UserSessionsRepository {
     // First find sessions to revoke so we can log history
     const findQuery = `
             SELECT
-                ls.LoginSessionID,
-                ls.UserID,
+                ls.login_session_id,
+                ls.user_id,
                 u.Username,
                 ls.IPAddress,
-                ls.UserAgent,
-                ls.IsActive,
-                ls.RevokedAt,
-                ls.ExpiresAt
-            FROM [auth].[LoginSessions] ls
-            LEFT JOIN [auth].[Users] u ON u.UserID = ls.UserID
-            WHERE ls.UserID = @0
-            AND (ls.LoginSessionID <> @1 OR @1 IS NULL)
-            AND ls.IsActive = 1
+                ls.user_agent,
+                ls.is_active,
+                ls.revoked_at,
+                ls.expires_at
+            FROM [auth].tbl_Login_Sessions] ls
+            LEFT JOIN [auth].tbl_Users] u ON u.user_id = ls.user_id
+            WHERE ls.user_id = @0
+            AND (ls.login_session_id <> @1 OR @1 IS NULL)
+            AND ls.is_active = 1
         `;
 
     const sessionsToRevoke = await this.dataSource.query(findQuery, [
@@ -143,14 +143,14 @@ export class UserSessionsRepository {
     ]);
 
     const updateQuery = `
-            UPDATE [auth].[LoginSessions]
+            UPDATE [auth].tbl_Login_Sessions]
             SET
                 IsActive = 0,
                 RevokedAt = SYSUTCDATETIME(),
                 RefreshTokenRevokedAt = SYSUTCDATETIME()
-            WHERE UserID = @0
+            WHERE user_id = @0
             AND (LoginSessionID <> @1 OR @1 IS NULL)
-            AND IsActive = 1
+            AND is_active = 1
         `;
 
     await this.dataSource.query(updateQuery, [
@@ -168,7 +168,7 @@ export class UserSessionsRepository {
         : null;
 
       const query = `
-                INSERT INTO [auth].[LogoutHistory]
+                INSERT INTO [auth].tbl_Logout_History]
                 (
                     LoginSessionID,
                     UserID,

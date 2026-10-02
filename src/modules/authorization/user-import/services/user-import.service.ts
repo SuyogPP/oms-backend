@@ -459,7 +459,7 @@ export class UserImportService {
         // 1. Insert User (IsActive = 0, awaiting invitation accept)
         const userRows = await queryRunner.query(
           `
-          INSERT INTO [auth].[Users] (
+          INSERT INTO [auth].tbl_Users] (
               UserID,
               Username,
               Email,
@@ -471,7 +471,7 @@ export class UserImportService {
               CreatedAt,
               UpdatedAt
           )
-          OUTPUT INSERTED.UserID AS userId
+          OUTPUT INSERTED.user_id AS userId
           VALUES (
               NEWID(),
               @0,
@@ -535,7 +535,7 @@ export class UserImportService {
 
         await queryRunner.query(
           `
-          INSERT INTO [auth].[UserInvitations] (
+          INSERT INTO [auth].tbl_User_Invitations] (
               UserInvitationID,
               UserID,
               TokenHash,
@@ -560,7 +560,7 @@ export class UserImportService {
           for (const roleId of row.roleIds) {
             await queryRunner.query(
               `
-              INSERT INTO [auth].[UserRoles] (
+              INSERT INTO [auth].tbl_User_Roles] (
                   UserRoleID,
                   UserID,
                   RoleID,

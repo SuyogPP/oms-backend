@@ -3,9 +3,9 @@
  *
  * Seeds structural prerequisites required for the 16 demo users per
  * docs/PORTAL-SEPARATION-AND-USERS.md Parts 2, 3, and 4:
- * 1. Missing roles in auth.Roles: LINE_MANAGER, SECTION_HEAD, PANEL_INTERVIEWER
- * 2. Missing permissions in auth.Permissions: WORKFORCE.VIEW, HR_REVIEW.VIEW, REPORTS.VIEW, etc.
- * 3. Role-Permission mappings in auth.RolePermissions aligning with Part 2.2
+ * 1. Missing roles in auth.tbl_Roles: LINE_MANAGER, SECTION_HEAD, PANEL_INTERVIEWER
+ * 2. Missing permissions in auth.tbl_Permissions: WORKFORCE.VIEW, HR_REVIEW.VIEW, REPORTS.VIEW, etc.
+ * 3. Role-Permission mappings in auth.tbl_Role_Permissions aligning with Part 2.2
  * 4. Missing org units in org.OrgUnits under DIEZ:
  *    - Corporate Services (BU)
  *    - Digital Security, Data Management, IT Infrastructure, Finance, HR, Procurement, PMO (Departments)
@@ -37,7 +37,7 @@ async function seedPrerequisites() {
     // ------------------------------------------------------------------------
     // 1. Roles
     // ------------------------------------------------------------------------
-    console.log('Ensuring roles in [auth].[Roles]...');
+    console.log('Ensuring roles in [auth].tbl_Roles]...');
     const rolesToEnsure = [
       { code: 'LINE_MANAGER', name: 'Line Manager', desc: 'Line manager with operational scope' },
       { code: 'SECTION_HEAD', name: 'Section Head', desc: 'Section head with departmental scope' },
@@ -50,9 +50,9 @@ async function seedPrerequisites() {
         .input('name', sql.NVarChar, r.name)
         .input('desc', sql.NVarChar, r.desc)
         .query(`
-          IF NOT EXISTS (SELECT 1 FROM [auth].[Roles] WHERE UPPER(RoleCode) = UPPER(@code))
+          IF NOT EXISTS (SELECT 1 FROM [auth].tbl_Roles] WHERE UPPER(RoleCode) = UPPER(@code))
           BEGIN
-              INSERT INTO [auth].[Roles] (RoleID, RoleCode, RoleName, Description, IsSystemRole, IsActive, CreatedAt)
+              INSERT INTO [auth].tbl_Roles] (RoleID, RoleCode, RoleName, Description, IsSystemRole, IsActive, CreatedAt)
               VALUES (NEWID(), @code, @name, @desc, 0, 1, SYSUTCDATETIME());
           END
         `);
@@ -61,7 +61,7 @@ async function seedPrerequisites() {
     // ------------------------------------------------------------------------
     // 2. Permissions
     // ------------------------------------------------------------------------
-    console.log('Ensuring permissions in [auth].[Permissions]...');
+    console.log('Ensuring permissions in [auth].tbl_Permissions]...');
     const permissionsToEnsure = [
       { code: 'WORKFORCE.VIEW', module: 'Workforce', action: 'View', desc: 'View workforce and onboarding records' },
       { code: 'WORKFORCE.MANAGE', module: 'Workforce', action: 'Manage', desc: 'Manage workforce allocations' },
@@ -81,9 +81,9 @@ async function seedPrerequisites() {
         .input('action', sql.NVarChar, p.action)
         .input('desc', sql.NVarChar, p.desc)
         .query(`
-          IF NOT EXISTS (SELECT 1 FROM [auth].[Permissions] WHERE UPPER(PermissionCode) = UPPER(@code))
+          IF NOT EXISTS (SELECT 1 FROM [auth].tbl_Permissions] WHERE UPPER(PermissionCode) = UPPER(@code))
           BEGIN
-              INSERT INTO [auth].[Permissions] (PermissionID, PermissionCode, ModuleName, ActionName, Description, CreatedAt)
+              INSERT INTO [auth].tbl_Permissions] (PermissionID, PermissionCode, ModuleName, ActionName, Description, CreatedAt)
               VALUES (NEWID(), @code, @module, @action, @desc, SYSUTCDATETIME());
           END
         `);
@@ -92,7 +92,7 @@ async function seedPrerequisites() {
     // ------------------------------------------------------------------------
     // 3. Role Permissions (Aligning with Part 2.2 Navigation Spec)
     // ------------------------------------------------------------------------
-    console.log('Aligning role permissions in [auth].[RolePermissions]...');
+    console.log('Aligning role permissions in [auth].tbl_Role_Permissions]...');
     const roleGrants: Record<string, string[]> = {
       REQUESTOR: ['REQUISITION.CREATE', 'REQUISITION.VIEW', 'REQUEST.VIEW', 'REQUEST.CREATE', 'REQUEST.LIST_MINE'],
       LINE_MANAGER: ['REQUISITION.VIEW', 'REQUEST.VIEW', 'WORKFORCE.VIEW'],
@@ -108,7 +108,7 @@ async function seedPrerequisites() {
     for (const [roleCode, permCodes] of Object.entries(roleGrants)) {
       const roleRow = await pool.request()
         .input('roleCode', sql.NVarChar, roleCode)
-        .query('SELECT RoleID FROM [auth].[Roles] WHERE UPPER(RoleCode) = UPPER(@roleCode)');
+        .query('SELECT role_id FROM [auth].tbl_Roles] WHERE UPPER(RoleCode) = UPPER(@roleCode)');
 
       if (roleRow.recordset.length === 0) continue;
       const roleId = roleRow.recordset[0].RoleID;
@@ -116,7 +116,7 @@ async function seedPrerequisites() {
       for (const permCode of permCodes) {
         const permRow = await pool.request()
           .input('permCode', sql.NVarChar, permCode)
-          .query('SELECT PermissionID FROM [auth].[Permissions] WHERE UPPER(PermissionCode) = UPPER(@permCode)');
+          .query('SELECT permission_id FROM [auth].tbl_Permissions] WHERE UPPER(PermissionCode) = UPPER(@permCode)');
 
         if (permRow.recordset.length === 0) continue;
         const permId = permRow.recordset[0].PermissionID;
@@ -125,9 +125,9 @@ async function seedPrerequisites() {
           .input('roleId', sql.UniqueIdentifier, roleId)
           .input('permId', sql.UniqueIdentifier, permId)
           .query(`
-            IF NOT EXISTS (SELECT 1 FROM [auth].[RolePermissions] WHERE RoleID = @roleId AND PermissionID = @permId)
+            IF NOT EXISTS (SELECT 1 FROM [auth].tbl_Role_Permissions] WHERE role_id = @roleId AND permission_id = @permId)
             BEGIN
-                INSERT INTO [auth].[RolePermissions] (RolePermissionID, RoleID, PermissionID, GrantedAt)
+                INSERT INTO [auth].tbl_Role_Permissions] (RolePermissionID, RoleID, PermissionID, GrantedAt)
                 VALUES (NEWID(), @roleId, @permId, SYSUTCDATETIME());
             END
           `);

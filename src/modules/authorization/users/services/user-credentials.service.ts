@@ -291,8 +291,8 @@ export class UserCredentialsService {
    * - ADMINS NEVER SET OR SEE A PASSWORD (no password argument).
    * - Issues a 1-hour PASSWORD_RESET token.
    * - Sets MustChangePassword = 1.
-   * - Terminates all active sessions in auth.LoginSessions.
-   * - Records auth.LogoutHistory with reason PASSWORD_RESET.
+   * - Terminates all active sessions in auth.tbl_Login_Sessions.
+   * - Records auth.tbl_Logout_History with reason PASSWORD_RESET.
    */
   async resetPassword(
     userId: string,

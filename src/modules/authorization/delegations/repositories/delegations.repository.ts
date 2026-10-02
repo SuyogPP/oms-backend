@@ -24,20 +24,20 @@ export class DelegationsRepository {
     const rows = await this.getExecutor(qr).query(
       `
       SELECT 
-          d.DelegationID AS delegationId,
-          d.FromUserID AS fromUserId,
-          CONCAT(fp.FirstName, ' ', fp.LastName) AS fromUserName,
-          d.ToUserID AS toUserId,
-          CONCAT(tp.FirstName, ' ', tp.LastName) AS toUserName,
-          d.StartDate AS startDate,
-          d.EndDate AS endDate,
+          d.delegation_id AS delegationId,
+          d.from_user_id AS fromUserId,
+          CONCAT(fp.first_name, ' ', fp.last_name) AS fromUserName,
+          d.to_user_id AS toUserId,
+          CONCAT(tp.first_name, ' ', tp.last_name) AS toUserName,
+          d.start_date AS startDate,
+          d.end_date AS endDate,
           d.Reason AS reason,
-          d.IsActive AS isActive,
-          d.StartDate AS createdAt
-      FROM [auth].[Delegations] d
-      LEFT JOIN [auth].[UserProfiles] fp ON fp.UserID = d.FromUserID
-      LEFT JOIN [auth].[UserProfiles] tp ON tp.UserID = d.ToUserID
-      WHERE d.DelegationID = @0;
+          d.is_active AS isActive,
+          d.start_date AS createdAt
+      FROM [auth].tbl_Delegations] d
+      LEFT JOIN [auth].[UserProfiles] fp ON fp.user_id = d.from_user_id
+      LEFT JOIN [auth].[UserProfiles] tp ON tp.user_id = d.to_user_id
+      WHERE d.delegation_id = @0;
       `,
       [delegationId],
     );
@@ -51,11 +51,11 @@ export class DelegationsRepository {
       .query(
         `
       SELECT 
-          p.PermissionID AS permissionId,
-          p.PermissionCode AS permissionCode
-      FROM [auth].[DelegationPermissions] dp
-      INNER JOIN [auth].[Permissions] p ON p.PermissionID = dp.PermissionID
-      WHERE dp.DelegationID = @0;
+          p.permission_id AS permissionId,
+          p.permission_code AS permissionCode
+      FROM [auth].tbl_Delegation_Permissions] dp
+      INNER JOIN [auth].tbl_Permissions] p ON p.permission_id = dp.permission_id
+      WHERE dp.delegation_id = @0;
       `,
         [delegationId],
       )
@@ -87,21 +87,21 @@ export class DelegationsRepository {
     const rows = await this.getExecutor(qr).query(
       `
       SELECT 
-          d.DelegationID AS delegationId,
-          d.FromUserID AS fromUserId,
-          CONCAT(fp.FirstName, ' ', fp.LastName) AS fromUserName,
-          d.ToUserID AS toUserId,
-          CONCAT(tp.FirstName, ' ', tp.LastName) AS toUserName,
-          d.StartDate AS startDate,
-          d.EndDate AS endDate,
+          d.delegation_id AS delegationId,
+          d.from_user_id AS fromUserId,
+          CONCAT(fp.first_name, ' ', fp.last_name) AS fromUserName,
+          d.to_user_id AS toUserId,
+          CONCAT(tp.first_name, ' ', tp.last_name) AS toUserName,
+          d.start_date AS startDate,
+          d.end_date AS endDate,
           d.Reason AS reason,
-          d.IsActive AS isActive,
-          d.StartDate AS createdAt
-      FROM [auth].[Delegations] d
-      LEFT JOIN [auth].[UserProfiles] fp ON fp.UserID = d.FromUserID
-      LEFT JOIN [auth].[UserProfiles] tp ON tp.UserID = d.ToUserID
-      WHERE d.ToUserID = @0
-      ORDER BY d.StartDate DESC;
+          d.is_active AS isActive,
+          d.start_date AS createdAt
+      FROM [auth].tbl_Delegations] d
+      LEFT JOIN [auth].[UserProfiles] fp ON fp.user_id = d.from_user_id
+      LEFT JOIN [auth].[UserProfiles] tp ON tp.user_id = d.to_user_id
+      WHERE d.to_user_id = @0
+      ORDER BY d.start_date DESC;
       `,
       [toUserId],
     );
@@ -130,21 +130,21 @@ export class DelegationsRepository {
     const rows = await this.getExecutor(qr).query(
       `
       SELECT 
-          d.DelegationID AS delegationId,
-          d.FromUserID AS fromUserId,
-          CONCAT(fp.FirstName, ' ', fp.LastName) AS fromUserName,
-          d.ToUserID AS toUserId,
-          CONCAT(tp.FirstName, ' ', tp.LastName) AS toUserName,
-          d.StartDate AS startDate,
-          d.EndDate AS endDate,
+          d.delegation_id AS delegationId,
+          d.from_user_id AS fromUserId,
+          CONCAT(fp.first_name, ' ', fp.last_name) AS fromUserName,
+          d.to_user_id AS toUserId,
+          CONCAT(tp.first_name, ' ', tp.last_name) AS toUserName,
+          d.start_date AS startDate,
+          d.end_date AS endDate,
           d.Reason AS reason,
-          d.IsActive AS isActive,
-          d.StartDate AS createdAt
-      FROM [auth].[Delegations] d
-      LEFT JOIN [auth].[UserProfiles] fp ON fp.UserID = d.FromUserID
-      LEFT JOIN [auth].[UserProfiles] tp ON tp.UserID = d.ToUserID
-      WHERE d.FromUserID = @0
-      ORDER BY d.StartDate DESC;
+          d.is_active AS isActive,
+          d.start_date AS createdAt
+      FROM [auth].tbl_Delegations] d
+      LEFT JOIN [auth].[UserProfiles] fp ON fp.user_id = d.from_user_id
+      LEFT JOIN [auth].[UserProfiles] tp ON tp.user_id = d.to_user_id
+      WHERE d.from_user_id = @0
+      ORDER BY d.start_date DESC;
       `,
       [fromUserId],
     );
@@ -169,7 +169,7 @@ export class DelegationsRepository {
   async create(data: ICreateDelegationData, qr?: QueryRunner): Promise<string> {
     const rows = await this.getExecutor(qr).query(
       `
-      INSERT INTO [auth].[Delegations] (
+      INSERT INTO [auth].tbl_Delegations] (
           DelegationID,
           FromUserID,
           ToUserID,
@@ -178,7 +178,7 @@ export class DelegationsRepository {
           Reason,
           IsActive
       )
-      OUTPUT INSERTED.DelegationID AS delegationId
+      OUTPUT INSERTED.delegation_id AS delegationId
       VALUES (
           NEWID(),
           @0,
@@ -205,7 +205,7 @@ export class DelegationsRepository {
         await this.getExecutor(qr)
           .query(
             `
-          INSERT INTO [auth].[DelegationPermissions] (
+          INSERT INTO [auth].tbl_Delegation_Permissions] (
               DelegationPermissionID,
               DelegationID,
               PermissionID,
@@ -237,12 +237,12 @@ export class DelegationsRepository {
   ): Promise<void> {
     await this.getExecutor(qr).query(
       `
-      UPDATE [auth].[Delegations]
+      UPDATE [auth].tbl_Delegations]
       SET 
           EndDate = COALESCE(@1, EndDate),
           Reason = COALESCE(@2, Reason),
           IsActive = CASE WHEN @3 IS NOT NULL THEN @3 ELSE IsActive END
-      WHERE DelegationID = @0;
+      WHERE delegation_id = @0;
       `,
       [
         delegationId,
@@ -259,9 +259,9 @@ export class DelegationsRepository {
   async cancel(delegationId: string, qr?: QueryRunner): Promise<void> {
     await this.getExecutor(qr).query(
       `
-      UPDATE [auth].[Delegations]
-      SET IsActive = 0, EndDate = SYSUTCDATETIME()
-      WHERE DelegationID = @0;
+      UPDATE [auth].tbl_Delegations]
+      SET is_active = 0, EndDate = SYSUTCDATETIME()
+      WHERE delegation_id = @0;
       `,
       [delegationId],
     );
@@ -273,11 +273,11 @@ export class DelegationsRepository {
   async endAllForUser(userId: string, qr?: QueryRunner): Promise<void> {
     await this.getExecutor(qr).query(
       `
-      UPDATE [auth].[Delegations]
-      SET IsActive = 0, EndDate = SYSUTCDATETIME()
-      WHERE (FromUserID = @0 OR ToUserID = @0)
-        AND IsActive = 1
-        AND EndDate > SYSUTCDATETIME();
+      UPDATE [auth].tbl_Delegations]
+      SET is_active = 0, EndDate = SYSUTCDATETIME()
+      WHERE (FromUserID = @0 OR to_user_id = @0)
+        AND is_active = 1
+        AND end_date > SYSUTCDATETIME();
       `,
       [userId],
     );
@@ -296,11 +296,11 @@ export class DelegationsRepository {
     const rows = await this.getExecutor(qr).query(
       `
       SELECT TOP 1 1 AS hasOverlap
-      FROM [auth].[Delegations] d
-      WHERE d.FromUserID = @0
-        AND d.IsActive = 1
-        AND (@3 IS NULL OR d.DelegationID != @3)
-        AND (d.StartDate <= @2 AND d.EndDate >= @1);
+      FROM [auth].tbl_Delegations] d
+      WHERE d.from_user_id = @0
+        AND d.is_active = 1
+        AND (@3 IS NULL OR d.delegation_id != @3)
+        AND (d.start_date <= @2 AND d.end_date >= @1);
       `,
       [fromUserId, startDate, endDate, excludeDelegationId || null],
     );
@@ -318,11 +318,11 @@ export class DelegationsRepository {
     const rows = await this.getExecutor(qr).query(
       `
       SELECT TOP 1 1 AS isDelegate
-      FROM [auth].[Delegations] d
-      WHERE d.ToUserID = @0
-        AND d.IsActive = 1
-        AND d.StartDate <= SYSUTCDATETIME()
-        AND d.EndDate > SYSUTCDATETIME();
+      FROM [auth].tbl_Delegations] d
+      WHERE d.to_user_id = @0
+        AND d.is_active = 1
+        AND d.start_date <= SYSUTCDATETIME()
+        AND d.end_date > SYSUTCDATETIME();
       `,
       [userId],
     );

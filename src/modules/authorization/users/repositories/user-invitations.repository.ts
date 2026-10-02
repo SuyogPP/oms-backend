@@ -12,7 +12,7 @@ export class UserInvitationsRepository {
   }
 
   /**
-   * Creates an invitation / reset token entry in auth.UserInvitations.
+   * Creates an invitation / reset token entry in auth.tbl_User_Invitations.
    */
   async create(
     userId: string,
@@ -24,7 +24,7 @@ export class UserInvitationsRepository {
   ): Promise<string> {
     const rows = await this.getExecutor(qr).query(
       `
-      INSERT INTO [auth].[UserInvitations] (
+      INSERT INTO [auth].tbl_User_Invitations] (
           UserInvitationID,
           UserID,
           TokenHash,
@@ -34,7 +34,7 @@ export class UserInvitationsRepository {
           IssuedToEmail,
           CreatedAt
       )
-      OUTPUT INSERTED.UserInvitationID AS invitationId
+      OUTPUT INSERTED.user_invitation_id AS invitationId
       SELECT
           NEWID(),
           @0,
@@ -44,8 +44,8 @@ export class UserInvitationsRepository {
           @4,
           COALESCE(u.Email, 'user@domain.com'),
           SYSUTCDATETIME()
-      FROM [auth].[Users] u
-      WHERE u.UserID = @0;
+      FROM [auth].tbl_Users] u
+      WHERE u.user_id = @0;
       `,
       [userId, tokenHash, purpose, expiresAt, createdBy || null],
     );
@@ -63,16 +63,16 @@ export class UserInvitationsRepository {
     const rows = await this.getExecutor(qr).query(
       `
       SELECT 
-          i.UserInvitationID AS invitationId,
-          i.UserID AS userId,
-          CONVERT(NVARCHAR(64), i.TokenHash, 2) AS tokenHash,
+          i.user_invitation_id AS invitationId,
+          i.user_id AS userId,
+          CONVERT(NVARCHAR(64), i.token_hash, 2) AS tokenHash,
           i.Purpose AS purpose,
-          i.ExpiresAt AS expiresAt,
-          i.ConsumedAt AS consumedAt,
-          i.CreatedAt AS createdAt,
-          i.IssuedByUserID AS createdBy
-      FROM [auth].[UserInvitations] i
-      WHERE i.TokenHash = CONVERT(VARBINARY(32), @0, 2);
+          i.expires_at AS expiresAt,
+          i.consumed_at AS consumedAt,
+          i.created_at AS createdAt,
+          i.issued_by_user_id AS createdBy
+      FROM [auth].tbl_User_Invitations] i
+      WHERE i.token_hash = CONVERT(VARBINARY(32), @0, 2);
       `,
       [tokenHash],
     );
@@ -100,9 +100,9 @@ export class UserInvitationsRepository {
   async markConsumed(invitationId: string, qr?: QueryRunner): Promise<void> {
     await this.getExecutor(qr).query(
       `
-      UPDATE [auth].[UserInvitations]
-      SET ConsumedAt = SYSUTCDATETIME()
-      WHERE UserInvitationID = @0;
+      UPDATE [auth].tbl_User_Invitations]
+      SET consumed_at = SYSUTCDATETIME()
+      WHERE user_invitation_id = @0;
       `,
       [invitationId],
     );
@@ -118,12 +118,12 @@ export class UserInvitationsRepository {
   ): Promise<void> {
     await this.getExecutor(qr).query(
       `
-      UPDATE [auth].[UserInvitations]
-      SET ConsumedAt = SYSUTCDATETIME(), RevokedAt = SYSUTCDATETIME()
-      WHERE UserID = @0
+      UPDATE [auth].tbl_User_Invitations]
+      SET consumed_at = SYSUTCDATETIME(), RevokedAt = SYSUTCDATETIME()
+      WHERE user_id = @0
         AND Purpose = @1
-        AND ConsumedAt IS NULL
-        AND RevokedAt IS NULL;
+        AND consumed_at IS NULL
+        AND revoked_at IS NULL;
       `,
       [userId, purpose],
     );
@@ -140,17 +140,17 @@ export class UserInvitationsRepository {
     const rows = await this.getExecutor(qr).query(
       `
       SELECT TOP 1
-          i.UserInvitationID AS invitationId,
-          i.UserID AS userId,
-          CONVERT(NVARCHAR(64), i.TokenHash, 2) AS tokenHash,
+          i.user_invitation_id AS invitationId,
+          i.user_id AS userId,
+          CONVERT(NVARCHAR(64), i.token_hash, 2) AS tokenHash,
           i.Purpose AS purpose,
-          i.ExpiresAt AS expiresAt,
-          i.ConsumedAt AS consumedAt,
-          i.CreatedAt AS createdAt,
-          i.IssuedByUserID AS createdBy
-      FROM [auth].[UserInvitations] i
-      WHERE i.UserID = @0 AND i.Purpose = @1
-      ORDER BY i.CreatedAt DESC;
+          i.expires_at AS expiresAt,
+          i.consumed_at AS consumedAt,
+          i.created_at AS createdAt,
+          i.issued_by_user_id AS createdBy
+      FROM [auth].tbl_User_Invitations] i
+      WHERE i.user_id = @0 AND i.Purpose = @1
+      ORDER BY i.created_at DESC;
       `,
       [userId, purpose],
     );
@@ -191,21 +191,21 @@ export class UserInvitationsRepository {
     const rows = await this.getExecutor(qr).query(
       `
       SELECT 
-          i.UserInvitationID AS invitationId,
-          i.UserID AS userId,
-          CONVERT(NVARCHAR(64), i.TokenHash, 2) AS tokenHash,
+          i.user_invitation_id AS invitationId,
+          i.user_id AS userId,
+          CONVERT(NVARCHAR(64), i.token_hash, 2) AS tokenHash,
           i.Purpose AS purpose,
-          i.ExpiresAt AS expiresAt,
-          i.ConsumedAt AS consumedAt,
-          i.CreatedAt AS createdAt,
-          i.IssuedByUserID AS createdBy,
+          i.expires_at AS expiresAt,
+          i.consumed_at AS consumedAt,
+          i.created_at AS createdAt,
+          i.issued_by_user_id AS createdBy,
           u.Username AS username,
           u.Email AS email,
-          u.IsActive AS isActive,
+          u.is_active AS isActive,
           u.IsDeleted AS isDeleted
-      FROM [auth].[UserInvitations] i
-      INNER JOIN [auth].[Users] u ON u.UserID = i.UserID
-      WHERE i.TokenHash = CONVERT(VARBINARY(32), @0, 2);
+      FROM [auth].tbl_User_Invitations] i
+      INNER JOIN [auth].tbl_Users] u ON u.user_id = i.user_id
+      WHERE i.token_hash = CONVERT(VARBINARY(32), @0, 2);
       `,
       [tokenHash],
     );

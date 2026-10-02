@@ -57,7 +57,7 @@ export class PaginationQueryDto {
 export class SortingQueryDto {
   @ApiPropertyOptional({
     description: 'Field to sort by',
-    example: 'CreatedAt',
+    example: 'created_at',
   })
   @IsOptional()
   @IsString()
@@ -87,7 +87,7 @@ export class BaseQueryDto extends PaginationQueryDto {
 
   @ApiPropertyOptional({
     description: 'Field to sort by',
-    example: 'CreatedAt',
+    example: 'created_at',
   })
   @IsOptional()
   @IsString()

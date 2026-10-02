@@ -69,7 +69,7 @@ export class AuthCoreRepository {
                 FailedLoginCount,
                 LastFailedLoginAt,
                 LockedUntil
-            FROM [auth].[Users]
+            FROM [auth].tbl_Users]
             WHERE (LOWER(Username) = LOWER(@0) OR LOWER(Email) = LOWER(@0))
             AND IsDeleted = 0
         `;
@@ -83,9 +83,9 @@ export class AuthCoreRepository {
 
     const query = `
             SELECT TOP 1 PasswordHash
-            FROM [auth].[LocalCredentials]
-            WHERE UserID = @0
-            AND IsActive = 1
+            FROM [auth].tbl_Local_Credentials]
+            WHERE user_id = @0
+            AND is_active = 1
         `;
     const rows = await this.dataSource.query(query, [validUserId]);
     return rows[0]?.PasswordHash || null;
@@ -96,12 +96,12 @@ export class AuthCoreRepository {
     if (!validUserId) return;
 
     const query = `
-            UPDATE [auth].[Users]
+            UPDATE [auth].tbl_Users]
             SET
                 FailedLoginCount = ISNULL(FailedLoginCount, 0) + 1,
                 LastFailedLoginAt = SYSUTCDATETIME(),
                 UpdatedAt = SYSUTCDATETIME()
-            WHERE UserID = @0
+            WHERE user_id = @0
         `;
     await this.dataSource.query(query, [validUserId]);
   }
@@ -111,11 +111,11 @@ export class AuthCoreRepository {
     if (!validUserId) return;
 
     const query = `
-            UPDATE [auth].[Users]
+            UPDATE [auth].tbl_Users]
             SET
                 LockedUntil = DATEADD(MINUTE, @1, SYSUTCDATETIME()),
                 UpdatedAt = SYSUTCDATETIME()
-            WHERE UserID = @0
+            WHERE user_id = @0
         `;
     await this.dataSource.query(query, [validUserId, lockoutMinutes]);
   }
@@ -125,14 +125,14 @@ export class AuthCoreRepository {
     if (!validUserId) return;
 
     const query = `
-            UPDATE [auth].[Users]
+            UPDATE [auth].tbl_Users]
             SET
                 FailedLoginCount = 0,
                 LockedUntil = NULL,
                 LastFailedLoginAt = NULL,
                 LastLoginAt = SYSUTCDATETIME(),
                 UpdatedAt = SYSUTCDATETIME()
-            WHERE UserID = @0
+            WHERE user_id = @0
         `;
     await this.dataSource.query(query, [validUserId]);
   }
@@ -145,27 +145,27 @@ export class AuthCoreRepository {
 
     const query = `
             SELECT
-                u.UserID,
+                u.user_id,
                 u.Username,
                 u.Email,
-                u.EmployeeID,
+                u.employee_id,
                 u.UserType,
-                r.RoleCode,
-                p.PermissionCode,
+                r.role_code,
+                p.permission_code,
                 sd.ScopeCode,
                 uos.OrganizationID,
                 uos.BusinessUnitID,
                 uos.DepartmentID,
                 uos.SectionID
-            FROM [auth].[Users] u
-            LEFT JOIN [auth].[UserRoles] ur ON ur.UserID = u.UserID AND ur.IsActive = 1
-            LEFT JOIN [auth].[Roles] r ON r.RoleID = ur.RoleID AND r.IsActive = 1
-            LEFT JOIN [auth].[RolePermissions] rp ON rp.RoleID = r.RoleID
-            LEFT JOIN [auth].[Permissions] p ON p.PermissionID = rp.PermissionID
-            LEFT JOIN [auth].[UserOrganizationScopes] uos ON uos.UserID = u.UserID
+            FROM [auth].tbl_Users] u
+            LEFT JOIN [auth].tbl_User_Roles] ur ON ur.user_id = u.user_id AND ur.is_active = 1
+            LEFT JOIN [auth].tbl_Roles] r ON r.role_id = ur.role_id AND r.is_active = 1
+            LEFT JOIN [auth].tbl_Role_Permissions] rp ON rp.role_id = r.role_id
+            LEFT JOIN [auth].tbl_Permissions] p ON p.permission_id = rp.permission_id
+            LEFT JOIN [auth].[UserOrganizationScopes] uos ON uos.user_id = u.user_id
             LEFT JOIN [auth].[ScopeDefinitions] sd ON sd.ScopeDefinitionID = uos.ScopeDefinitionID
-            WHERE u.UserID = @0
-            AND u.IsActive = 1
+            WHERE u.user_id = @0
+            AND u.is_active = 1
             AND u.IsDeleted = 0
         `;
 
@@ -176,10 +176,10 @@ export class AuthCoreRepository {
 
     const first = rows[0];
     const roles = [
-      ...new Set(rows.map((r: any) => r.RoleCode).filter(Boolean)),
+      ...new Set(rows.map((r: any) => r.role_code).filter(Boolean)),
     ] as string[];
     const permissions = [
-      ...new Set(rows.map((r: any) => r.PermissionCode).filter(Boolean)),
+      ...new Set(rows.map((r: any) => r.permission_code).filter(Boolean)),
     ] as string[];
 
     if (first.Username?.toLowerCase() === 'admin') {
@@ -214,10 +214,10 @@ export class AuthCoreRepository {
     }
 
     return {
-      userId: first.UserID,
+      userId: first.user_id,
       username: first.Username,
       email: first.Email,
-      employeeId: first.EmployeeID || null,
+      employeeId: first.employee_id || null,
       userType: first.UserType,
       roles,
       permissions,
@@ -231,11 +231,11 @@ export class AuthCoreRepository {
 
     const query = `
             SELECT COUNT(*) as [count]
-            FROM [auth].[LoginSessions]
-            WHERE UserID = @0
-            AND IsActive = 1
-            AND RevokedAt IS NULL
-            AND ExpiresAt > SYSUTCDATETIME()
+            FROM [auth].tbl_Login_Sessions]
+            WHERE user_id = @0
+            AND is_active = 1
+            AND revoked_at IS NULL
+            AND expires_at > SYSUTCDATETIME()
         `;
     const result = await this.dataSource.query(query, [validUserId]);
     return result?.[0]?.count ? Number(result[0].count) : 0;
@@ -247,12 +247,12 @@ export class AuthCoreRepository {
 
     const query = `
             SELECT TOP 1 LoginSessionID
-            FROM [auth].[LoginSessions]
-            WHERE UserID = @0
-            AND IsActive = 1
-            AND RevokedAt IS NULL
-            AND ExpiresAt > SYSUTCDATETIME()
-            ORDER BY LoginAt ASC
+            FROM [auth].tbl_Login_Sessions]
+            WHERE user_id = @0
+            AND is_active = 1
+            AND revoked_at IS NULL
+            AND expires_at > SYSUTCDATETIME()
+            ORDER BY login_at ASC
         `;
     const result = await this.dataSource.query(query, [validUserId]);
     return result?.[0]?.LoginSessionID || null;
@@ -263,12 +263,12 @@ export class AuthCoreRepository {
     if (!validSessionId) return;
 
     const query = `
-            UPDATE [auth].[LoginSessions]
+            UPDATE [auth].tbl_Login_Sessions]
             SET
                 IsActive = 0,
                 RevokedAt = SYSUTCDATETIME(),
                 RefreshTokenRevokedAt = SYSUTCDATETIME()
-            WHERE LoginSessionID = @0
+            WHERE login_session_id = @0
         `;
     await this.dataSource.query(query, [validSessionId]);
   }
@@ -278,13 +278,13 @@ export class AuthCoreRepository {
     if (!validUserId) return;
 
     const query = `
-            UPDATE [auth].[LoginSessions]
+            UPDATE [auth].tbl_Login_Sessions]
             SET
                 IsActive = 0,
                 RevokedAt = SYSUTCDATETIME(),
                 RefreshTokenRevokedAt = SYSUTCDATETIME()
-            WHERE UserID = @0
-            AND IsActive = 1
+            WHERE user_id = @0
+            AND is_active = 1
         `;
     await this.dataSource.query(query, [validUserId]);
   }
@@ -310,7 +310,7 @@ export class AuthCoreRepository {
     const fingerprint = `${data.browserName || ''}|${data.deviceType || ''}`;
 
     const query = `
-            INSERT INTO [auth].[LoginSessions]
+            INSERT INTO [auth].tbl_Login_Sessions]
             (
                 LoginSessionID,
                 UserID,
@@ -364,12 +364,12 @@ export class AuthCoreRepository {
     if (!validSessionId) return;
 
     const query = `
-            UPDATE [auth].[LoginSessions]
+            UPDATE [auth].tbl_Login_Sessions]
             SET
                 RefreshTokenHash = @1,
                 RefreshTokenExpiresAt = DATEADD(DAY, @2, SYSUTCDATETIME()),
                 RefreshTokenRevokedAt = NULL
-            WHERE LoginSessionID = @0
+            WHERE login_session_id = @0
         `;
     await this.dataSource.query(query, [
       validSessionId,
@@ -396,8 +396,8 @@ export class AuthCoreRepository {
                 BrowserName,
                 DeviceType,
                 LastActivityAt
-            FROM [auth].[LoginSessions]
-            WHERE RefreshTokenHash = @0
+            FROM [auth].tbl_Login_Sessions]
+            WHERE refresh_token_hash = @0
         `;
     const rows = await this.dataSource.query(query, [refreshTokenHash]);
     return rows[0] || null;
@@ -412,13 +412,13 @@ export class AuthCoreRepository {
     if (!validSessionId) return;
 
     const query = `
-            UPDATE [auth].[LoginSessions]
+            UPDATE [auth].tbl_Login_Sessions]
             SET
                 RefreshTokenHash = @1,
                 RefreshTokenExpiresAt = DATEADD(DAY, @2, SYSUTCDATETIME()),
                 RefreshTokenRevokedAt = NULL,
                 LastActivityAt = SYSUTCDATETIME()
-            WHERE LoginSessionID = @0
+            WHERE login_session_id = @0
         `;
     await this.dataSource.query(query, [
       validSessionId,
@@ -432,9 +432,9 @@ export class AuthCoreRepository {
     if (!validSessionId) return;
 
     const query = `
-            UPDATE [auth].[LoginSessions]
-            SET RefreshTokenRevokedAt = SYSUTCDATETIME()
-            WHERE LoginSessionID = @0
+            UPDATE [auth].tbl_Login_Sessions]
+            SET refresh_token_revoked_at = SYSUTCDATETIME()
+            WHERE login_session_id = @0
         `;
     await this.dataSource.query(query, [validSessionId]);
   }
@@ -453,7 +453,7 @@ export class AuthCoreRepository {
       const validUserId =
         data.userId && UUID_REGEX.test(data.userId) ? data.userId : null;
       const query = `
-                INSERT INTO [auth].[FailedLoginAttempts]
+                INSERT INTO [auth].tbl_Failed_Login_Attempts]
                 (
                     UserID,
                     Username,
@@ -508,7 +508,7 @@ export class AuthCoreRepository {
           : null;
 
       const query = `
-                INSERT INTO [auth].[LoginHistory]
+                INSERT INTO [auth].tbl_Login_History]
                 (
                     UserID,
                     Username,
@@ -561,7 +561,7 @@ export class AuthCoreRepository {
         : null;
 
       const query = `
-                INSERT INTO [auth].[LogoutHistory]
+                INSERT INTO [auth].tbl_Logout_History]
                 (
                     LoginSessionID,
                     UserID,

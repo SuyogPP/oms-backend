@@ -23,21 +23,21 @@ export class UserOverridesRepository {
     const rows = await this.getExecutor(qr).query(
       `
       SELECT 
-          upo.UserPermissionOverrideID AS userPermissionOverrideId,
-          upo.UserID AS userId,
-          upo.PermissionID AS permissionId,
-          p.PermissionCode AS permissionCode,
-          p.ModuleName AS moduleName,
+          upo.user_permission_override_id AS userPermissionOverrideId,
+          upo.user_id AS userId,
+          upo.permission_id AS permissionId,
+          p.permission_code AS permissionCode,
+          p.module_name AS moduleName,
           p.ActionName AS actionName,
-          upo.IsGranted AS isGranted,
+          upo.is_granted AS isGranted,
           upo.Reason AS reason,
-          upo.ApprovedBy AS approvedBy,
-          upo.EffectiveFrom AS effectiveFrom,
-          upo.EffectiveTo AS effectiveTo
-      FROM [auth].[UserPermissionOverrides] upo
-      INNER JOIN [auth].[Permissions] p ON p.PermissionID = upo.PermissionID
-      WHERE upo.UserID = @0
-      ORDER BY upo.EffectiveFrom DESC;
+          upo.approved_by AS approvedBy,
+          upo.effective_from AS effectiveFrom,
+          upo.effective_to AS effectiveTo
+      FROM [auth].tbl_User_Permission_Overrides] upo
+      INNER JOIN [auth].tbl_Permissions] p ON p.permission_id = upo.permission_id
+      WHERE upo.user_id = @0
+      ORDER BY upo.effective_from DESC;
       `,
       [userId],
     );
@@ -67,23 +67,23 @@ export class UserOverridesRepository {
     const rows = await this.getExecutor(qr).query(
       `
       SELECT 
-          upo.UserPermissionOverrideID AS userPermissionOverrideId,
-          upo.UserID AS userId,
-          upo.PermissionID AS permissionId,
-          p.PermissionCode AS permissionCode,
-          p.ModuleName AS moduleName,
+          upo.user_permission_override_id AS userPermissionOverrideId,
+          upo.user_id AS userId,
+          upo.permission_id AS permissionId,
+          p.permission_code AS permissionCode,
+          p.module_name AS moduleName,
           p.ActionName AS actionName,
-          upo.IsGranted AS isGranted,
+          upo.is_granted AS isGranted,
           upo.Reason AS reason,
-          upo.ApprovedBy AS approvedBy,
-          upo.EffectiveFrom AS effectiveFrom,
-          upo.EffectiveTo AS effectiveTo
-      FROM [auth].[UserPermissionOverrides] upo
-      INNER JOIN [auth].[Permissions] p ON p.PermissionID = upo.PermissionID
-      WHERE upo.UserID = @0
-        AND upo.EffectiveFrom <= SYSUTCDATETIME()
-        AND (upo.EffectiveTo IS NULL OR upo.EffectiveTo > SYSUTCDATETIME())
-      ORDER BY upo.EffectiveFrom DESC;
+          upo.approved_by AS approvedBy,
+          upo.effective_from AS effectiveFrom,
+          upo.effective_to AS effectiveTo
+      FROM [auth].tbl_User_Permission_Overrides] upo
+      INNER JOIN [auth].tbl_Permissions] p ON p.permission_id = upo.permission_id
+      WHERE upo.user_id = @0
+        AND upo.effective_from <= SYSUTCDATETIME()
+        AND (upo.effective_to IS NULL OR upo.effective_to > SYSUTCDATETIME())
+      ORDER BY upo.effective_from DESC;
       `,
       [userId],
     );
@@ -113,20 +113,20 @@ export class UserOverridesRepository {
     const rows = await this.getExecutor(qr).query(
       `
       SELECT 
-          upo.UserPermissionOverrideID AS userPermissionOverrideId,
-          upo.UserID AS userId,
-          upo.PermissionID AS permissionId,
-          p.PermissionCode AS permissionCode,
-          p.ModuleName AS moduleName,
+          upo.user_permission_override_id AS userPermissionOverrideId,
+          upo.user_id AS userId,
+          upo.permission_id AS permissionId,
+          p.permission_code AS permissionCode,
+          p.module_name AS moduleName,
           p.ActionName AS actionName,
-          upo.IsGranted AS isGranted,
+          upo.is_granted AS isGranted,
           upo.Reason AS reason,
-          upo.ApprovedBy AS approvedBy,
-          upo.EffectiveFrom AS effectiveFrom,
-          upo.EffectiveTo AS effectiveTo
-      FROM [auth].[UserPermissionOverrides] upo
-      INNER JOIN [auth].[Permissions] p ON p.PermissionID = upo.PermissionID
-      WHERE upo.UserPermissionOverrideID = @0;
+          upo.approved_by AS approvedBy,
+          upo.effective_from AS effectiveFrom,
+          upo.effective_to AS effectiveTo
+      FROM [auth].tbl_User_Permission_Overrides] upo
+      INNER JOIN [auth].tbl_Permissions] p ON p.permission_id = upo.permission_id
+      WHERE upo.user_permission_override_id = @0;
       `,
       [userPermissionOverrideId],
     );
@@ -160,7 +160,7 @@ export class UserOverridesRepository {
   ): Promise<string> {
     const rows = await this.getExecutor(qr).query(
       `
-      INSERT INTO [auth].[UserPermissionOverrides] (
+      INSERT INTO [auth].tbl_User_Permission_Overrides] (
           UserPermissionOverrideID,
           UserID,
           PermissionID,
@@ -170,7 +170,7 @@ export class UserOverridesRepository {
           EffectiveFrom,
           EffectiveTo
       )
-      OUTPUT INSERTED.UserPermissionOverrideID AS userPermissionOverrideId
+      OUTPUT INSERTED.user_permission_override_id AS userPermissionOverrideId
       VALUES (
           NEWID(),
           @0,
@@ -205,9 +205,9 @@ export class UserOverridesRepository {
   ): Promise<void> {
     await this.getExecutor(qr).query(
       `
-      UPDATE [auth].[UserPermissionOverrides]
-      SET EffectiveTo = SYSUTCDATETIME()
-      WHERE UserPermissionOverrideID = @0;
+      UPDATE [auth].tbl_User_Permission_Overrides]
+      SET effective_to = SYSUTCDATETIME()
+      WHERE user_permission_override_id = @0;
       `,
       [userPermissionOverrideId],
     );
@@ -219,10 +219,10 @@ export class UserOverridesRepository {
   async revokeAllForUser(userId: string, qr?: QueryRunner): Promise<void> {
     await this.getExecutor(qr).query(
       `
-      UPDATE [auth].[UserPermissionOverrides]
-      SET EffectiveTo = SYSUTCDATETIME()
-      WHERE UserID = @0
-        AND (EffectiveTo IS NULL OR EffectiveTo > SYSUTCDATETIME());
+      UPDATE [auth].tbl_User_Permission_Overrides]
+      SET effective_to = SYSUTCDATETIME()
+      WHERE user_id = @0
+        AND (EffectiveTo IS NULL OR effective_to > SYSUTCDATETIME());
       `,
       [userId],
     );

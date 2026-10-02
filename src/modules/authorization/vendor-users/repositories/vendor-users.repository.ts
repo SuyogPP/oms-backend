@@ -21,28 +21,28 @@ export class VendorUsersRepository {
     const rows = await this.getExecutor(qr).query(
       `
       SELECT 
-          u.UserID AS userId,
+          u.user_id AS userId,
           u.Username AS username,
           u.Email AS email,
           u.UserType AS userType,
-          u.IsActive AS isActive,
+          u.is_active AS isActive,
           u.IsDeleted AS isDeleted,
-          u.FailedLoginCount AS failedLoginCount,
-          u.LockedUntil AS lockedUntil,
-          u.CreatedAt AS createdAt,
-          u.UpdatedAt AS updatedAt,
+          u.failed_login_count AS failedLoginCount,
+          u.locked_until AS lockedUntil,
+          u.created_at AS createdAt,
+          u.updated_at AS updatedAt,
           p.UserProfileID AS userProfileId,
-          p.FirstName AS firstName,
-          p.LastName AS lastName,
-          RTRIM(LTRIM(p.FirstName + ' ' + ISNULL(p.LastName, ''))) AS displayName,
-          p.MobileNo AS phoneNumber,
-          p.JobTitle AS jobTitle,
+          p.first_name AS firstName,
+          p.last_name AS lastName,
+          RTRIM(LTRIM(p.first_name + ' ' + ISNULL(p.last_name, ''))) AS displayName,
+          p.mobile_no AS phoneNumber,
+          p.job_title AS jobTitle,
           CAST(NULL AS UNIQUEIDENTIFIER) AS vendorId
-      FROM [auth].[Users] u
-      INNER JOIN [auth].[UserProfiles] p ON p.UserID = u.UserID
+      FROM [auth].tbl_Users] u
+      INNER JOIN [auth].[UserProfiles] p ON p.user_id = u.user_id
       WHERE u.UserType = 'VENDOR'
         AND u.IsDeleted = 0
-      ORDER BY u.CreatedAt DESC;
+      ORDER BY u.created_at DESC;
       `,
     );
 
@@ -84,26 +84,26 @@ export class VendorUsersRepository {
     const rows = await this.getExecutor(qr).query(
       `
       SELECT 
-          u.UserID AS userId,
+          u.user_id AS userId,
           u.Username AS username,
           u.Email AS email,
           u.UserType AS userType,
-          u.IsActive AS isActive,
+          u.is_active AS isActive,
           u.IsDeleted AS isDeleted,
-          u.FailedLoginCount AS failedLoginCount,
-          u.LockedUntil AS lockedUntil,
-          u.CreatedAt AS createdAt,
-          u.UpdatedAt AS updatedAt,
+          u.failed_login_count AS failedLoginCount,
+          u.locked_until AS lockedUntil,
+          u.created_at AS createdAt,
+          u.updated_at AS updatedAt,
           p.UserProfileID AS userProfileId,
-          p.FirstName AS firstName,
-          p.LastName AS lastName,
-          RTRIM(LTRIM(p.FirstName + ' ' + ISNULL(p.LastName, ''))) AS displayName,
-          p.MobileNo AS phoneNumber,
-          p.JobTitle AS jobTitle,
+          p.first_name AS firstName,
+          p.last_name AS lastName,
+          RTRIM(LTRIM(p.first_name + ' ' + ISNULL(p.last_name, ''))) AS displayName,
+          p.mobile_no AS phoneNumber,
+          p.job_title AS jobTitle,
           CAST(NULL AS UNIQUEIDENTIFIER) AS vendorId
-      FROM [auth].[Users] u
-      INNER JOIN [auth].[UserProfiles] p ON p.UserID = u.UserID
-      WHERE u.UserID = @0
+      FROM [auth].tbl_Users] u
+      INNER JOIN [auth].[UserProfiles] p ON p.user_id = u.user_id
+      WHERE u.user_id = @0
         AND u.UserType = 'VENDOR'
         AND u.IsDeleted = 0;
       `,
@@ -159,7 +159,7 @@ export class VendorUsersRepository {
     try {
       const userRows = await runner.query(
         `
-        INSERT INTO [auth].[Users] (
+        INSERT INTO [auth].tbl_Users] (
             UserID,
             Username,
             Email,
@@ -170,7 +170,7 @@ export class VendorUsersRepository {
             CreatedAt,
             UpdatedAt
         )
-        OUTPUT INSERTED.UserID AS userId
+        OUTPUT INSERTED.user_id AS userId
         VALUES (
             NEWID(),
             @0,
@@ -261,9 +261,9 @@ export class VendorUsersRepository {
       if (data.email) {
         await runner.query(
           `
-          UPDATE [auth].[Users]
+          UPDATE [auth].tbl_Users]
           SET Email = @1, UpdatedAt = SYSUTCDATETIME()
-          WHERE UserID = @0 AND UserType = 'VENDOR';
+          WHERE user_id = @0 AND UserType = 'VENDOR';
           `,
           [userId, data.email],
         );
@@ -277,7 +277,7 @@ export class VendorUsersRepository {
             LastName = COALESCE(@2, LastName),
             MobileNo = COALESCE(@3, MobileNo),
             JobTitle = COALESCE(@4, JobTitle)
-        WHERE UserID = @0;
+        WHERE user_id = @0;
         `,
         [
           userId,
@@ -309,9 +309,9 @@ export class VendorUsersRepository {
   async deactivate(userId: string, qr?: QueryRunner): Promise<void> {
     await this.getExecutor(qr).query(
       `
-      UPDATE [auth].[Users]
-      SET IsActive = 0, UpdatedAt = SYSUTCDATETIME()
-      WHERE UserID = @0 AND UserType = 'VENDOR';
+      UPDATE [auth].tbl_Users]
+      SET is_active = 0, UpdatedAt = SYSUTCDATETIME()
+      WHERE user_id = @0 AND UserType = 'VENDOR';
       `,
       [userId],
     );
@@ -326,8 +326,8 @@ export class VendorUsersRepository {
   ): Promise<void> {
     await this.getExecutor(qr).query(
       `
-      UPDATE [auth].[Users]
-      SET IsActive = 0, UpdatedAt = SYSUTCDATETIME()
+      UPDATE [auth].tbl_Users]
+      SET is_active = 0, UpdatedAt = SYSUTCDATETIME()
       WHERE UserType = 'VENDOR' AND IsDeleted = 0;
       `,
     );

@@ -35,7 +35,7 @@ BEGIN
         TokenId       UNIQUEIDENTIFIER NOT NULL DEFAULT (NEWSEQUENTIALID()),
         OnboardingId  UNIQUEIDENTIFIER NOT NULL,
         TokenHash     VARBINARY(32)    NOT NULL,   -- SHA-256, same discipline as
-                                                    -- auth.UserInvitations
+                                                    -- auth.tbl_User_Invitations
         ExpiresAt     DATETIME2(3)     NOT NULL,
         ConsumedCount INT              NOT NULL DEFAULT (0),
         RevokedAt     DATETIME2(3)     NULL,

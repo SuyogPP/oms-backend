@@ -24,7 +24,7 @@ export class UserScopesRepository {
       `
       SELECT 
           s.UserOrganizationScopeID AS userOrganizationScopeId,
-          s.UserID AS userId,
+          s.user_id AS userId,
           s.ScopeDefinitionID AS scopeDefinitionId,
           sd.ScopeCode AS scopeCode,
           sd.ScopeName AS scopeName,
@@ -41,7 +41,7 @@ export class UserScopesRepository {
       FROM [auth].[UserOrganizationScopes] s
       INNER JOIN [auth].[ScopeDefinitions] sd ON sd.ScopeDefinitionID = s.ScopeDefinitionID
       LEFT JOIN [org].[OrgUnits] ou ON ou.OrgUnitId = COALESCE(s.DepartmentID, s.BusinessUnitID, s.SectionID, s.OrganizationID)
-      WHERE s.UserID = @0;
+      WHERE s.user_id = @0;
       `,
       [userId],
     );
@@ -79,7 +79,7 @@ export class UserScopesRepository {
       `
       SELECT 
           s.UserOrganizationScopeID AS userOrganizationScopeId,
-          s.UserID AS userId,
+          s.user_id AS userId,
           s.ScopeDefinitionID AS scopeDefinitionId,
           sd.ScopeCode AS scopeCode,
           sd.ScopeName AS scopeName,
@@ -96,7 +96,7 @@ export class UserScopesRepository {
       FROM [auth].[UserOrganizationScopes] s
       INNER JOIN [auth].[ScopeDefinitions] sd ON sd.ScopeDefinitionID = s.ScopeDefinitionID
       LEFT JOIN [org].[OrgUnits] ou ON ou.OrgUnitId = COALESCE(s.DepartmentID, s.BusinessUnitID, s.SectionID, s.OrganizationID, s.OrgUnitId)
-      WHERE s.UserID = @0;
+      WHERE s.user_id = @0;
       `,
       [userId],
     );
@@ -134,7 +134,7 @@ export class UserScopesRepository {
       `
       SELECT 
           s.UserOrganizationScopeID AS userOrganizationScopeId,
-          s.UserID AS userId,
+          s.user_id AS userId,
           s.ScopeDefinitionID AS scopeDefinitionId,
           sd.ScopeCode AS scopeCode,
           sd.ScopeName AS scopeName,
@@ -249,7 +249,7 @@ export class UserScopesRepository {
       `
       SELECT COUNT(*) AS total
       FROM [auth].[UserOrganizationScopes]
-      WHERE UserID = @0;
+      WHERE user_id = @0;
       `,
       [userId],
     );
@@ -270,7 +270,7 @@ export class UserScopesRepository {
         `
         SELECT COUNT(*) AS total
         FROM [org].[OrgUnits]
-        WHERE IsDeleted = 0 AND IsActive = 1;
+        WHERE IsDeleted = 0 AND is_active = 1;
         `,
       );
       return rows[0]?.total ? Number(rows[0].total) : 0;
@@ -283,7 +283,7 @@ export class UserScopesRepository {
       INNER JOIN [org].[OrgUnits] u ON u.OrgUnitId = c.DescendantOrgUnitId
       WHERE c.AncestorOrgUnitId = @0
         AND u.IsDeleted = 0
-        AND u.IsActive = 1;
+        AND u.is_active = 1;
       `,
       [orgUnitId],
     );

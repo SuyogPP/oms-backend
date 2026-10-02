@@ -146,10 +146,10 @@ export class UserScopesService {
     if (!orgUnitId) return;
     try {
       const roles: any[] = await this.dataSource.query(
-        `SELECT r.RoleCode 
-         FROM auth.UserRoles ur 
-         INNER JOIN auth.Roles r ON r.RoleID = ur.RoleID 
-         WHERE ur.UserID = @0 AND r.RoleCode IN ('HOD', 'SECTION_HEAD')`,
+        `SELECT r.role_code 
+         FROM auth.tbl_User_Roles ur 
+         INNER JOIN auth.tbl_Roles r ON r.role_id = ur.role_id 
+         WHERE ur.user_id = @0 AND r.role_code IN ('HOD', 'SECTION_HEAD')`,
         [userId],
       );
       if (roles.length > 0) {
@@ -159,7 +159,7 @@ export class UserScopesService {
         );
         const existing: any[] = await this.dataSource.query(
           `SELECT OrgUnitManagerId FROM org.OrgUnitManagers 
-           WHERE OrgUnitId = @0 AND UserId = @1 AND ManagerRoleCode = 'HEAD' AND IsDeleted = 0`,
+           WHERE OrgUnitId = @0 AND UserId = @1 AND manager_role_code = 'HEAD' AND IsDeleted = 0`,
           [orgUnitId, userId],
         );
         if (existing.length === 0) {
@@ -175,7 +175,7 @@ export class UserScopesService {
           );
         } else {
           await this.dataSource.query(
-            `UPDATE org.OrgUnitManagers SET IsActive = 1, IsPrimary = 1 WHERE OrgUnitManagerId = @0`,
+            `UPDATE org.OrgUnitManagers SET is_active = 1, IsPrimary = 1 WHERE OrgUnitManagerId = @0`,
             [existing[0].OrgUnitManagerId],
           );
         }
@@ -187,17 +187,17 @@ export class UserScopesService {
       const typeCode = unitTypes?.[0]?.Code;
       if (typeCode === 'DEPARTMENT') {
         await this.dataSource.query(
-          `UPDATE auth.UserProfiles SET DepartmentID = @0 WHERE UserID = @1`,
+          `UPDATE auth.UserProfiles SET DepartmentID = @0 WHERE user_id = @1`,
           [orgUnitId, userId],
         );
       } else if (typeCode === 'BUSINESS_UNIT') {
         await this.dataSource.query(
-          `UPDATE auth.UserProfiles SET BusinessUnitID = @0 WHERE UserID = @1`,
+          `UPDATE auth.UserProfiles SET BusinessUnitID = @0 WHERE user_id = @1`,
           [orgUnitId, userId],
         );
       } else if (typeCode === 'SECTION') {
         await this.dataSource.query(
-          `UPDATE auth.UserProfiles SET SectionID = @0 WHERE UserID = @1`,
+          `UPDATE auth.UserProfiles SET SectionID = @0 WHERE user_id = @1`,
           [orgUnitId, userId],
         );
       }
@@ -347,11 +347,11 @@ export class UserScopesService {
       `
       SELECT 1 FROM [auth].[UserOrganizationScopes] s
       INNER JOIN [auth].[ScopeDefinitions] sd ON sd.ScopeDefinitionID = s.ScopeDefinitionID
-      WHERE s.UserID = @0
+      WHERE s.user_id = @0
         AND sd.ScopeCode = 'GLOBAL'
-        AND (s.IsActive = 1 OR s.IsActive IS NULL)
-        AND (s.EffectiveFrom IS NULL OR s.EffectiveFrom <= SYSUTCDATETIME())
-        AND (s.EffectiveTo IS NULL OR s.EffectiveTo > SYSUTCDATETIME());
+        AND (s.is_active = 1 OR s.is_active IS NULL)
+        AND (s.effective_from IS NULL OR s.effective_from <= SYSUTCDATETIME())
+        AND (s.effective_to IS NULL OR s.effective_to > SYSUTCDATETIME());
       `,
       [requesterUserId],
     );

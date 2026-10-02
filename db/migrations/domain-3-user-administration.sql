@@ -18,15 +18,15 @@
 --   Each block is guarded with existence checks and separated by GO batches for idempotent execution.
 --
 -- SCRIPT STRUCTURE:
---   [BLOCK 1] Data Sanitization (Resolve UserType drift on auth.Users)
---   [BLOCK 2] auth.Users Check Constraint (Enforce 4 seeded UserTypeCodes)
---   [BLOCK 3] Table: auth.PasswordHistory (Closes G1)
---   [BLOCK 4] Table: auth.UserInvitations (Closes G2)
---   [BLOCK 5] Table: auth.DelegationPermissions (Closes G6 — Granular Delegation)
+--   [BLOCK 1] Data Sanitization (Resolve UserType drift on auth.tbl_Users)
+--   [BLOCK 2] auth.tbl_Users Check Constraint (Enforce 4 seeded UserTypeCodes)
+--   [BLOCK 3] Table: auth.tbl_Password_History (Closes G1)
+--   [BLOCK 4] Table: auth.tbl_User_Invitations (Closes G2)
+--   [BLOCK 5] Table: auth.tbl_Delegation_Permissions (Closes G6 — Granular Delegation)
 --   [BLOCK 6] Table Alterations: auth.UserOrganizationScopes & auth.UserProfiles (Closes G3, G4)
 --   [BLOCK 7] Non-Clustered & Filtered Performance Indexes
 --   [BLOCK 8] Updated Inline TVF: org.fn_VisibleOrgUnits (Temporal & Active Scope Validation)
---   [BLOCK 9] Seed: Domain 3 Permissions & Role Grants (auth.Permissions, auth.RolePermissions)
+--   [BLOCK 9] Seed: Domain 3 Permissions & Role Grants (auth.tbl_Permissions, auth.tbl_Role_Permissions)
 --   [BLOCK 10] Verification Query (Confirms all tables, columns, indexes, constraints & TVF)
 -- ====================================================================================================
 
@@ -38,12 +38,12 @@ SET QUOTED_IDENTIFIER ON;
 GO
 
 -- ====================================================================================================
--- [BLOCK 1] Data Sanitization (Resolve UserType drift on auth.Users)
+-- [BLOCK 1] Data Sanitization (Resolve UserType drift on auth.tbl_Users)
 -- Maps any unseeded 'EXTERNAL' values to 'VENDOR' before applying the check constraint.
 -- ====================================================================================================
-PRINT '>>> [BLOCK 1] Sanitizing auth.Users UserType values...';
+PRINT '>>> [BLOCK 1] Sanitizing auth.tbl_Users UserType values...';
 
-UPDATE [auth].[Users]
+UPDATE [auth].tbl_Users]
 SET [UserType] = 'VENDOR'
 WHERE [UserType] = 'EXTERNAL';
 
@@ -52,17 +52,17 @@ GO
 
 
 -- ====================================================================================================
--- [BLOCK 2] auth.Users Check Constraint (Enforce 4 seeded UserTypeCodes)
+-- [BLOCK 2] auth.tbl_Users Check Constraint (Enforce 4 seeded UserTypeCodes)
 -- ====================================================================================================
-PRINT '>>> [BLOCK 2] Applying constraint CK_Users_UserType on auth.Users...';
+PRINT '>>> [BLOCK 2] Applying constraint CK_Users_UserType on auth.tbl_Users...';
 
 IF NOT EXISTS (
     SELECT 1 FROM sys.check_constraints 
     WHERE name = 'CK_Users_UserType' 
-      AND parent_object_id = OBJECT_ID('auth.Users')
+      AND parent_object_id = OBJECT_ID('auth.tbl_Users')
 )
 BEGIN
-    ALTER TABLE [auth].[Users] WITH CHECK
+    ALTER TABLE [auth].tbl_Users] WITH CHECK
     ADD CONSTRAINT [CK_Users_UserType]
         CHECK ([UserType] IN ('INTERNAL', 'VENDOR', 'SYSTEM', 'SERVICE_ACCOUNT'));
 
@@ -76,39 +76,39 @@ GO
 
 
 -- ====================================================================================================
--- [BLOCK 3] Table: auth.PasswordHistory (Closes G1)
+-- [BLOCK 3] Table: auth.tbl_Password_History (Closes G1)
 -- Enables password history tracking to prevent reuse of last N passwords.
 -- ====================================================================================================
-PRINT '>>> [BLOCK 3] Creating table [auth].[PasswordHistory]...';
+PRINT '>>> [BLOCK 3] Creating table [auth].tbl_Password_History]...';
 
-IF OBJECT_ID('auth.PasswordHistory', 'U') IS NULL
+IF OBJECT_ID('auth.tbl_Password_History', 'U') IS NULL
 BEGIN
-    CREATE TABLE [auth].[PasswordHistory] (
-        [PasswordHistoryID] UNIQUEIDENTIFIER NOT NULL CONSTRAINT [DF_PwdHist_ID] DEFAULT (NEWSEQUENTIALID()),
-        [UserID]            UNIQUEIDENTIFIER NOT NULL,
-        [PasswordHash]      NVARCHAR(500)    NOT NULL,
-        [CreatedAt]         DATETIME2(3)     NOT NULL CONSTRAINT [DF_PwdHist_CreatedAt] DEFAULT (SYSUTCDATETIME()),
+    CREATE TABLE [auth].tbl_Password_History] (
+        [password_history_id] UNIQUEIDENTIFIER NOT NULL CONSTRAINT [DF_PwdHist_ID] DEFAULT (NEWSEQUENTIALID()),
+        [user_id]            UNIQUEIDENTIFIER NOT NULL,
+        [password_hash]      NVARCHAR(500)    NOT NULL,
+        [created_at]         DATETIME2(3)     NOT NULL CONSTRAINT [DF_PwdHist_CreatedAt] DEFAULT (SYSUTCDATETIME()),
 
-        CONSTRAINT [PK_PasswordHistory] PRIMARY KEY CLUSTERED ([PasswordHistoryID]),
-        CONSTRAINT [FK_PasswordHistory_User] FOREIGN KEY ([UserID]) REFERENCES [auth].[Users] ([UserID])
+        CONSTRAINT [PK_PasswordHistory] PRIMARY KEY CLUSTERED ([password_history_id]),
+        CONSTRAINT [FK_PasswordHistory_User] FOREIGN KEY ([user_id]) REFERENCES [auth].tbl_Users] ([user_id])
     );
 
-    PRINT '    [+] Created table [auth].[PasswordHistory].';
+    PRINT '    [+] Created table [auth].tbl_Password_History].';
 END
 ELSE
 BEGIN
-    PRINT '    [-] Table [auth].[PasswordHistory] already exists.';
+    PRINT '    [-] Table [auth].tbl_Password_History] already exists.';
 END
 GO
 
 IF NOT EXISTS (
     SELECT 1 FROM sys.indexes 
     WHERE name = 'IX_PasswordHistory_User' 
-      AND object_id = OBJECT_ID('auth.PasswordHistory')
+      AND object_id = OBJECT_ID('auth.tbl_Password_History')
 )
 BEGIN
     CREATE NONCLUSTERED INDEX [IX_PasswordHistory_User]
-        ON [auth].[PasswordHistory] ([UserID], [CreatedAt] DESC);
+        ON [auth].tbl_Password_History] ([user_id], [created_at] DESC);
 
     PRINT '    [+] Created index [IX_PasswordHistory_User].';
 END
@@ -120,47 +120,47 @@ GO
 
 
 -- ====================================================================================================
--- [BLOCK 4] Table: auth.UserInvitations (Closes G2)
+-- [BLOCK 4] Table: auth.tbl_User_Invitations (Closes G2)
 -- Enables secure invitation and self-service password set / reset workflows.
 -- ====================================================================================================
-PRINT '>>> [BLOCK 4] Creating table [auth].[UserInvitations]...';
+PRINT '>>> [BLOCK 4] Creating table [auth].tbl_User_Invitations]...';
 
-IF OBJECT_ID('auth.UserInvitations', 'U') IS NULL
+IF OBJECT_ID('auth.tbl_User_Invitations', 'U') IS NULL
 BEGIN
-    CREATE TABLE [auth].[UserInvitations] (
-        [UserInvitationID] UNIQUEIDENTIFIER NOT NULL CONSTRAINT [DF_UserInv_ID] DEFAULT (NEWSEQUENTIALID()),
-        [UserID]           UNIQUEIDENTIFIER NOT NULL,
-        [TokenHash]        VARBINARY(32)    NOT NULL,
+    CREATE TABLE [auth].tbl_User_Invitations] (
+        [user_invitation_id] UNIQUEIDENTIFIER NOT NULL CONSTRAINT [DF_UserInv_ID] DEFAULT (NEWSEQUENTIALID()),
+        [user_id]           UNIQUEIDENTIFIER NOT NULL,
+        [token_hash]        VARBINARY(32)    NOT NULL,
         [Purpose]          NVARCHAR(30)     NOT NULL,
-        [ExpiresAt]        DATETIME2(3)     NOT NULL,
-        [ConsumedAt]       DATETIME2(3)     NULL,
-        [RevokedAt]        DATETIME2(3)     NULL,
-        [IssuedByUserID]   UNIQUEIDENTIFIER NULL,
-        [IssuedToEmail]    NVARCHAR(255)    NOT NULL,
+        [expires_at]        DATETIME2(3)     NOT NULL,
+        [consumed_at]       DATETIME2(3)     NULL,
+        [revoked_at]        DATETIME2(3)     NULL,
+        [issued_by_user_id]   UNIQUEIDENTIFIER NULL,
+        [issued_to_email]    NVARCHAR(255)    NOT NULL,
         [IPAddress]        VARCHAR(45)      NULL,
-        [CreatedAt]        DATETIME2(3)     NOT NULL CONSTRAINT [DF_UserInv_CreatedAt] DEFAULT (SYSUTCDATETIME()),
+        [created_at]        DATETIME2(3)     NOT NULL CONSTRAINT [DF_UserInv_CreatedAt] DEFAULT (SYSUTCDATETIME()),
 
-        CONSTRAINT [PK_UserInvitations]      PRIMARY KEY CLUSTERED ([UserInvitationID]),
-        CONSTRAINT [FK_UserInvitations_User] FOREIGN KEY ([UserID]) REFERENCES [auth].[Users] ([UserID]),
+        CONSTRAINT [PK_UserInvitations]      PRIMARY KEY CLUSTERED ([user_invitation_id]),
+        CONSTRAINT [FK_UserInvitations_User] FOREIGN KEY ([user_id]) REFERENCES [auth].tbl_Users] ([user_id]),
         CONSTRAINT [CK_UserInvitations_Purpose] CHECK ([Purpose] IN ('INVITE', 'PASSWORD_RESET'))
     );
 
-    PRINT '    [+] Created table [auth].[UserInvitations].';
+    PRINT '    [+] Created table [auth].tbl_User_Invitations].';
 END
 ELSE
 BEGIN
-    PRINT '    [-] Table [auth].[UserInvitations] already exists.';
+    PRINT '    [-] Table [auth].tbl_User_Invitations] already exists.';
 END
 GO
 
 IF NOT EXISTS (
     SELECT 1 FROM sys.indexes 
     WHERE name = 'UX_UserInvitations_TokenHash' 
-      AND object_id = OBJECT_ID('auth.UserInvitations')
+      AND object_id = OBJECT_ID('auth.tbl_User_Invitations')
 )
 BEGIN
     CREATE UNIQUE NONCLUSTERED INDEX [UX_UserInvitations_TokenHash]
-        ON [auth].[UserInvitations] ([TokenHash]);
+        ON [auth].tbl_User_Invitations] ([token_hash]);
 
     PRINT '    [+] Created unique index [UX_UserInvitations_TokenHash].';
 END
@@ -173,11 +173,11 @@ GO
 IF NOT EXISTS (
     SELECT 1 FROM sys.indexes 
     WHERE name = 'IX_UserInvitations_User' 
-      AND object_id = OBJECT_ID('auth.UserInvitations')
+      AND object_id = OBJECT_ID('auth.tbl_User_Invitations')
 )
 BEGIN
     CREATE NONCLUSTERED INDEX [IX_UserInvitations_User]
-        ON [auth].[UserInvitations] ([UserID], [Purpose], [ExpiresAt] DESC);
+        ON [auth].tbl_User_Invitations] ([user_id], [Purpose], [expires_at] DESC);
 
     PRINT '    [+] Created index [IX_UserInvitations_User].';
 END
@@ -189,42 +189,42 @@ GO
 
 
 -- ====================================================================================================
--- [BLOCK 5] Table: auth.DelegationPermissions (Closes G6 — Granular Delegation)
+-- [BLOCK 5] Table: auth.tbl_Delegation_Permissions (Closes G6 — Granular Delegation)
 -- Scopes authority delegation to specific permissions instead of all-or-nothing transfer.
 -- ====================================================================================================
-PRINT '>>> [BLOCK 5] Creating table [auth].[DelegationPermissions]...';
+PRINT '>>> [BLOCK 5] Creating table [auth].tbl_Delegation_Permissions]...';
 
-IF OBJECT_ID('auth.DelegationPermissions', 'U') IS NULL
+IF OBJECT_ID('auth.tbl_Delegation_Permissions', 'U') IS NULL
 BEGIN
-    CREATE TABLE [auth].[DelegationPermissions] (
+    CREATE TABLE [auth].tbl_Delegation_Permissions] (
         [DelegationPermissionID] UNIQUEIDENTIFIER NOT NULL CONSTRAINT [DF_DelPerm_ID] DEFAULT (NEWSEQUENTIALID()),
-        [DelegationID]           UNIQUEIDENTIFIER NOT NULL,
-        [PermissionID]           UNIQUEIDENTIFIER NOT NULL,
-        [CreatedAt]              DATETIME2(3)     NOT NULL CONSTRAINT [DF_DelPerm_CreatedAt] DEFAULT (SYSUTCDATETIME()),
+        [delegation_id]           UNIQUEIDENTIFIER NOT NULL,
+        [permission_id]           UNIQUEIDENTIFIER NOT NULL,
+        [created_at]              DATETIME2(3)     NOT NULL CONSTRAINT [DF_DelPerm_CreatedAt] DEFAULT (SYSUTCDATETIME()),
 
         CONSTRAINT [PK_DelegationPermissions] PRIMARY KEY CLUSTERED ([DelegationPermissionID]),
-        CONSTRAINT [FK_DelegationPermissions_Delegation] FOREIGN KEY ([DelegationID]) 
-            REFERENCES [auth].[Delegations] ([DelegationID]) ON DELETE CASCADE,
-        CONSTRAINT [FK_DelegationPermissions_Permission] FOREIGN KEY ([PermissionID]) 
-            REFERENCES [auth].[Permissions] ([PermissionID])
+        CONSTRAINT [FK_DelegationPermissions_Delegation] FOREIGN KEY ([delegation_id]) 
+            REFERENCES [auth].tbl_Delegations] ([delegation_id]) ON DELETE CASCADE,
+        CONSTRAINT [FK_DelegationPermissions_Permission] FOREIGN KEY ([permission_id]) 
+            REFERENCES [auth].tbl_Permissions] ([permission_id])
     );
 
-    PRINT '    [+] Created table [auth].[DelegationPermissions].';
+    PRINT '    [+] Created table [auth].tbl_Delegation_Permissions].';
 END
 ELSE
 BEGIN
-    PRINT '    [-] Table [auth].[DelegationPermissions] already exists.';
+    PRINT '    [-] Table [auth].tbl_Delegation_Permissions] already exists.';
 END
 GO
 
 IF NOT EXISTS (
     SELECT 1 FROM sys.indexes 
     WHERE name = 'UX_DelegationPermissions_Unique' 
-      AND object_id = OBJECT_ID('auth.DelegationPermissions')
+      AND object_id = OBJECT_ID('auth.tbl_Delegation_Permissions')
 )
 BEGIN
     CREATE UNIQUE NONCLUSTERED INDEX [UX_DelegationPermissions_Unique]
-        ON [auth].[DelegationPermissions] ([DelegationID], [PermissionID]);
+        ON [auth].tbl_Delegation_Permissions] ([delegation_id], [permission_id]);
 
     PRINT '    [+] Created unique index [UX_DelegationPermissions_Unique].';
 END
@@ -246,15 +246,15 @@ IF NOT EXISTS (
     SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS 
     WHERE TABLE_SCHEMA = 'auth' 
       AND TABLE_NAME = 'UserOrganizationScopes' 
-      AND COLUMN_NAME = 'EffectiveFrom'
+      AND COLUMN_NAME = 'effective_from'
 )
 BEGIN
     ALTER TABLE [auth].[UserOrganizationScopes] ADD
-        [EffectiveFrom] DATETIME2(3)     NOT NULL CONSTRAINT [DF_UOS_EffFrom] DEFAULT (SYSUTCDATETIME()),
-        [EffectiveTo]   DATETIME2(3)     NULL,
-        [IsActive]      BIT              NOT NULL CONSTRAINT [DF_UOS_IsActive] DEFAULT (1),
-        [AssignedBy]    UNIQUEIDENTIFIER NULL,
-        [AssignedAt]    DATETIME2(3)     NOT NULL CONSTRAINT [DF_UOS_AssignedAt] DEFAULT (SYSUTCDATETIME()),
+        [effective_from] DATETIME2(3)     NOT NULL CONSTRAINT [DF_UOS_EffFrom] DEFAULT (SYSUTCDATETIME()),
+        [effective_to]   DATETIME2(3)     NULL,
+        [is_active]      BIT              NOT NULL CONSTRAINT [DF_UOS_IsActive] DEFAULT (1),
+        [assigned_by]    UNIQUEIDENTIFIER NULL,
+        [assigned_at]    DATETIME2(3)     NOT NULL CONSTRAINT [DF_UOS_AssignedAt] DEFAULT (SYSUTCDATETIME()),
         [Reason]        NVARCHAR(500)    NULL;
 
     PRINT '    [+] Added temporal and audit columns to [auth].[UserOrganizationScopes].';
@@ -270,14 +270,14 @@ IF NOT EXISTS (
     SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS 
     WHERE TABLE_SCHEMA = 'auth' 
       AND TABLE_NAME = 'UserProfiles' 
-      AND COLUMN_NAME = 'CreatedAt'
+      AND COLUMN_NAME = 'created_at'
 )
 BEGIN
     ALTER TABLE [auth].[UserProfiles] ADD
-        [CreatedAt] DATETIME2(3)     NOT NULL CONSTRAINT [DF_UP_CreatedAt] DEFAULT (SYSUTCDATETIME()),
-        [CreatedBy] UNIQUEIDENTIFIER NULL,
-        [UpdatedAt] DATETIME2(3)     NULL,
-        [UpdatedBy] UNIQUEIDENTIFIER NULL;
+        [created_at] DATETIME2(3)     NOT NULL CONSTRAINT [DF_UP_CreatedAt] DEFAULT (SYSUTCDATETIME()),
+        [created_by] UNIQUEIDENTIFIER NULL,
+        [updated_at] DATETIME2(3)     NULL,
+        [updated_by] UNIQUEIDENTIFIER NULL;
 
     PRINT '    [+] Added audit columns to [auth].[UserProfiles].';
 END
@@ -296,13 +296,13 @@ PRINT '>>> [BLOCK 7] Creating performance indexes...';
 IF NOT EXISTS (
     SELECT 1 FROM sys.indexes 
     WHERE name = 'IX_UserRoles_User_Active' 
-      AND object_id = OBJECT_ID('auth.UserRoles')
+      AND object_id = OBJECT_ID('auth.tbl_User_Roles')
 )
 BEGIN
     CREATE NONCLUSTERED INDEX [IX_UserRoles_User_Active]
-        ON [auth].[UserRoles] ([UserID], [EffectiveFrom], [EffectiveTo])
-        INCLUDE ([RoleID]) 
-        WHERE [IsActive] = 1;
+        ON [auth].tbl_User_Roles] ([user_id], [effective_from], [effective_to])
+        INCLUDE ([role_id]) 
+        WHERE [is_active] = 1;
 
     PRINT '    [+] Created index [IX_UserRoles_User_Active].';
 END
@@ -315,13 +315,13 @@ GO
 IF NOT EXISTS (
     SELECT 1 FROM sys.indexes 
     WHERE name = 'IX_UserRoles_Role' 
-      AND object_id = OBJECT_ID('auth.UserRoles')
+      AND object_id = OBJECT_ID('auth.tbl_User_Roles')
 )
 BEGIN
     CREATE NONCLUSTERED INDEX [IX_UserRoles_Role]
-        ON [auth].[UserRoles] ([RoleID]) 
-        INCLUDE ([UserID]) 
-        WHERE [IsActive] = 1;
+        ON [auth].tbl_User_Roles] ([role_id]) 
+        INCLUDE ([user_id]) 
+        WHERE [is_active] = 1;
 
     PRINT '    [+] Created index [IX_UserRoles_Role].';
 END
@@ -338,7 +338,7 @@ IF NOT EXISTS (
 )
 BEGIN
     CREATE NONCLUSTERED INDEX [IX_UOS_User]
-        ON [auth].[UserOrganizationScopes] ([UserID])
+        ON [auth].[UserOrganizationScopes] ([user_id])
         INCLUDE (
             [ScopeDefinitionID], 
             [OrgUnitId], 
@@ -346,9 +346,9 @@ BEGIN
             [BusinessUnitID], 
             [DepartmentID], 
             [SectionID], 
-            [IsActive], 
-            [EffectiveFrom], 
-            [EffectiveTo]
+            [is_active], 
+            [effective_from], 
+            [effective_to]
         );
 
     PRINT '    [+] Created index [IX_UOS_User].';
@@ -367,7 +367,7 @@ IF NOT EXISTS (
 BEGIN
     CREATE NONCLUSTERED INDEX [IX_UserProfiles_Dept]
         ON [auth].[UserProfiles] ([DepartmentID]) 
-        INCLUDE ([UserID], [FirstName], [LastName]);
+        INCLUDE ([user_id], [first_name], [last_name]);
 
     PRINT '    [+] Created index [IX_UserProfiles_Dept].';
 END
@@ -380,12 +380,12 @@ GO
 IF NOT EXISTS (
     SELECT 1 FROM sys.indexes 
     WHERE name = 'IX_Delegations_Active' 
-      AND object_id = OBJECT_ID('auth.Delegations')
+      AND object_id = OBJECT_ID('auth.tbl_Delegations')
 )
 BEGIN
     CREATE NONCLUSTERED INDEX [IX_Delegations_Active]
-        ON [auth].[Delegations] ([ToUserID], [StartDate], [EndDate]) 
-        WHERE [IsActive] = 1;
+        ON [auth].tbl_Delegations] ([to_user_id], [start_date], [end_date]) 
+        WHERE [is_active] = 1;
 
     PRINT '    [+] Created index [IX_Delegations_Active].';
 END
@@ -414,12 +414,12 @@ RETURN
         ON c.AncestorOrgUnitId = COALESCE(s.OrgUnitId, s.SectionID, s.DepartmentID, s.BusinessUnitID, s.OrganizationID)
     INNER JOIN [org].[OrgUnits] AS u 
         ON u.OrgUnitId = c.DescendantOrgUnitId
-    WHERE s.UserID = @UserId
-      AND s.IsActive = 1
-      AND s.EffectiveFrom <= SYSUTCDATETIME()
-      AND (s.EffectiveTo IS NULL OR s.EffectiveTo > SYSUTCDATETIME())
+    WHERE s.user_id = @UserId
+      AND s.is_active = 1
+      AND s.effective_from <= SYSUTCDATETIME()
+      AND (s.effective_to IS NULL OR s.effective_to > SYSUTCDATETIME())
       AND u.IsDeleted = 0
-      AND u.IsActive = 1
+      AND u.is_active = 1
 );
 GO
 
@@ -435,7 +435,7 @@ PRINT '>>> [BLOCK 9] Seeding Domain 3 permissions and role grants...';
 DECLARE @Now DATETIME2(3) = SYSUTCDATETIME();
 
 -- 1. Seed Permissions
-MERGE [auth].[Permissions] AS Target
+MERGE [auth].tbl_Permissions] AS Target
 USING (VALUES
     ('USER.VIEW',              'USER_ADMIN', 'VIEW',              'View users and their assignments'),
     ('USER.CREATE',            'USER_ADMIN', 'CREATE',            'Create a new user'),
@@ -453,15 +453,15 @@ USING (VALUES
     ('USER.EXPORT',            'USER_ADMIN', 'EXPORT',            'Export the user list'),
     ('VENDORUSER.MANAGE',      'USER_ADMIN', 'VENDOR_MANAGE',     'Manage vendor portal users')
 ) AS Source (PermissionCode, ModuleName, ActionName, Description)
-ON Target.PermissionCode = Source.PermissionCode
+ON Target.permission_code = Source.permission_code
 WHEN MATCHED THEN
     UPDATE SET 
-        Target.ModuleName  = Source.ModuleName,
+        Target.module_name  = Source.module_name,
         Target.ActionName  = Source.ActionName,
         Target.Description = Source.Description
 WHEN NOT MATCHED THEN
     INSERT (PermissionID, PermissionCode, ModuleName, ActionName, Description, CreatedAt)
-    VALUES (NEWID(), Source.PermissionCode, Source.ModuleName, Source.ActionName, Source.Description, @Now);
+    VALUES (NEWID(), Source.permission_code, Source.module_name, Source.ActionName, Source.Description, @Now);
 
 -- 2. Seed Role Permission Grants
 DECLARE @SystemAdminRoleId UNIQUEIDENTIFIER = '2B850D65-CBC0-4071-9B90-694042F7338F';
@@ -514,19 +514,19 @@ INSERT INTO @RoleGrants (RoleID, PermissionCode) VALUES
 (@HodRoleId, 'USER.VIEW');
 
 -- Grant permissions idempotently
-INSERT INTO [auth].[RolePermissions] (RolePermissionID, RoleID, PermissionID, GrantedAt)
+INSERT INTO [auth].tbl_Role_Permissions] (RolePermissionID, RoleID, PermissionID, GrantedAt)
 SELECT 
     NEWID(),
-    rg.RoleID,
-    p.PermissionID,
+    rg.role_id,
+    p.permission_id,
     SYSUTCDATETIME()
 FROM @RoleGrants rg
-INNER JOIN [auth].[Permissions] p 
-    ON p.PermissionCode = rg.PermissionCode
-LEFT JOIN [auth].[RolePermissions] existing 
-    ON existing.RoleID = rg.RoleID 
-   AND existing.PermissionID = p.PermissionID
-WHERE existing.RolePermissionID IS NULL;
+INNER JOIN [auth].tbl_Permissions] p 
+    ON p.permission_code = rg.permission_code
+LEFT JOIN [auth].tbl_Role_Permissions] existing 
+    ON existing.role_id = rg.role_id 
+   AND existing.permission_id = p.permission_id
+WHERE existing.role_permission_id IS NULL;
 
 PRINT '    [+] Domain 3 permissions and role grants seeded successfully.';
 GO
@@ -537,22 +537,22 @@ GO
 -- Run this query after deployment to verify all objects exist, compile, and have zero structural gaps.
 -- ====================================================================================================
 /*
-SELECT 'Table: auth.PasswordHistory' AS ObjectName, CASE WHEN OBJECT_ID('auth.PasswordHistory', 'U') IS NOT NULL THEN 'PASS' ELSE 'FAIL' END AS Status
+SELECT 'Table: auth.tbl_Password_History' AS ObjectName, CASE WHEN OBJECT_ID('auth.tbl_Password_History', 'U') IS NOT NULL THEN 'PASS' ELSE 'FAIL' END AS Status
 UNION ALL
-SELECT 'Table: auth.UserInvitations', CASE WHEN OBJECT_ID('auth.UserInvitations', 'U') IS NOT NULL THEN 'PASS' ELSE 'FAIL' END
+SELECT 'Table: auth.tbl_User_Invitations', CASE WHEN OBJECT_ID('auth.tbl_User_Invitations', 'U') IS NOT NULL THEN 'PASS' ELSE 'FAIL' END
 UNION ALL
-SELECT 'Table: auth.DelegationPermissions', CASE WHEN OBJECT_ID('auth.DelegationPermissions', 'U') IS NOT NULL THEN 'PASS' ELSE 'FAIL' END
+SELECT 'Table: auth.tbl_Delegation_Permissions', CASE WHEN OBJECT_ID('auth.tbl_Delegation_Permissions', 'U') IS NOT NULL THEN 'PASS' ELSE 'FAIL' END
 UNION ALL
-SELECT 'Constraint: CK_Users_UserType', CASE WHEN EXISTS (SELECT 1 FROM sys.check_constraints WHERE name = 'CK_Users_UserType' AND parent_object_id = OBJECT_ID('auth.Users')) THEN 'PASS' ELSE 'FAIL' END
+SELECT 'Constraint: CK_Users_UserType', CASE WHEN EXISTS (SELECT 1 FROM sys.check_constraints WHERE name = 'CK_Users_UserType' AND parent_object_id = OBJECT_ID('auth.tbl_Users')) THEN 'PASS' ELSE 'FAIL' END
 UNION ALL
-SELECT 'Columns: auth.UserOrganizationScopes (Temporal)', CASE WHEN EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'auth' AND TABLE_NAME = 'UserOrganizationScopes' AND COLUMN_NAME = 'EffectiveFrom') THEN 'PASS' ELSE 'FAIL' END
+SELECT 'Columns: auth.UserOrganizationScopes (Temporal)', CASE WHEN EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'auth' AND TABLE_NAME = 'UserOrganizationScopes' AND COLUMN_NAME = 'effective_from') THEN 'PASS' ELSE 'FAIL' END
 UNION ALL
-SELECT 'Columns: auth.UserProfiles (Audit)', CASE WHEN EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'auth' AND TABLE_NAME = 'UserProfiles' AND COLUMN_NAME = 'CreatedAt') THEN 'PASS' ELSE 'FAIL' END
+SELECT 'Columns: auth.UserProfiles (Audit)', CASE WHEN EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'auth' AND TABLE_NAME = 'UserProfiles' AND COLUMN_NAME = 'created_at') THEN 'PASS' ELSE 'FAIL' END
 UNION ALL
 SELECT 'Function: org.fn_VisibleOrgUnits', CASE WHEN OBJECT_ID('org.fn_VisibleOrgUnits', 'IF') IS NOT NULL THEN 'PASS' ELSE 'FAIL' END
 UNION ALL
-SELECT 'Permissions: USER_ADMIN (15 Total)', CASE WHEN (SELECT COUNT(*) FROM auth.Permissions WHERE ModuleName = 'USER_ADMIN') = 15 THEN 'PASS' ELSE 'FAIL' END
+SELECT 'Permissions: USER_ADMIN (15 Total)', CASE WHEN (SELECT COUNT(*) FROM auth.tbl_Permissions WHERE module_name = 'USER_ADMIN') = 15 THEN 'PASS' ELSE 'FAIL' END
 UNION ALL
-SELECT 'Role Grants: SYSTEM_ADMIN (15 Total)', CASE WHEN (SELECT COUNT(*) FROM auth.RolePermissions rp INNER JOIN auth.Permissions p ON p.PermissionID = rp.PermissionID WHERE rp.RoleID = '2B850D65-CBC0-4071-9B90-694042F7338F' AND p.ModuleName = 'USER_ADMIN') = 15 THEN 'PASS' ELSE 'FAIL' END;
+SELECT 'Role Grants: SYSTEM_ADMIN (15 Total)', CASE WHEN (SELECT COUNT(*) FROM auth.tbl_Role_Permissions rp INNER JOIN auth.tbl_Permissions p ON p.permission_id = rp.permission_id WHERE rp.role_id = '2B850D65-CBC0-4071-9B90-694042F7338F' AND p.module_name = 'USER_ADMIN') = 15 THEN 'PASS' ELSE 'FAIL' END;
 */
 GO

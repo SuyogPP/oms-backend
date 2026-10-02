@@ -58,7 +58,7 @@ export class UserOverridesService {
    * - Cannot grant yourself an override (9.1 / U14).
    * - Reason is MANDATORY (unauditable without justification).
    * - Temporal bounds: EffectiveFrom and optional EffectiveTo.
-   * - Writes auth.SecurityEvents with before and after state.
+   * - Writes auth.tbl_Security_Events with before and after state.
    */
   async createOverride(
     userId: string,
@@ -88,9 +88,9 @@ export class UserOverridesService {
     // 3. Verify Permission Exists
     const permRows = await this.dataSource.query(
       `
-      SELECT PermissionID, PermissionCode, ModuleName, ActionName
-      FROM [auth].[Permissions]
-      WHERE PermissionID = @0;
+      SELECT permission_id, PermissionCode, ModuleName, ActionName
+      FROM [auth].tbl_Permissions]
+      WHERE permission_id = @0;
       `,
       [dto.permissionId],
     );
@@ -140,13 +140,13 @@ export class UserOverridesService {
 
     await this.securityEventsService.log(eventType, {
       userId,
-      description: `Permission override [${perm.PermissionCode}] set to [${dto.isGranted ? 'GRANT' : 'REVOKE'}] (${beforeDesc}) for user [${user.username}] by [${operatorUserId || 'SYSTEM'}]. Reason: "${dto.reason}".`,
+      description: `Permission override [${perm.permission_code}] set to [${dto.isGranted ? 'GRANT' : 'REVOKE'}] (${beforeDesc}) for user [${user.username}] by [${operatorUserId || 'SYSTEM'}]. Reason: "${dto.reason}".`,
     });
 
     await this.auditService.logUserUpdated({
       userId,
       updatedFields: {
-        permissionOverride: perm.PermissionCode,
+        permissionOverride: perm.permission_code,
         isGranted: dto.isGranted,
         reason: dto.reason,
         approvedBy: operatorUserId,
@@ -245,11 +245,11 @@ export class UserOverridesService {
       `
       SELECT 1 FROM [auth].[UserOrganizationScopes] s
       INNER JOIN [auth].[ScopeDefinitions] sd ON sd.ScopeDefinitionID = s.ScopeDefinitionID
-      WHERE s.UserID = @0
+      WHERE s.user_id = @0
         AND sd.ScopeCode = 'GLOBAL'
-        AND (s.IsActive = 1 OR s.IsActive IS NULL)
-        AND (s.EffectiveFrom IS NULL OR s.EffectiveFrom <= SYSUTCDATETIME())
-        AND (s.EffectiveTo IS NULL OR s.EffectiveTo > SYSUTCDATETIME());
+        AND (s.is_active = 1 OR s.is_active IS NULL)
+        AND (s.effective_from IS NULL OR s.effective_from <= SYSUTCDATETIME())
+        AND (s.effective_to IS NULL OR s.effective_to > SYSUTCDATETIME());
       `,
       [requesterUserId],
     );

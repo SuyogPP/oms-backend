@@ -19,7 +19,7 @@ export class UserImportRepository {
     if (!emails || emails.length === 0) return [];
     const placeholders = emails.map((_, i) => `@${i}`).join(', ');
     const rows = await this.getExecutor(qr).query(
-      `SELECT LOWER(Email) as email FROM [auth].[Users] WHERE LOWER(Email) IN (${placeholders})`,
+      `SELECT LOWER(Email) as email FROM [auth].tbl_Users] WHERE LOWER(Email) IN (${placeholders})`,
       emails.map((e) => e.toLowerCase()),
     );
     return rows.map((r: any) => r.email);
@@ -35,7 +35,7 @@ export class UserImportRepository {
     if (!usernames || usernames.length === 0) return [];
     const placeholders = usernames.map((_, i) => `@${i}`).join(', ');
     const rows = await this.getExecutor(qr).query(
-      `SELECT LOWER(Username) as username FROM [auth].[Users] WHERE LOWER(Username) IN (${placeholders})`,
+      `SELECT LOWER(Username) as username FROM [auth].tbl_Users] WHERE LOWER(Username) IN (${placeholders})`,
       usernames.map((u) => u.toLowerCase()),
     );
     return rows.map((r: any) => r.username);
@@ -92,7 +92,7 @@ export class UserImportRepository {
     if (!roleCodes || roleCodes.length === 0) return [];
     const placeholders = roleCodes.map((_, i) => `@${i}`).join(', ');
     const rows = await this.getExecutor(qr).query(
-      `SELECT RoleCode as roleCode, RoleID as roleId FROM [auth].[Roles] WHERE RoleCode IN (${placeholders}) AND IsActive = 1`,
+      `SELECT role_code as roleCode, RoleID as roleId FROM [auth].tbl_Roles] WHERE role_code IN (${placeholders}) AND is_active = 1`,
       roleCodes,
     );
     return rows.map((r: any) => ({

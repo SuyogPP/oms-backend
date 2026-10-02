@@ -3,77 +3,11 @@ import {
   IsEmail,
   IsEnum,
   IsOptional,
-  IsUUID,
-  ValidateNested,
+  IsNumber,
 } from 'class-validator';
-import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 import { USER_TYPES } from '../users.constants';
 import type { UserType } from '../users.constants';
-
-export class UpdateUserProfileDto {
-  @ApiProperty({ example: 'Fatima', required: false })
-  @IsString()
-  @IsOptional()
-  firstName?: string;
-
-  @ApiProperty({ example: 'Al Zarooni', required: false })
-  @IsString()
-  @IsOptional()
-  lastName?: string;
-
-  @ApiProperty({ example: 'Fatima Al Zarooni', required: false })
-  @IsString()
-  @IsOptional()
-  displayName?: string;
-
-  @ApiProperty({ example: '+971509876543', required: false })
-  @IsString()
-  @IsOptional()
-  phoneNumber?: string;
-
-  @ApiProperty({ example: 'Director Human Capital', required: false })
-  @IsString()
-  @IsOptional()
-  jobTitle?: string;
-
-  @ApiProperty({
-    example: '1053433E-F36B-1410-85ED-009A959FB122',
-    required: false,
-  })
-  @IsUUID()
-  @IsOptional()
-  organizationId?: string;
-
-  @ApiProperty({
-    example: '1053433E-F36B-1410-85ED-009A959FB122',
-    required: false,
-  })
-  @IsUUID()
-  @IsOptional()
-  businessUnitId?: string;
-
-  @ApiProperty({
-    example: '1053433E-F36B-1410-85ED-009A959FB122',
-    required: false,
-  })
-  @IsUUID()
-  @IsOptional()
-  departmentId?: string;
-
-  @ApiProperty({
-    example: '1053433E-F36B-1410-85ED-009A959FB122',
-    required: false,
-  })
-  @IsUUID()
-  @IsOptional()
-  sectionId?: string;
-
-  @ApiProperty({ example: null, required: false })
-  @IsUUID()
-  @IsOptional()
-  vendorId?: string;
-}
 
 export class UpdateUserDto {
   @ApiProperty({ example: 'EMP-0098', required: false })
@@ -96,9 +30,33 @@ export class UpdateUserDto {
   @IsOptional()
   userType?: UserType;
 
-  @ApiProperty({ type: UpdateUserProfileDto, required: false })
-  @ValidateNested()
-  @Type(() => UpdateUserProfileDto)
+  @ApiProperty({ example: 'Fatima', required: false })
+  @IsString()
   @IsOptional()
-  profile?: UpdateUserProfileDto;
+  firstName?: string;
+
+  @ApiProperty({ example: 'Al Zarooni', required: false })
+  @IsString()
+  @IsOptional()
+  lastName?: string;
+
+  @ApiProperty({ example: '+971509876543', required: false })
+  @IsString()
+  @IsOptional()
+  mobileNo?: string;
+
+  @ApiProperty({ example: 'Director Human Capital', required: false })
+  @IsString()
+  @IsOptional()
+  jobTitle?: string;
+
+  @ApiProperty({ example: '123', required: false })
+  @IsString()
+  @IsOptional()
+  orgUnitId?: string;
+
+  @ApiProperty({ example: 456, required: false })
+  @IsNumber()
+  @IsOptional()
+  vendorId?: number;
 }

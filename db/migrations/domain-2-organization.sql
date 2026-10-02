@@ -24,7 +24,7 @@
 --   [BLOCK 3] Core Tables DDL (Types, Rules, Units, Closure, Managers, ChangeLog, Assignments)
 --   [BLOCK 4] Non-Clustered & Filtered Performance Indexes
 --   [BLOCK 5] Inline TVF: org.fn_VisibleOrgUnits (Layer 3 Scope Resolution)
---   [BLOCK 6] Permissions & Role Grants (auth.Permissions, auth.RolePermissions)
+--   [BLOCK 6] Permissions & Role Grants (auth.tbl_Permissions, auth.tbl_Role_Permissions)
 --   [BLOCK 7] Seed Data (Unit Types, Hierarchy Rules, Root DIEZ Node, Closure Root)
 --   [BLOCK 8] Integrity Verification Query (Must return 0 rows)
 -- ====================================================================================================
@@ -90,7 +90,7 @@ IF NOT EXISTS (
 )
 BEGIN
     CREATE NONCLUSTERED INDEX [IX_UserOrganizationScopes_User_OrgUnit]
-    ON [auth].[UserOrganizationScopes] ([UserID], [OrgUnitId])
+    ON [auth].[UserOrganizationScopes] ([user_id], [OrgUnitId])
     INCLUDE ([ScopeDefinitionID])
     WHERE [OrgUnitId] IS NOT NULL;
     PRINT '    [+] Created index [IX_UserOrganizationScopes_User_OrgUnit].';
@@ -211,9 +211,9 @@ BEGIN
         CONSTRAINT PK_OrgUnits            PRIMARY KEY CLUSTERED (OrgUnitId),
         CONSTRAINT FK_OrgUnits_Type       FOREIGN KEY (OrgUnitTypeId)   REFERENCES org.OrgUnitTypes (OrgUnitTypeId),
         CONSTRAINT FK_OrgUnits_Parent     FOREIGN KEY (ParentOrgUnitId) REFERENCES org.OrgUnits (OrgUnitId),
-        CONSTRAINT FK_OrgUnits_HeadUser   FOREIGN KEY (HeadUserId)      REFERENCES auth.Users (UserID),
+        CONSTRAINT FK_OrgUnits_HeadUser   FOREIGN KEY (HeadUserId)      REFERENCES auth.tbl_Users (UserID),
         CONSTRAINT CK_OrgUnits_NoSelf     CHECK (ParentOrgUnitId IS NULL OR ParentOrgUnitId <> OrgUnitId),
-        CONSTRAINT CK_OrgUnits_Effective  CHECK (EffectiveTo IS NULL OR EffectiveTo >= EffectiveFrom)
+        CONSTRAINT CK_OrgUnits_Effective  CHECK (EffectiveTo IS NULL OR effective_to >= EffectiveFrom)
     );
     PRINT '    [+] Created table [org].[OrgUnits].';
 END
@@ -272,9 +272,9 @@ BEGIN
 
         CONSTRAINT PK_OrgUnitManagers      PRIMARY KEY CLUSTERED (OrgUnitManagerId),
         CONSTRAINT FK_OrgUnitManagers_Unit FOREIGN KEY (OrgUnitId) REFERENCES org.OrgUnits (OrgUnitId),
-        CONSTRAINT FK_OrgUnitManagers_User FOREIGN KEY (UserId)    REFERENCES auth.Users (UserID),
+        CONSTRAINT FK_OrgUnitManagers_User FOREIGN KEY (UserId)    REFERENCES auth.tbl_Users (UserID),
         CONSTRAINT CK_OrgUnitManagers_Role CHECK (ManagerRoleCode IN ('HEAD','DEPUTY','ACTING')),
-        CONSTRAINT CK_OrgUnitManagers_Eff  CHECK (EffectiveTo IS NULL OR EffectiveTo >= EffectiveFrom)
+        CONSTRAINT CK_OrgUnitManagers_Eff  CHECK (EffectiveTo IS NULL OR effective_to >= EffectiveFrom)
     );
     PRINT '    [+] Created table [org].[OrgUnitManagers].';
 END
@@ -340,9 +340,9 @@ BEGIN
         DeletedAt               DATETIME2(3)     NULL,
 
         CONSTRAINT PK_UserOrgUnitAssignments PRIMARY KEY CLUSTERED (UserOrgUnitAssignmentId),
-        CONSTRAINT FK_UOUA_User    FOREIGN KEY (UserId)    REFERENCES auth.Users (UserID),
+        CONSTRAINT FK_UOUA_User    FOREIGN KEY (UserId)    REFERENCES auth.tbl_Users (UserID),
         CONSTRAINT FK_UOUA_OrgUnit FOREIGN KEY (OrgUnitId) REFERENCES org.OrgUnits (OrgUnitId),
-        CONSTRAINT CK_UOUA_Eff     CHECK (EffectiveTo IS NULL OR EffectiveTo >= EffectiveFrom)
+        CONSTRAINT CK_UOUA_Eff     CHECK (EffectiveTo IS NULL OR effective_to >= EffectiveFrom)
     );
     PRINT '    [+] Created table [org].[UserOrgUnitAssignments].';
 END
@@ -425,7 +425,7 @@ IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_OrgUnits_CostCentre' A
 BEGIN
     CREATE NONCLUSTERED INDEX IX_OrgUnits_CostCentre
     ON org.OrgUnits (CostCenterCode)
-    WHERE IsDeleted = 0 AND CostCenterCode IS NOT NULL;
+    WHERE IsDeleted = 0 AND cost_center_code IS NOT NULL;
     PRINT '    [+] Created index [IX_OrgUnits_CostCentre].';
 END
 GO
@@ -456,7 +456,7 @@ BEGIN
     CREATE NONCLUSTERED INDEX IX_OrgUnitManagers_Unit
     ON org.OrgUnitManagers (OrgUnitId, ManagerRoleCode, EffectiveFrom, EffectiveTo)
     INCLUDE (UserId, IsPrimary)
-    WHERE IsDeleted = 0 AND IsActive = 1;
+    WHERE IsDeleted = 0 AND is_active = 1;
     PRINT '    [+] Created index [IX_OrgUnitManagers_Unit].';
 END
 GO
@@ -467,7 +467,7 @@ BEGIN
     CREATE NONCLUSTERED INDEX IX_OrgUnitManagers_User
     ON org.OrgUnitManagers (UserId)
     INCLUDE (OrgUnitId, ManagerRoleCode)
-    WHERE IsDeleted = 0 AND IsActive = 1;
+    WHERE IsDeleted = 0 AND is_active = 1;
     PRINT '    [+] Created index [IX_OrgUnitManagers_User].';
 END
 GO
@@ -496,7 +496,7 @@ BEGIN
     CREATE NONCLUSTERED INDEX IX_UserOrgUnitAssignments_User
     ON org.UserOrgUnitAssignments (UserId, OrgUnitId)
     INCLUDE (IsPrimary, EffectiveFrom, EffectiveTo)
-    WHERE IsDeleted = 0 AND IsActive = 1;
+    WHERE IsDeleted = 0 AND is_active = 1;
     PRINT '    [+] Created index [IX_UserOrgUnitAssignments_User].';
 END
 GO
@@ -507,7 +507,7 @@ BEGIN
     CREATE NONCLUSTERED INDEX IX_UserOrgUnitAssignments_Unit
     ON org.UserOrgUnitAssignments (OrgUnitId)
     INCLUDE (UserId)
-    WHERE IsDeleted = 0 AND IsActive = 1;
+    WHERE IsDeleted = 0 AND is_active = 1;
     PRINT '    [+] Created index [IX_UserOrgUnitAssignments_Unit].';
 END
 GO
@@ -534,9 +534,9 @@ RETURN
         ON c.AncestorOrgUnitId = COALESCE(s.OrgUnitId, s.SectionID, s.DepartmentID, s.BusinessUnitID, s.OrganizationID)
     INNER JOIN [org].[OrgUnits] AS u 
         ON u.OrgUnitId = c.DescendantOrgUnitId
-    WHERE s.UserID = @UserId
+    WHERE s.user_id = @UserId
       AND u.IsDeleted = 0
-      AND u.IsActive = 1
+      AND u.is_active = 1
 );
 GO
 PRINT '    [+] Created function [org].[fn_VisibleOrgUnits].';
@@ -550,8 +550,8 @@ PRINT '>>> [BLOCK 6] Seeding Domain 2 Permissions and Role Grants...';
 
 DECLARE @Now DATETIME2(3) = SYSUTCDATETIME();
 
--- 6.1 Insert Permissions (Matches live auth.Permissions schema)
-MERGE [auth].[Permissions] AS Target
+-- 6.1 Insert Permissions (Matches live auth.tbl_Permissions schema)
+MERGE [auth].tbl_Permissions] AS Target
 USING (VALUES
     ('ORG.VIEW',           'Organization', 'View',         'View org units, tree hierarchy, and assigned managers'),
     ('ORG.CREATE',         'Organization', 'Create',       'Create a new organization unit node'),
@@ -562,17 +562,17 @@ USING (VALUES
     ('ORG.TYPE.MANAGE',    'Organization', 'ManageTypes',  'Manage organization unit types and hierarchy rules'),
     ('ORG.EXPORT',         'Organization', 'Export',       'Export organization structure and trees to Excel/PDF')
 ) AS Source (PermissionCode, ModuleName, ActionName, Description)
-ON Target.PermissionCode = Source.PermissionCode
+ON Target.permission_code = Source.permission_code
 WHEN MATCHED THEN
     UPDATE SET 
-        Target.ModuleName  = Source.ModuleName,
+        Target.module_name  = Source.module_name,
         Target.ActionName  = Source.ActionName,
         Target.Description = Source.Description
 WHEN NOT MATCHED THEN
     INSERT (PermissionCode, ModuleName, ActionName, Description, CreatedAt)
-    VALUES (Source.PermissionCode, Source.ModuleName, Source.ActionName, Source.Description, @Now);
+    VALUES (Source.permission_code, Source.module_name, Source.ActionName, Source.Description, @Now);
 
-PRINT '    [+] Seeded 8 Domain 2 Permissions in [auth].[Permissions].';
+PRINT '    [+] Seeded 8 Domain 2 Permissions in [auth].tbl_Permissions].';
 
 -- 6.2 Grant Permissions to Roles
 DECLARE @SystemAdminRoleId UNIQUEIDENTIFIER = '2B850D65-CBC0-4071-9B90-694042F7338F';
@@ -613,17 +613,17 @@ INSERT INTO @RolePermissions (RoleID, PermissionCode) VALUES
 (@HodRoleId, 'ORG.EXPORT');
 
 -- Insert missing grants idempotently
-INSERT INTO [auth].[RolePermissions] (RoleID, PermissionID, GrantedAt)
+INSERT INTO [auth].tbl_Role_Permissions] (RoleID, PermissionID, GrantedAt)
 SELECT 
-    rp.RoleID,
-    p.PermissionID,
+    rp.role_id,
+    p.permission_id,
     SYSUTCDATETIME()
 FROM @RolePermissions rp
-INNER JOIN [auth].[Permissions] p ON p.PermissionCode = rp.PermissionCode
-LEFT JOIN [auth].[RolePermissions] existing 
-    ON existing.RoleID = rp.RoleID 
-   AND existing.PermissionID = p.PermissionID
-WHERE existing.RolePermissionID IS NULL;
+INNER JOIN [auth].tbl_Permissions] p ON p.permission_code = rp.permission_code
+LEFT JOIN [auth].tbl_Role_Permissions] existing 
+    ON existing.role_id = rp.role_id 
+   AND existing.permission_id = p.permission_id
+WHERE existing.role_permission_id IS NULL;
 
 PRINT '    [+] Granted Domain 2 Permissions to SYSTEM_ADMIN, HR, FINANCE, and HOD roles.';
 GO
@@ -652,14 +652,14 @@ WHEN MATCHED THEN
         Target.NameAr = Source.NameAr,
         Target.CanonicalLevel = Source.CanonicalLevel,
         Target.ScopeLevelCode = Source.ScopeLevelCode,
-        Target.AllowsBudget = Source.AllowsBudget,
-        Target.AllowsRequisition = Source.AllowsRequisition,
+        Target.allows_budget = Source.allows_budget,
+        Target.allows_requisition = Source.allows_requisition,
         Target.AllowsManager = Source.AllowsManager,
         Target.IsRootType = Source.IsRootType,
         Target.SortOrder = Source.SortOrder
 WHEN NOT MATCHED THEN
     INSERT (OrgUnitTypeId, Code, Name, NameAr, CanonicalLevel, ScopeLevelCode, AllowsBudget, AllowsRequisition, AllowsManager, IsRootType, SortOrder, CreatedBy)
-    VALUES (Source.OrgUnitTypeId, Source.Code, Source.Name, Source.NameAr, Source.CanonicalLevel, Source.ScopeLevelCode, Source.AllowsBudget, Source.AllowsRequisition, Source.AllowsManager, Source.IsRootType, Source.SortOrder, @AdminUserId);
+    VALUES (Source.OrgUnitTypeId, Source.Code, Source.Name, Source.NameAr, Source.CanonicalLevel, Source.ScopeLevelCode, Source.allows_budget, Source.allows_requisition, Source.AllowsManager, Source.IsRootType, Source.SortOrder, @AdminUserId);
 
 PRINT '    [+] Seeded 4 OrgUnitTypes.';
 
@@ -673,7 +673,7 @@ USING (VALUES
 ) AS Source (ChildOrgUnitTypeId, ParentOrgUnitTypeId)
 ON Target.ChildOrgUnitTypeId = Source.ChildOrgUnitTypeId AND Target.ParentOrgUnitTypeId = Source.ParentOrgUnitTypeId
 WHEN MATCHED THEN
-    UPDATE SET Target.IsActive = 1
+    UPDATE SET Target.is_active = 1
 WHEN NOT MATCHED THEN
     INSERT (ChildOrgUnitTypeId, ParentOrgUnitTypeId, CreatedBy)
     VALUES (Source.ChildOrgUnitTypeId, Source.ParentOrgUnitTypeId, @AdminUserId);

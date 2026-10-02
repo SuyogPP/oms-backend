@@ -34,22 +34,22 @@ export class UserSessionsService {
       : null;
 
     const sessions: UserActiveSessionDto[] = rows.map((row) => {
-      const sidUpper = row.LoginSessionID.toUpperCase();
+      const sidUpper = row.login_session_id.toUpperCase();
       const isCurrent = Boolean(
         currentSidUpper && sidUpper === currentSidUpper,
       );
 
       return {
-        loginSessionId: row.LoginSessionID,
-        LoginSessionID: row.LoginSessionID,
+        loginSessionId: row.login_session_id,
+        LoginSessionID: row.login_session_id,
         ipAddress: row.IPAddress,
-        browserName: row.BrowserName || null,
-        deviceType: row.DeviceType || null,
-        createdAt: new Date(row.LoginAt).toISOString(),
-        lastActivityAt: row.LastActivityAt
-          ? new Date(row.LastActivityAt).toISOString()
+        browserName: row.browser_name || null,
+        deviceType: row.device_type || null,
+        createdAt: new Date(row.login_at).toISOString(),
+        lastActivityAt: row.last_activity_at
+          ? new Date(row.last_activity_at).toISOString()
           : null,
-        expiresAt: new Date(row.ExpiresAt).toISOString(),
+        expiresAt: new Date(row.expires_at).toISOString(),
         isCurrentSession: isCurrent,
       };
     });
@@ -86,7 +86,7 @@ export class UserSessionsService {
     }
 
     // Verify ownership
-    if (session.UserID.toUpperCase() !== userId.toUpperCase()) {
+    if (session.user_id.toUpperCase() !== userId.toUpperCase()) {
       throw new ForbiddenException('Forbidden');
     }
 
@@ -137,7 +137,7 @@ export class UserSessionsService {
     for (const session of revokedSessions) {
       await this.repository.createLogoutHistory({
         userId,
-        loginSessionId: session.LoginSessionID,
+        loginSessionId: session.login_session_id,
         username: session.Username || 'Unknown',
         ipAddress,
         userAgent,

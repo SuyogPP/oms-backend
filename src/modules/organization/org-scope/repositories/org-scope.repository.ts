@@ -23,7 +23,7 @@ export class OrgScopeRepository {
     const sql = `
       SELECT
         s.UserOrganizationScopeID AS userOrganizationScopeId,
-        s.UserID AS userId,
+        s.user_id AS userId,
         s.ScopeDefinitionID AS scopeDefinitionId,
         d.ScopeCode AS scopeCode,
         d.ScopeName AS scopeName,
@@ -34,7 +34,7 @@ export class OrgScopeRepository {
         s.SectionID AS sectionId
       FROM auth.UserOrganizationScopes s
       LEFT JOIN auth.ScopeDefinitions d ON d.ScopeDefinitionID = s.ScopeDefinitionID
-      WHERE s.UserID = @0;
+      WHERE s.user_id = @0;
     `;
     return this.getExecutor(qr).query(sql, [userId]);
   }

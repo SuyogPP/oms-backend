@@ -17,7 +17,7 @@ export class AuditRepository {
       `
             SELECT DeviceID
             FROM [OMS_Audit_DB].[audit].[Devices]
-            WHERE DeviceFingerprint = @0
+            WHERE device_fingerprint = @0
             `,
       [data.deviceFingerprint],
     );
