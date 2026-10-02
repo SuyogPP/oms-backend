@@ -6,8 +6,17 @@ export interface AppConfig {
   /** The port on which the NestJS server listens */
   port: number;
 
-  /** Database connection settings */
+  /** Primary OMS database connection settings */
   database: {
+    host: string;
+    port: number;
+    username: string;
+    password: string;
+    database: string;
+  };
+
+  /** Audit database connection settings (DIEZ-AUDIT-DB) */
+  auditDatabase: {
     host: string;
     port: number;
     username: string;
