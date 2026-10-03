@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  Ip,
   Param,
   Patch,
   Post,
@@ -15,6 +16,8 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { Public } from '../../../auth/decorators/public.decorator';
+import { CurrentUser } from '../../../auth/decorators/current-user.decorator';
+import type { CurrentUser as ICurrentUser } from '../../../auth/interfaces/current-user.interface';
 import { BudgetCategoriesService } from '../services/budget-categories.service';
 import { CreateBudgetCategoryDto } from '../dto/create-budget-category.dto';
 import { UpdateBudgetCategoryDto } from '../dto/update-budget-category.dto';
@@ -68,8 +71,16 @@ export class BudgetCategoriesController {
     status: 409,
     description: 'Conflict - Code already exists',
   })
-  async create(@Body() dto: CreateBudgetCategoryDto) {
-    return this.budgetCategoriesService.create(dto);
+  async create(
+    @Body() dto: CreateBudgetCategoryDto,
+    @CurrentUser() user?: ICurrentUser,
+    @Ip() ip?: string,
+  ) {
+    return this.budgetCategoriesService.create(dto, {
+      userId: user?.userId,
+      userName: user?.email,
+      ip,
+    });
   }
 
   @Patch(':id')
@@ -92,8 +103,14 @@ export class BudgetCategoriesController {
   async update(
     @Param('id') id: string,
     @Body() dto: UpdateBudgetCategoryDto,
+    @CurrentUser() user?: ICurrentUser,
+    @Ip() ip?: string,
   ) {
-    return this.budgetCategoriesService.update(id, dto);
+    return this.budgetCategoriesService.update(id, dto, {
+      userId: user?.userId,
+      userName: user?.email,
+      ip,
+    });
   }
 
   @Patch()
@@ -117,8 +134,16 @@ export class BudgetCategoriesController {
     status: 409,
     description: 'Conflict - New code already exists',
   })
-  async updateByBody(@Body() dto: UpdateBudgetCategoryDto) {
-    return this.budgetCategoriesService.update(dto.budgetCategoryId, dto);
+  async updateByBody(
+    @Body() dto: UpdateBudgetCategoryDto,
+    @CurrentUser() user?: ICurrentUser,
+    @Ip() ip?: string,
+  ) {
+    return this.budgetCategoriesService.update(dto.budgetCategoryId, dto, {
+      userId: user?.userId,
+      userName: user?.email,
+      ip,
+    });
   }
 
   @Delete(':id')
@@ -131,7 +156,15 @@ export class BudgetCategoriesController {
     status: 404,
     description: 'Budget category not found',
   })
-  async remove(@Param('id') id: string) {
-    return this.budgetCategoriesService.softDelete(id);
+  async remove(
+    @Param('id') id: string,
+    @CurrentUser() user?: ICurrentUser,
+    @Ip() ip?: string,
+  ) {
+    return this.budgetCategoriesService.softDelete(id, {
+      userId: user?.userId,
+      userName: user?.email,
+      ip,
+    });
   }
 }

@@ -8,14 +8,21 @@ import { AuditLog } from '../entities/audit-log.entity';
  * DTO for writing a new audit log entry.
  * All optional fields default to NULL in the database.
  */
-export interface CreateAuditLogDto
-  extends Omit<AuditLog, 'audit_id' | 'performed_at'> {
-  /**
-   * Optional override for the timestamp.
-   * Defaults to SYSUTCDATETIME() in the DB if omitted.
-   */
+export type CreateAuditLogDto = Partial<
+  Omit<AuditLog, 'audit_id' | 'performed_at'>
+> & {
+  table_name: string;
+  operation: string;
   performed_at?: Date;
-}
+};
+
+const UUID_REGEX =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+const isUUID = (val?: string | null): boolean => {
+  if (!val) return false;
+  return UUID_REGEX.test(val);
+};
 
 /**
  * AuditLogRepository
@@ -23,12 +30,6 @@ export interface CreateAuditLogDto
  * Dedicated repository for [dbo].[tbl_Audit_Log] in **DIEZ-AUDIT-DB**.
  * Uses the named `AUDIT_DB_CONNECTION` DataSource — completely isolated
  * from the primary OMS DataSource to prevent cross-DB coupling.
- *
- * Design decisions:
- * - Raw SQL only (no TypeORM entities) to keep the audit DB schema-agnostic.
- * - All writes are fire-and-forget (errors are caught + logged, never thrown)
- *   so audit failures never block the primary business flow.
- * - Reads surface structured `AuditLog` objects for type safety.
  */
 @Injectable()
 export class AuditLogRepository {
@@ -43,16 +44,15 @@ export class AuditLogRepository {
 
   /**
    * Inserts one row into [dbo].[tbl_Audit_Log].
-   * Swallows errors silently to prevent audit failures from disrupting callers.
-   *
-   * @returns The generated audit_id UUID, or null if the insert failed.
+   * Handles NOT NULL constraints for transaction_id, source_db, schema_name,
+   * table_name, operation, source_app, performed_at.
    */
   async insert(dto: CreateAuditLogDto): Promise<string | null> {
     try {
-      const result = await this.auditDataSource.query<{ audit_id: string }[]>(
-        `
+      const sql = `
         INSERT INTO [dbo].[tbl_Audit_Log]
         (
+          audit_id,
           transaction_id,
           source_db,
           schema_name,
@@ -71,40 +71,67 @@ export class AuditLogRepository {
           reason,
           performed_at
         )
-        OUTPUT INSERTED.audit_id
         VALUES
         (
-          @0, @1, @2, @3, @4, @5,
-          @6, @7, @8, @9, @10, @11,
-          @12, @13, @14, @15,
-          ISNULL(@16, SYSUTCDATETIME())
-        )
-        `,
-        [
-          dto.transaction_id ?? null,
-          dto.source_db ?? null,
-          dto.schema_name ?? 'dbo',
-          dto.table_name,
-          dto.record_id ?? null,
-          dto.record_id_text ?? null,
-          dto.operation,
-          dto.old_values ?? null,
-          dto.new_values ?? null,
-          dto.changed_columns ?? null,
-          dto.performed_by ?? null,
-          dto.performed_by_name ?? null,
-          dto.source_app ?? 'OMS-Backend',
-          dto.source_module ?? null,
-          dto.client_ip ?? null,
-          dto.reason ?? null,
-          dto.performed_at ?? null,
-        ],
-      );
+          NEWID(),
+          ISNULL(@0, NEWID()),
+          ISNULL(@1, 'DIEZ-BUILD-DB'),
+          ISNULL(@2, 'masters'),
+          @3,
+          @4,
+          @5,
+          @6,
+          @7,
+          @8,
+          @9,
+          @10,
+          ISNULL(@11, 'OMS-Backend'),
+          @12,
+          @13,
+          @14,
+          ISNULL(@15, SYSUTCDATETIME())
+        );
+      `;
 
-      return result?.[0]?.audit_id ?? null;
+      const recordIdUUID =
+        dto.record_id_text && isUUID(dto.record_id_text)
+          ? dto.record_id_text
+          : null;
+
+      const performedByUUID =
+        dto.performed_by && isUUID(dto.performed_by)
+          ? dto.performed_by
+          : null;
+
+      await this.auditDataSource.query(sql, [
+        dto.transaction_id || null, // @0
+        dto.source_db || null, // @1
+        dto.schema_name || 'masters', // @2
+        dto.table_name, // @3
+        recordIdUUID, // @4 (uniqueidentifier record_id)
+        dto.record_id_text || null, // @5 (varchar record_id_text)
+        dto.operation, // @6
+        dto.old_values || null, // @7
+        dto.new_values || null, // @8
+        dto.changed_columns || null, // @9
+        performedByUUID, // @10 (uniqueidentifier performed_by)
+        dto.performed_by_name || null, // @11
+        dto.source_app || 'OMS-Backend', // @12
+        dto.source_module || 'BudgetCategoriesModule', // @13
+        dto.client_ip || null, // @14
+        dto.reason || null, // @15
+        dto.performed_at || null, // @16
+      ]);
+
+      this.logger.log(
+        `[AuditLogRepository] Audit log saved successfully for table="${dto.table_name}" op="${dto.operation}"`,
+      );
+      return 'SUCCESS';
     } catch (err) {
       this.logger.error(
-        `[AuditLogRepository] Failed to insert audit log for table="${dto.table_name}" op="${dto.operation}"`,
+        `[AuditLogRepository] Failed to insert audit log for table="${dto.table_name}" op="${dto.operation}": ${
+          err instanceof Error ? err.message : String(err)
+        }`,
         err instanceof Error ? err.stack : String(err),
       );
       return null;
@@ -135,10 +162,6 @@ export class AuditLogRepository {
 
   /**
    * Fetches audit logs for a specific record within a table, ordered by most recent first.
-   *
-   * @param tableName  Target table name (e.g. 'tbl_Users')
-   * @param recordIdText  UUID / text PK of the record
-   * @param limit  Max rows to return (default 100)
    */
   async findByRecord(
     tableName: string,
@@ -163,7 +186,6 @@ export class AuditLogRepository {
 
   /**
    * Fetches all audit logs associated with a transaction ID.
-   * Useful for grouping related changes (e.g. a bulk operation).
    */
   async findByTransaction(transactionId: string): Promise<AuditLog[]> {
     return this.auditDataSource.query<AuditLog[]>(

@@ -26,6 +26,7 @@ import { OrganizationModule } from './modules/organization/organization.module';
 import { AuthorizationModule } from './modules/authorization/authorization.module';
 import { CandidateTokensModule } from './modules/onboarding/candidate-tokens/candidate-tokens.module';
 import { BudgetCategoriesModule } from './modules/organization/budget-categories/budget-categories.module';
+import { FiscalYearsModule } from './modules/organization/fiscal-years/fiscal-years.module';
 
 // Guards
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
@@ -65,6 +66,7 @@ import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
     AuthorizationModule,
     CandidateTokensModule,
     BudgetCategoriesModule,
+    FiscalYearsModule,
   ],
   providers: [
     // 1. Rate Limiting Guard (Applies before JWT auth)
