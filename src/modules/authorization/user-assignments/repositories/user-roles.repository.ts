@@ -31,11 +31,11 @@ export class UserRolesRepository {
           r.is_system_role AS isSystemRole,
           ur.effective_from AS effectiveFrom,
           ur.effective_to AS effectiveTo,
-          ur.is_active AS isActive,
+          ur.IsActive AS isActive,
           ur.assigned_by AS assignedBy,
           ur.assigned_at AS assignedAt
-      FROM [auth].tbl_User_Roles] ur
-      INNER JOIN [auth].tbl_Roles] r ON r.role_id = ur.role_id
+      FROM [auth].[tbl_User_Roles] ur
+      INNER JOIN [auth].[tbl_Roles] r ON r.role_id = ur.role_id
       WHERE ur.user_id = @0
       ORDER BY ur.effective_from DESC;
       `,
@@ -75,13 +75,13 @@ export class UserRolesRepository {
           r.is_system_role AS isSystemRole,
           ur.effective_from AS effectiveFrom,
           ur.effective_to AS effectiveTo,
-          ur.is_active AS isActive,
+          ur.IsActive AS isActive,
           ur.assigned_by AS assignedBy,
           ur.assigned_at AS assignedAt
-      FROM [auth].tbl_User_Roles] ur
-      INNER JOIN [auth].tbl_Roles] r ON r.role_id = ur.role_id
+      FROM [auth].[tbl_User_Roles] ur
+      INNER JOIN [auth].[tbl_Roles] r ON r.role_id = ur.role_id
       WHERE ur.user_id = @0
-        AND ur.is_active = 1
+        AND ur.IsActive = 1
         AND r.is_active = 1
         AND ur.effective_from <= SYSUTCDATETIME()
         AND (ur.effective_to IS NULL OR ur.effective_to > SYSUTCDATETIME())
@@ -123,11 +123,11 @@ export class UserRolesRepository {
           r.is_system_role AS isSystemRole,
           ur.effective_from AS effectiveFrom,
           ur.effective_to AS effectiveTo,
-          ur.is_active AS isActive,
+          ur.IsActive AS isActive,
           ur.assigned_by AS assignedBy,
           ur.assigned_at AS assignedAt
-      FROM [auth].tbl_User_Roles] ur
-      INNER JOIN [auth].tbl_Roles] r ON r.role_id = ur.role_id
+      FROM [auth].[tbl_User_Roles] ur
+      INNER JOIN [auth].[tbl_Roles] r ON r.role_id = ur.role_id
       WHERE ur.user_role_id = @0;
       `,
       [userRoleId],
@@ -159,7 +159,7 @@ export class UserRolesRepository {
   async assignRole(data: IAssignRoleData, qr?: QueryRunner): Promise<string> {
     const rows = await this.getExecutor(qr).query(
       `
-      INSERT INTO [auth].tbl_User_Roles] (
+      INSERT INTO [auth].[tbl_User_Roles] (
           UserRoleID,
           UserID,
           RoleID,
@@ -203,7 +203,7 @@ export class UserRolesRepository {
   async revokeRole(userRoleId: string, qr?: QueryRunner): Promise<void> {
     await this.getExecutor(qr).query(
       `
-      UPDATE [auth].tbl_User_Roles]
+      UPDATE [auth].[tbl_User_Roles]
       SET effective_to = SYSUTCDATETIME()
       WHERE user_role_id = @0;
       `,
@@ -217,7 +217,7 @@ export class UserRolesRepository {
   async revokeAllForUser(userId: string, qr?: QueryRunner): Promise<void> {
     await this.getExecutor(qr).query(
       `
-      UPDATE [auth].tbl_User_Roles]
+      UPDATE [auth].[tbl_User_Roles]
       SET 
           IsActive = 0,
           EffectiveTo = SYSUTCDATETIME()
@@ -240,11 +240,11 @@ export class UserRolesRepository {
     const rows = await this.getExecutor(qr).query(
       `
       SELECT TOP 1 1 AS hasRole
-      FROM [auth].tbl_User_Roles] ur
-      INNER JOIN [auth].tbl_Roles] r ON r.role_id = ur.role_id
+      FROM [auth].[tbl_User_Roles] ur
+      INNER JOIN [auth].[tbl_Roles] r ON r.role_id = ur.role_id
       WHERE ur.user_id = @0
         AND r.role_code = @1
-        AND ur.is_active = 1
+        AND ur.IsActive = 1
         AND r.is_active = 1
         AND ur.effective_from <= SYSUTCDATETIME()
         AND (ur.effective_to IS NULL OR ur.effective_to > SYSUTCDATETIME());
@@ -277,7 +277,7 @@ export class UserRolesRepository {
           Description AS description,
           IsSystemRole AS isSystemRole,
           IsActive AS isActive
-      FROM [auth].tbl_Roles]
+      FROM [auth].[tbl_Roles]
       WHERE is_active = 1
       ORDER BY role_name ASC;
       `,
@@ -316,7 +316,7 @@ export class UserRolesRepository {
           Description AS description,
           IsSystemRole AS isSystemRole,
           IsActive AS isActive
-      FROM [auth].tbl_Roles]
+      FROM [auth].[tbl_Roles]
       WHERE (CAST(RoleID AS NVARCHAR(50)) = @0 OR LOWER(RoleCode) = LOWER(@0))
         AND is_active = 1;
       `,

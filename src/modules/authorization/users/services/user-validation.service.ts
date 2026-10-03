@@ -44,7 +44,7 @@ export class UserValidationService {
     const rows = await this.getExecutor(qr).query(
       `
       SELECT TOP 1 UserID AS userId
-      FROM [auth].tbl_Users]
+      FROM [auth].[tbl_Users]
       WHERE LOWER(Email) = LOWER(@0)
         AND (@1 IS NULL OR user_id != @1);
       `,
@@ -79,7 +79,7 @@ export class UserValidationService {
     const rows = await this.getExecutor(qr).query(
       `
       SELECT TOP 1 UserID AS userId
-      FROM [auth].tbl_Users]
+      FROM [auth].[tbl_Users]
       WHERE LOWER(Username) = LOWER(@0)
         AND (@1 IS NULL OR user_id != @1);
       `,
@@ -118,7 +118,7 @@ export class UserValidationService {
     const rows = await this.getExecutor(qr).query(
       `
       SELECT TOP 1 UserTypeID
-      FROM [auth].tbl_User_Types]
+      FROM [auth].[tbl_User_Types]
       WHERE user_type_code = @0;
       `,
       [userType],
@@ -324,11 +324,11 @@ export class UserValidationService {
     const userAdminRows = await this.getExecutor(qr).query(
       `
       SELECT 1
-      FROM [auth].tbl_User_Roles] ur
-      INNER JOIN [auth].tbl_Roles] r ON r.role_id = ur.role_id
+      FROM [auth].[tbl_User_Roles] ur
+      INNER JOIN [auth].[tbl_Roles] r ON r.role_id = ur.role_id
       WHERE ur.user_id = @0
         AND r.role_code = 'SYSTEM_ADMIN'
-        AND ur.is_active = 1
+        AND ur.IsActive = 1
         AND ur.effective_from <= SYSUTCDATETIME()
         AND (ur.effective_to IS NULL OR ur.effective_to > SYSUTCDATETIME());
       `,
@@ -612,11 +612,11 @@ export class UserValidationService {
       const rows = await this.getExecutor(qr).query(
         `
         SELECT 1
-        FROM [auth].tbl_User_Roles] ur
-        INNER JOIN [auth].tbl_Roles] r ON r.role_id = ur.role_id
+        FROM [auth].[tbl_User_Roles] ur
+        INNER JOIN [auth].[tbl_Roles] r ON r.role_id = ur.role_id
         WHERE ur.user_id = @0
           AND (r.role_code = 'SYSTEM_ADMIN' OR r.role_code = 'SUPER_ADMIN' OR r.role_code = 'SUPERADMIN')
-          AND ur.is_active = 1
+          AND ur.IsActive = 1
           AND ur.effective_from <= SYSUTCDATETIME()
           AND (ur.effective_to IS NULL OR ur.effective_to > SYSUTCDATETIME());
         `,
@@ -892,7 +892,7 @@ export class UserValidationService {
       const rows = await this.getExecutor(qr).query(
         `
         SELECT role_code, RoleName
-        FROM [auth].tbl_Roles]
+        FROM [auth].[tbl_Roles]
         WHERE role_id = @0;
         `,
         [roleId],

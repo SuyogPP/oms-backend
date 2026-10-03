@@ -1,134 +1,98 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { OrgUnitTypeEntity } from './org-unit-type.entity';
 
-export class OrgHeadSummaryEntity {
-  @ApiProperty({ example: '1053433E-F36B-1410-85ED-009A959FB122' })
-  userId: string;
+export class OrgBreadcrumbItemEntity {
+  @ApiProperty({ example: 1, description: 'Org unit identifier' })
+  orgUnitId: number;
 
-  @ApiProperty({ example: 'John Doe' })
-  displayName: string;
+  @ApiProperty({ example: 'IT', description: 'Unique code' })
+  orgCode: string;
 
-  @ApiPropertyOptional({ example: 'john.doe@diez.ae' })
-  email?: string;
-
-  @ApiProperty({ example: '2026-01-01' })
-  effectiveFrom: string;
+  @ApiProperty({ example: 'Information Technology', description: 'English name' })
+  orgName: string;
 }
 
-export class OrgBreadcrumbItemEntity {
-  @ApiProperty({ example: '11111111-2222-3333-4444-555555555555' })
-  orgUnitId: string;
+export class OrgHeadSummaryEntity {
+  @ApiProperty({ example: 'UUID', description: 'Head user ID' })
+  userId: string;
 
-  @ApiProperty({ example: 'DIEZ' })
-  code: string;
+  @ApiProperty({ example: 'John Doe', description: 'Head display name' })
+  displayName: string;
 
-  @ApiProperty({ example: 'Dubai Integrated Economic Zones' })
-  name: string;
+  @ApiPropertyOptional({ example: 'john.doe@example.com' })
+  email?: string;
 }
 
 export class OrgUnitEntity {
-  @ApiProperty({ example: '77777777-8888-9999-0000-111111111111' })
-  orgUnitId: string;
+  @ApiProperty({ example: 1, description: 'Org unit identifier' })
+  orgUnitId: number;
 
   @ApiProperty({ type: () => OrgUnitTypeEntity })
   orgUnitType: OrgUnitTypeEntity;
 
-  @ApiPropertyOptional({ example: '66666666-7777-8888-9999-000000000000' })
-  parentOrgUnitId?: string | null;
+  @ApiPropertyOptional({ example: 2, description: 'Parent org unit identifier' })
+  parentId: number | null;
 
-  @ApiProperty({ example: 'IT' })
-  code: string;
+  @ApiProperty({ example: 'IT', description: 'Unique code' })
+  orgCode: string;
 
-  @ApiProperty({ example: 'Information Technology' })
-  name: string;
+  @ApiProperty({ example: 'Information Technology', description: 'English name' })
+  orgName: string;
 
-  @ApiPropertyOptional({ example: 'تقنية المعلومات' })
-  nameAr?: string | null;
-
-  @ApiPropertyOptional({ example: 'IT' })
-  shortName?: string | null;
-
-  @ApiPropertyOptional()
-  description?: string | null;
-
-  @ApiProperty({ example: 2 })
-  depth: number;
-
-  @ApiPropertyOptional({ example: 'CC-1042' })
+  @ApiPropertyOptional({ example: 'CC-1000', description: 'Cost center code' })
   costCenterCode?: string | null;
 
-  @ApiPropertyOptional({ example: 'ORG_IT_001' })
-  oracleOrgCode?: string | null;
-
-  @ApiPropertyOptional({ example: 'it@diez.ae' })
-  emailAddress?: string | null;
-
-  @ApiPropertyOptional({ example: '+97141234567' })
-  phoneNumber?: string | null;
+  @ApiPropertyOptional({
+    example: 'guid',
+    description: 'Active Directory Object GUID',
+  })
+  adObjectGuid?: string | null;
 
   @ApiPropertyOptional({ type: () => OrgHeadSummaryEntity })
   head?: OrgHeadSummaryEntity | null;
 
-  @ApiProperty({ example: true })
+  @ApiProperty({ example: true, description: 'Can hold budget' })
   allowsBudget: boolean;
 
-  @ApiProperty({ example: true })
+  @ApiProperty({ example: true, description: 'Can create requisitions' })
   allowsRequisition: boolean;
 
-  @ApiProperty({ example: 10 })
-  sortOrder: number;
-
-  @ApiProperty({ example: '2026-01-01' })
-  effectiveFrom: string;
-
-  @ApiPropertyOptional({ example: null })
-  effectiveTo?: string | null;
-
-  @ApiProperty({ example: true })
+  @ApiProperty({ example: true, description: 'Active status' })
   isActive: boolean;
-
-  @ApiProperty({ example: '0x00000000000007D1' })
-  rowVersion: string;
 }
 
 export class OrgUnitDetailEntity extends OrgUnitEntity {
-  @ApiProperty({ example: 4, description: 'Number of direct child units' })
+  @ApiProperty({ example: 3, description: 'Direct active child count' })
   childCount: number;
 
-  @ApiProperty({ example: 11, description: 'Total descendants in subtree' })
+  @ApiProperty({ example: 12, description: 'Total active descendant count' })
   descendantCount: number;
 
-  @ApiPropertyOptional({ example: 8, description: 'Total assigned people in unit' })
-  peopleCount?: number;
+  @ApiProperty({ example: 45, description: 'Active members count' })
+  peopleCount: number;
 
   @ApiProperty({
-    type: () => [OrgBreadcrumbItemEntity],
-    description: 'Ancestral path from root to parent',
+    type: [OrgBreadcrumbItemEntity],
+    description: 'Breadcrumb trail',
   })
   breadcrumb: OrgBreadcrumbItemEntity[];
 }
 
 export class OrgUnitTreeItemEntity {
-  @ApiProperty({ example: '77777777-8888-9999-0000-111111111111' })
-  orgUnitId: string;
+  @ApiProperty({ example: 1 })
+  orgUnitId: number;
 
   @ApiProperty({ example: 3 })
-  orgUnitTypeId: number;
+  unitTypeId: number;
 
-  @ApiPropertyOptional({ example: '66666666-7777-8888-9999-000000000000' })
-  parentOrgUnitId?: string | null;
+  @ApiPropertyOptional({ example: 2 })
+  parentId: number | null;
 
   @ApiProperty({ example: 'IT' })
-  code: string;
+  orgCode: string;
 
   @ApiProperty({ example: 'Information Technology' })
-  name: string;
-
-  @ApiPropertyOptional({ example: 'تقنية المعلومات' })
-  nameAr?: string | null;
-
-  @ApiProperty({ example: 2 })
-  depth: number;
+  orgName: string;
 
   @ApiProperty({ example: true })
   allowsBudget: boolean;
@@ -142,38 +106,9 @@ export class OrgUnitTreeItemEntity {
   @ApiPropertyOptional({ type: () => OrgHeadSummaryEntity })
   head?: OrgHeadSummaryEntity | null;
 
-  @ApiPropertyOptional({ type: () => [OrgUnitTreeItemEntity] })
+  @ApiPropertyOptional({
+    type: () => [OrgUnitTreeItemEntity],
+    description: 'Child nodes',
+  })
   children?: OrgUnitTreeItemEntity[];
-}
-
-export class OrgUnitMemberEntity {
-  @ApiProperty({ example: '3039C733-B657-4116-937A-4C4E28D2D7B5' })
-  userId: string;
-
-  @ApiProperty({ example: 'youssef.alblooshi' })
-  username: string;
-
-  @ApiProperty({ example: 'Youssef Al Blooshi' })
-  displayName: string;
-
-  @ApiPropertyOptional({ example: 'youssef.alblooshi@diez.ae' })
-  email?: string | null;
-
-  @ApiPropertyOptional({ example: 'Head of Department' })
-  jobTitle?: string | null;
-
-  @ApiPropertyOptional({ example: '+971501234567' })
-  mobileNo?: string | null;
-
-  @ApiProperty({ example: ['HOD'], type: [String] })
-  roles: string[];
-
-  @ApiProperty({ example: true })
-  isHead: boolean;
-
-  @ApiPropertyOptional({ example: 'HEAD' })
-  managerRoleCode?: string | null;
-
-  @ApiProperty({ example: true })
-  isActive: boolean;
 }

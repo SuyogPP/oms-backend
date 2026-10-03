@@ -1,35 +1,17 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import {
-  IsNotEmpty,
-  IsOptional,
-  IsString,
-  IsUUID,
-  MaxLength,
-} from 'class-validator';
+import { IsNumber, IsString, IsOptional, MaxLength } from 'class-validator';
 
 export class MoveOrgUnitDto {
-  @ApiProperty({
-    example: '55555555-6666-7777-8888-999999999999',
-    description: 'The new parent OrgUnitId',
-  })
-  @IsUUID()
-  @IsNotEmpty()
-  newParentOrgUnitId: string;
+  @ApiProperty({ example: 456, description: 'Target parent org unit ID' })
+  @IsNumber()
+  newParentId: number;
 
   @ApiPropertyOptional({
-    example: '2026 reorganisation — IT consolidated under Corporate Services',
-    description: 'Business justification for structural reorganization',
+    example: 'Restructuring',
+    description: 'Audit reason for move',
   })
   @IsOptional()
   @IsString()
-  @MaxLength(1000)
+  @MaxLength(500)
   reason?: string;
-
-  @ApiProperty({
-    example: '0x00000000000007D1',
-    description: 'Mandatory optimistic concurrency token (RowVersion)',
-  })
-  @IsString()
-  @IsNotEmpty()
-  rowVersion: string;
 }

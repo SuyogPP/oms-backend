@@ -19,7 +19,6 @@ import {
   ORG_ERROR_CODES,
   ORG_MANAGER_ROLES,
 } from '../org-units.constants';
-import { OrgUnitClosureRepository } from '../repositories/org-unit-closure.repository';
 import { OrgUnitTypesRepository } from '../repositories/org-unit-types.repository';
 import { OrgUnitsRepository } from '../repositories/org-units.repository';
 
@@ -27,7 +26,6 @@ import { OrgUnitsRepository } from '../repositories/org-units.repository';
 export class OrgUnitValidationService {
   constructor(
     private readonly orgUnitsRepository: OrgUnitsRepository,
-    private readonly closureRepository: OrgUnitClosureRepository,
     private readonly typesRepository: OrgUnitTypesRepository,
     private readonly dataSource: DataSource,
     @Optional()
@@ -39,24 +37,16 @@ export class OrgUnitValidationService {
     return qr ? qr : this.dataSource;
   }
 
-  // ===========================================================================
-  // SECTION 7.1: CREATION RULES (C1 – C10)
-  // ===========================================================================
-
-  /**
-   * C1: OrgUnitTypeId must exist and be active.
-   * Failure: 400 ORG_TYPE_INVALID
-   */
   async validateC1_TypeExistsAndActive(
-    orgUnitTypeId: number,
+    unitTypeId: number,
     qr?: QueryRunner,
   ): Promise<IOrgUnitType> {
-    const unitType = await this.typesRepository.findTypeById(orgUnitTypeId, qr);
-    if (!unitType || !unitType.isActive || unitType.isDeleted) {
+    const unitType = await this.typesRepository.findTypeById(unitTypeId, qr);
+    if (!unitType || !unitType.isActive) {
       throw new HttpException(
         {
           code: ORG_ERROR_CODES.ORG_TYPE_INVALID,
-          message: `OrgUnitTypeId [${orgUnitTypeId}] is invalid, inactive, or does not exist.`,
+          message: `unitTypeId [${unitTypeId}] is invalid, inactive, or does not exist.`,
         },
         HttpStatus.BAD_REQUEST,
       );
@@ -64,15 +54,11 @@ export class OrgUnitValidationService {
     return unitType;
   }
 
-  /**
-   * C2: Non-root types require a parent node.
-   * Failure: 400 ORG_PARENT_REQUIRED
-   */
   validateC2_ParentRequiredForNonRoot(
     isRootType: boolean,
-    parentOrgUnitId?: string | null,
+    parentId?: number | null,
   ): void {
-    if (!isRootType && (!parentOrgUnitId || parentOrgUnitId.trim() === '')) {
+    if (!isRootType && (!parentId)) {
       throw new HttpException(
         {
           code: ORG_ERROR_CODES.ORG_PARENT_REQUIRED,
@@ -84,15 +70,11 @@ export class OrgUnitValidationService {
     }
   }
 
-  /**
-   * C3: Root types must have a NULL parent.
-   * Failure: 400 ORG_ROOT_CANNOT_HAVE_PARENT
-   */
   validateC3_RootCannotHaveParent(
     isRootType: boolean,
-    parentOrgUnitId?: string | null,
+    parentId?: number | null,
   ): void {
-    if (isRootType && parentOrgUnitId && parentOrgUnitId.trim() !== '') {
+    if (isRootType && parentId) {
       throw new HttpException(
         {
           code: ORG_ERROR_CODES.ORG_ROOT_CANNOT_HAVE_PARENT,
@@ -103,10 +85,6 @@ export class OrgUnitValidationService {
     }
   }
 
-  /**
-   * C4: Only one active root organization unit may exist in the system.
-   * Failure: 409 ORG_ROOT_EXISTS
-   */
   async validateC4_SingleActiveRoot(
     isRootType: boolean,
     qr?: QueryRunner,
@@ -117,7 +95,7 @@ export class OrgUnitValidationService {
         throw new HttpException(
           {
             code: ORG_ERROR_CODES.ORG_ROOT_EXISTS,
-            message: `An active root organization already exists with Code [${existingRoot.code}].`,
+            message: `An active root organization already exists with Code [${existingRoot.orgCode}].`,
           },
           HttpStatus.CONFLICT,
         );
@@ -125,10 +103,6 @@ export class OrgUnitValidationService {
     }
   }
 
-  /**
-   * C5: (childType, parentType) pair must exist in OrgUnitTypeHierarchyRules.
-   * Failure: 400 ORG_HIERARCHY_RULE_VIOLATION
-   */
   async validateC5_HierarchyRule(
     childTypeId: number,
     parentTypeId: number,
@@ -150,29 +124,25 @@ export class OrgUnitValidationService {
     }
   }
 
-  /**
-   * C6: Parent unit must exist, be active, and not soft-deleted.
-   * Failure: 400 ORG_PARENT_INACTIVE / ORG_PARENT_INVALID
-   */
   async validateC6_ParentExistsAndActive(
-    parentOrgUnitId: string,
+    parentId: number,
     qr?: QueryRunner,
   ): Promise<IOrgUnit> {
-    const parent = await this.orgUnitsRepository.findById(parentOrgUnitId, qr);
+    const parent = await this.orgUnitsRepository.findById(parentId, qr);
     if (!parent) {
       throw new HttpException(
         {
           code: ORG_ERROR_CODES.ORG_PARENT_INVALID,
-          message: `Parent organization unit [${parentOrgUnitId}] was not found.`,
+          message: `Parent organization unit [${parentId}] was not found.`,
         },
         HttpStatus.BAD_REQUEST,
       );
     }
-    if (!parent.isActive || parent.isDeleted) {
+    if (!parent.isActive) {
       throw new HttpException(
         {
           code: ORG_ERROR_CODES.ORG_PARENT_INACTIVE,
-          message: `Parent organization unit [${parent.code}] is inactive or deleted.`,
+          message: `Parent organization unit [${parent.orgCode}] is inactive or deleted.`,
         },
         HttpStatus.BAD_REQUEST,
       );
@@ -180,17 +150,13 @@ export class OrgUnitValidationService {
     return parent;
   }
 
-  /**
-   * C7: Code must be unique among live siblings (case-insensitive).
-   * Failure: 409 ORG_CODE_DUPLICATE
-   */
   async validateC7_CodeUniqueAmongSiblings(
-    parentOrgUnitId: string | null,
+    parentId: number | null,
     code: string,
     qr?: QueryRunner,
   ): Promise<void> {
     const existing = await this.orgUnitsRepository.findByCode(
-      parentOrgUnitId,
+      parentId,
       code,
       qr,
     );
@@ -205,10 +171,6 @@ export class OrgUnitValidationService {
     }
   }
 
-  /**
-   * C8: Code must match ^[A-Z0-9][A-Z0-9_-]{1,49}$
-   * Failure: 400 ORG_CODE_FORMAT
-   */
   validateC8_CodeFormat(code: string): void {
     if (!ORG_CODE_REGEX.test(code)) {
       throw new HttpException(
@@ -222,34 +184,8 @@ export class OrgUnitValidationService {
     }
   }
 
-  /**
-   * C9: EffectiveFrom must be greater than or equal to parent's EffectiveFrom.
-   * Failure: 400 ORG_EFFECTIVE_BEFORE_PARENT
-   */
-  validateC9_EffectiveFromNotBeforeParent(
-    effectiveFrom: string | Date,
-    parentEffectiveFrom: string | Date,
-  ): void {
-    const childDate = new Date(effectiveFrom);
-    const parentDate = new Date(parentEffectiveFrom);
-
-    if (childDate < parentDate) {
-      throw new HttpException(
-        {
-          code: ORG_ERROR_CODES.ORG_EFFECTIVE_BEFORE_PARENT,
-          message: `EffectiveFrom date [${childDate.toISOString().split('T')[0]}] cannot be earlier than parent unit EffectiveFrom date [${parentDate.toISOString().split('T')[0]}].`,
-        },
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-  }
-
-  /**
-   * C10: Creator must have scope covering the parent node.
-   * Failure: 403 ORG_SCOPE_DENIED
-   */
   async validateC10_CreatorScope(
-    parentOrgUnitId: string,
+    parentId: number,
     actorUserId: string,
     qr?: QueryRunner,
   ): Promise<void> {
@@ -260,7 +196,7 @@ export class OrgUnitValidationService {
     `;
     const rows = await this.getExecutor(qr).query(sql, [
       actorUserId,
-      parentOrgUnitId,
+      parentId,
     ]);
     if (rows.length === 0) {
       throw new HttpException(
@@ -274,79 +210,51 @@ export class OrgUnitValidationService {
     }
   }
 
-  /**
-   * Orchestrator: Validates all C1–C10 creation rules in sequence.
-   */
   async validateCreate(
     dto: CreateOrgUnitDto,
     actorUserId: string,
     qr?: QueryRunner,
   ): Promise<{ unitType: IOrgUnitType; parentUnit: IOrgUnit | null }> {
-    // C8: Code format
-    this.validateC8_CodeFormat(dto.code);
+    this.validateC8_CodeFormat(dto.orgCode);
 
-    // C1: Unit type valid and active
     const unitType = await this.validateC1_TypeExistsAndActive(
-      dto.orgUnitTypeId,
+      dto.unitTypeId,
       qr,
     );
 
     let parentUnit: IOrgUnit | null = null;
+    const isRootType = unitType.level === 1;
 
-    if (unitType.isRootType) {
-      // C3: Root cannot have parent
-      this.validateC3_RootCannotHaveParent(true, dto.parentOrgUnitId);
-      // C4: Single active root check
+    if (isRootType) {
+      this.validateC3_RootCannotHaveParent(true, dto.parentId);
       await this.validateC4_SingleActiveRoot(true, qr);
-      // C7: Root code uniqueness
-      await this.validateC7_CodeUniqueAmongSiblings(null, dto.code, qr);
+      await this.validateC7_CodeUniqueAmongSiblings(null, dto.orgCode, qr);
     } else {
-      // C2: Non-root requires parent
-      this.validateC2_ParentRequiredForNonRoot(false, dto.parentOrgUnitId);
-      const parentId = dto.parentOrgUnitId!;
+      this.validateC2_ParentRequiredForNonRoot(false, dto.parentId);
+      const parentId = dto.parentId!;
 
-      // C6: Parent exists and active
       parentUnit = await this.validateC6_ParentExistsAndActive(parentId, qr);
 
-      // C5: Hierarchy rule
       await this.validateC5_HierarchyRule(
-        unitType.orgUnitTypeId,
-        parentUnit.orgUnitTypeId,
+        unitType.unitTypeId,
+        parentUnit.unitTypeId,
         qr,
       );
 
-      // C7: Code uniqueness under parent
-      await this.validateC7_CodeUniqueAmongSiblings(parentId, dto.code, qr);
+      await this.validateC7_CodeUniqueAmongSiblings(parentId, dto.orgCode, qr);
 
-      // C9: Effective date check
-      if (dto.effectiveFrom) {
-        this.validateC9_EffectiveFromNotBeforeParent(
-          dto.effectiveFrom,
-          parentUnit.effectiveFrom,
-        );
-      }
-
-      // C10: Creator scope validation
       await this.validateC10_CreatorScope(parentId, actorUserId, qr);
     }
 
     return { unitType, parentUnit };
   }
 
-  // ===========================================================================
-  // SECTION 7.2: MOVE RULES (M1 – M8)
-  // ===========================================================================
-
-  /**
-   * M1: New parent must exist, be active, and not soft-deleted.
-   * Failure: 400 ORG_PARENT_INVALID
-   */
   async validateM1_NewParentExistsAndActive(
-    newParentId: string,
+    newParentId: number,
     qr?: QueryRunner,
   ): Promise<IOrgUnit> {
     const parent = await this.orgUnitsRepository.findById(newParentId, qr);
-    if (!parent || !parent.isActive || parent.isDeleted) {
+    if (!parent || !parent.isActive) {
       throw new HttpException(
         {
           code: ORG_ERROR_CODES.ORG_PARENT_INVALID,
@@ -358,12 +266,8 @@ export class OrgUnitValidationService {
     return parent;
   }
 
-  /**
-   * M2: New parent must not be the node itself.
-   * Failure: 400 ORG_MOVE_TO_SELF
-   */
-  validateM2_NotMovingToSelf(nodeId: string, newParentId: string): void {
-    if (nodeId.toLowerCase() === newParentId.toLowerCase()) {
+  validateM2_NotMovingToSelf(nodeId: number, newParentId: number): void {
+    if (nodeId === newParentId) {
       throw new HttpException(
         {
           code: ORG_ERROR_CODES.ORG_MOVE_TO_SELF,
@@ -374,22 +278,13 @@ export class OrgUnitValidationService {
     }
   }
 
-  /**
-   * M3: New parent must not be a descendant of the node (cycle detection).
-   * Implemented via closure table isDescendantOf check.
-   * Failure: 400 ORG_MOVE_CYCLE
-   */
   async validateM3_NotMovingToDescendant(
-    nodeId: string,
-    newParentId: string,
+    nodeId: number,
+    newParentId: number,
     qr?: QueryRunner,
   ): Promise<void> {
-    const isCycle = await this.closureRepository.isDescendantOf(
-      newParentId,
-      nodeId,
-      qr,
-    );
-    if (isCycle) {
+    const ancestors = await this.orgUnitsRepository.findAncestors(newParentId, qr);
+    if (ancestors.some(a => a.orgUnitId === nodeId)) {
       throw new HttpException(
         {
           code: ORG_ERROR_CODES.ORG_MOVE_CYCLE,
@@ -401,10 +296,6 @@ export class OrgUnitValidationService {
     }
   }
 
-  /**
-   * M4: (nodeType, newParentType) must satisfy OrgUnitTypeHierarchyRules.
-   * Failure: 400 ORG_HIERARCHY_RULE_VIOLATION
-   */
   async validateM4_MoveHierarchyRule(
     nodeTypeId: number,
     newParentTypeId: number,
@@ -413,13 +304,9 @@ export class OrgUnitValidationService {
     await this.validateC5_HierarchyRule(nodeTypeId, newParentTypeId, qr);
   }
 
-  /**
-   * M5: Code must remain unique among new siblings.
-   * Failure: 409 ORG_CODE_DUPLICATE
-   */
   async validateM5_CodeUniqueAmongNewSiblings(
-    nodeId: string,
-    newParentId: string,
+    nodeId: number,
+    newParentId: number,
     code: string,
     qr?: QueryRunner,
   ): Promise<void> {
@@ -428,7 +315,7 @@ export class OrgUnitValidationService {
       code,
       qr,
     );
-    if (existing && existing.orgUnitId.toLowerCase() !== nodeId.toLowerCase()) {
+    if (existing && existing.orgUnitId !== nodeId) {
       throw new HttpException(
         {
           code: ORG_ERROR_CODES.ORG_CODE_DUPLICATE,
@@ -439,13 +326,9 @@ export class OrgUnitValidationService {
     }
   }
 
-  /**
-   * M6: Actor must have scope over both old parent and new parent.
-   * Failure: 403 ORG_SCOPE_DENIED
-   */
   async validateM6_ScopeOverOldAndNewParent(
-    oldParentId: string | null,
-    newParentId: string,
+    oldParentId: number | null,
+    newParentId: number,
     actorUserId: string,
     qr?: QueryRunner,
   ): Promise<void> {
@@ -455,17 +338,12 @@ export class OrgUnitValidationService {
     await this.validateC10_CreatorScope(newParentId, actorUserId, qr);
   }
 
-  /**
-   * M7: Blocked if the subtree has registered budget commitments in an open period.
-   * Iterates through the registered OrgUnitReferenceCheck implementations.
-   * Failure: 409 ORG_MOVE_BLOCKED_BUDGET
-   */
   async validateM7_SubtreeReferencesBlockMove(
-    subtreeOrgUnitIds: string[],
+    subtreeOrgUnitIds: number[],
   ): Promise<void> {
     const moveBlockers = this.referenceChecks.filter((r) => r.blocksMove);
     for (const checker of moveBlockers) {
-      const count = await checker.countReferences(subtreeOrgUnitIds);
+      const count = await checker.countReferences(subtreeOrgUnitIds.map(id => String(id)));
       if (count > 0) {
         throw new HttpException(
           {
@@ -478,43 +356,16 @@ export class OrgUnitValidationService {
     }
   }
 
-  /**
-   * M8: Optimistic concurrency check via RowVersion.
-   * Failure: 409 ORG_CONCURRENCY_CONFLICT
-   */
-  validateM8_RowVersionConcurrency(
-    currentRowVersion: string,
-    expectedRowVersion: string,
-  ): void {
-    const cleanCurrent = currentRowVersion.toLowerCase().replace(/^0x/, '');
-    const cleanExpected = expectedRowVersion.toLowerCase().replace(/^0x/, '');
-
-    if (cleanCurrent !== cleanExpected) {
-      throw new HttpException(
-        {
-          code: ORG_ERROR_CODES.ORG_CONCURRENCY_CONFLICT,
-          message:
-            'The organization unit has been modified by another transaction. Please reload and retry.',
-        },
-        HttpStatus.CONFLICT,
-      );
-    }
-  }
-
-  /**
-   * Orchestrator: Validates all M1–M8 move rules in sequence.
-   */
   async validateMove(
-    orgUnitId: string,
+    orgUnitId: number,
     dto: MoveOrgUnitDto,
     actorUserId: string,
     qr?: QueryRunner,
   ): Promise<{
     movingUnit: IOrgUnit;
     newParentUnit: IOrgUnit;
-    subtreeIds: string[];
+    subtreeIds: number[];
   }> {
-    // 1. Fetch moving unit
     const movingUnit = await this.orgUnitsRepository.findById(orgUnitId, qr);
     if (!movingUnit) {
       throw new HttpException(
@@ -526,76 +377,51 @@ export class OrgUnitValidationService {
       );
     }
 
-    // Cannot move root organization
     this.validateD5_RootProtected(movingUnit);
 
-    // M8: Concurrency check
-    this.validateM8_RowVersionConcurrency(
-      movingUnit.rowVersion,
-      dto.rowVersion,
-    );
+    this.validateM2_NotMovingToSelf(orgUnitId, dto.newParentId);
 
-    // M2: Not moving to self
-    this.validateM2_NotMovingToSelf(orgUnitId, dto.newParentOrgUnitId);
-
-    // M1: New parent exists and active
     const newParentUnit = await this.validateM1_NewParentExistsAndActive(
-      dto.newParentOrgUnitId,
+      dto.newParentId,
       qr,
     );
 
-    // M3: Cycle detection (not moving under a descendant)
     await this.validateM3_NotMovingToDescendant(
       orgUnitId,
-      dto.newParentOrgUnitId,
+      dto.newParentId,
       qr,
     );
 
-    // M4: Hierarchy rule
     await this.validateM4_MoveHierarchyRule(
-      movingUnit.orgUnitTypeId,
-      newParentUnit.orgUnitTypeId,
+      movingUnit.unitTypeId,
+      newParentUnit.unitTypeId,
       qr,
     );
 
-    // M5: Code uniqueness under new parent
     await this.validateM5_CodeUniqueAmongNewSiblings(
       orgUnitId,
-      dto.newParentOrgUnitId,
-      movingUnit.code,
+      dto.newParentId,
+      movingUnit.orgCode,
       qr,
     );
 
-    // M6: Scope authorization over old and new parent
     await this.validateM6_ScopeOverOldAndNewParent(
-      movingUnit.parentOrgUnitId,
-      dto.newParentOrgUnitId,
+      movingUnit.parentId,
+      dto.newParentId,
       actorUserId,
       qr,
     );
 
-    // Fetch all subtree IDs for reference check
-    const subtreeIds = await this.closureRepository.getDescendantIds(
-      orgUnitId,
-      qr,
-    );
+    const descendants = await this.orgUnitsRepository.findDescendants(orgUnitId, qr);
+    const subtreeIds = [orgUnitId, ...descendants.map((d) => d.orgUnitId)];
 
-    // M7: Downstream reference checks
     await this.validateM7_SubtreeReferencesBlockMove(subtreeIds);
 
     return { movingUnit, newParentUnit, subtreeIds };
   }
 
-  // ===========================================================================
-  // SECTION 7.3: DEACTIVATE / DELETE RULES (D1 – D7)
-  // ===========================================================================
-
-  /**
-   * D1: Cannot deactivate unit with active children.
-   * Failure: 409 ORG_HAS_ACTIVE_CHILDREN
-   */
   async validateD1_NoActiveChildrenOnDeactivate(
-    orgUnitId: string,
+    orgUnitId: number,
     qr?: QueryRunner,
   ): Promise<void> {
     const activeChildren = await this.orgUnitsRepository.countDirectChildren(
@@ -614,12 +440,8 @@ export class OrgUnitValidationService {
     }
   }
 
-  /**
-   * D2: Cannot delete unit with any non-deleted children.
-   * Failure: 409 ORG_HAS_CHILDREN
-   */
   async validateD2_NoChildrenOnDelete(
-    orgUnitId: string,
+    orgUnitId: number,
     qr?: QueryRunner,
   ): Promise<void> {
     const childCount = await this.orgUnitsRepository.countDirectChildren(
@@ -638,22 +460,18 @@ export class OrgUnitValidationService {
     }
   }
 
-  /**
-   * D3: Cannot delete unit if users are currently assigned.
-   * Failure: 409 ORG_HAS_ASSIGNED_USERS
-   */
   async validateD3_NoAssignedUsersOnDelete(
-    orgUnitId: string,
+    orgUnitId: number,
     qr?: QueryRunner,
   ): Promise<void> {
     const sql = `
       SELECT COUNT(*) AS total
       FROM (
-        SELECT UserOrgUnitAssignmentId FROM org.UserOrgUnitAssignments
-        WHERE OrgUnitId = @0 AND IsDeleted = 0 AND is_active = 1
+        SELECT user_id FROM auth.tbl_User_Roles
+        WHERE org_unit_id = @0
         UNION ALL
-        SELECT UserProfileID FROM auth.UserProfiles
-        WHERE (DepartmentID = @0 OR BusinessUnitID = @0 OR SectionID = @0)
+        SELECT user_id FROM auth.tbl_Users
+        WHERE org_unit_id = @0
       ) AS Assigned;
     `;
     const res = await this.getExecutor(qr).query(sql, [orgUnitId]);
@@ -670,16 +488,12 @@ export class OrgUnitValidationService {
     }
   }
 
-  /**
-   * D4: Cannot delete if referenced by any registered downstream consumer.
-   * Failure: 409 ORG_REFERENCED
-   */
   async validateD4_NoRegisteredReferencesOnDelete(
-    orgUnitId: string,
+    orgUnitId: number,
   ): Promise<void> {
     const deleteBlockers = this.referenceChecks.filter((r) => r.blocksDelete);
     for (const checker of deleteBlockers) {
-      const count = await checker.countReferences([orgUnitId]);
+      const count = await checker.countReferences([String(orgUnitId)]);
       if (count > 0) {
         throw new HttpException(
           {
@@ -692,12 +506,8 @@ export class OrgUnitValidationService {
     }
   }
 
-  /**
-   * D5: Root organization can never be deleted or deactivated.
-   * Failure: 409 ORG_ROOT_PROTECTED
-   */
   validateD5_RootProtected(orgUnit: IOrgUnit): void {
-    if (orgUnit.parentOrgUnitId === null || orgUnit.orgUnitTypeId === 1) {
+    if (orgUnit.parentId === null) {
       throw new HttpException(
         {
           code: ORG_ERROR_CODES.ORG_ROOT_PROTECTED,
@@ -709,11 +519,8 @@ export class OrgUnitValidationService {
     }
   }
 
-  /**
-   * Orchestrator: Validates deactivation rules (D1, D5).
-   */
   async validateDeactivate(
-    orgUnitId: string,
+    orgUnitId: number,
     qr?: QueryRunner,
   ): Promise<IOrgUnit> {
     const unit = await this.orgUnitsRepository.findById(orgUnitId, qr);
@@ -733,10 +540,7 @@ export class OrgUnitValidationService {
     return unit;
   }
 
-  /**
-   * Orchestrator: Validates deletion rules (D2, D3, D4, D5).
-   */
-  async validateDelete(orgUnitId: string, qr?: QueryRunner): Promise<IOrgUnit> {
+  async validateDelete(orgUnitId: number, qr?: QueryRunner): Promise<IOrgUnit> {
     const unit = await this.orgUnitsRepository.findById(orgUnitId, qr);
     if (!unit) {
       throw new HttpException(
@@ -756,16 +560,8 @@ export class OrgUnitValidationService {
     return unit;
   }
 
-  // ===========================================================================
-  // SECTION 7.4: MANAGER RULES (G1 – G7)
-  // ===========================================================================
-
-  /**
-   * G1: At most one active HEAD with IsPrimary=1 per unit per date.
-   * Failure: 409 ORG_PRIMARY_HEAD_EXISTS
-   */
   async validateG1_PrimaryHeadUniqueness(
-    orgUnitId: string,
+    orgUnitId: number,
     effectiveFrom: string,
     effectiveTo?: string | null,
     excludeManagerId?: string,
@@ -781,7 +577,7 @@ export class OrgUnitValidationService {
         AND IsDeleted = 0
         AND (@1 IS NULL OR OrgUnitManagerId <> @1)
         AND (@2 IS NULL OR effective_from <= CAST(@2 AS DATE))
-        AND (EffectiveTo IS NULL OR effective_to >= CAST(@3 AS DATE));
+        AND (effective_to IS NULL OR effective_to >= CAST(@3 AS DATE));
     `;
     const rows = await this.getExecutor(qr).query(sql, [
       orgUnitId,
@@ -801,12 +597,8 @@ export class OrgUnitValidationService {
     }
   }
 
-  /**
-   * G3: Overlapping periods for the same user + unit + role are rejected.
-   * Failure: 409 ORG_MANAGER_PERIOD_OVERLAP
-   */
   async validateG3_NoManagerPeriodOverlap(
-    orgUnitId: string,
+    orgUnitId: number,
     userId: string,
     roleCode: string,
     effectiveFrom: string,
@@ -823,7 +615,7 @@ export class OrgUnitValidationService {
         AND IsDeleted = 0
         AND (@3 IS NULL OR OrgUnitManagerId <> @3)
         AND (@4 IS NULL OR effective_from <= CAST(@4 AS DATE))
-        AND (EffectiveTo IS NULL OR effective_to >= CAST(@5 AS DATE));
+        AND (effective_to IS NULL OR effective_to >= CAST(@5 AS DATE));
     `;
     const rows = await this.getExecutor(qr).query(sql, [
       orgUnitId,
@@ -844,16 +636,12 @@ export class OrgUnitValidationService {
     }
   }
 
-  /**
-   * G4: User must be active and INTERNAL. Vendors can never be managers.
-   * Failure: 400 ORG_MANAGER_INVALID_USER
-   */
   async validateG4_UserIsActiveAndInternal(
     userId: string,
     qr?: QueryRunner,
   ): Promise<void> {
     const sql = `
-      SELECT user_id, UserType, IsActive, IsDeleted
+      SELECT user_id, UserType, is_active
       FROM auth.tbl_Users
       WHERE user_id = @0;
     `;
@@ -863,7 +651,6 @@ export class OrgUnitValidationService {
     if (
       !user ||
       !user.is_active ||
-      user.IsDeleted ||
       user.UserType !== 'INTERNAL'
     ) {
       throw new HttpException(
@@ -877,31 +664,24 @@ export class OrgUnitValidationService {
     }
   }
 
-  /**
-   * G5: Unit type must have AllowsManager = 1.
-   * Failure: 400 ORG_TYPE_NO_MANAGER
-   */
   async validateG5_UnitTypeAllowsManager(
     unitTypeId: number,
     qr?: QueryRunner,
   ): Promise<void> {
     const unitType = await this.typesRepository.findTypeById(unitTypeId, qr);
-    if (!unitType || !unitType.allowsManager) {
+    if (!unitType) {
       throw new HttpException(
         {
-          code: ORG_ERROR_CODES.ORG_TYPE_NO_MANAGER,
-          message: `Organization unit type [${unitType?.code || unitTypeId}] does not permit manager assignments.`,
+          code: ORG_ERROR_CODES.ORG_TYPE_INVALID,
+          message: `Organization unit type [${unitTypeId}] does not permit manager assignments.`,
         },
         HttpStatus.BAD_REQUEST,
       );
     }
   }
 
-  /**
-   * Orchestrator: Validates manager assignment rules (G3, G4, G5).
-   */
   async validateAssignManager(
-    orgUnitId: string,
+    orgUnitId: number,
     dto: AssignManagerDto,
     qr?: QueryRunner,
   ): Promise<{ unit: IOrgUnit }> {
@@ -916,13 +696,10 @@ export class OrgUnitValidationService {
       );
     }
 
-    // G5: AllowsManager check
-    await this.validateG5_UnitTypeAllowsManager(unit.orgUnitTypeId, qr);
+    await this.validateG5_UnitTypeAllowsManager(unit.unitTypeId, qr);
 
-    // G4: User is active INTERNAL
     await this.validateG4_UserIsActiveAndInternal(dto.userId, qr);
 
-    // G3: Overlap check
     await this.validateG3_NoManagerPeriodOverlap(
       orgUnitId,
       dto.userId,

@@ -148,7 +148,7 @@ describe('Step 0 Cross-Cutting Foundation', () => {
   describe('Filtering Framework', () => {
     it('should parse shorthand filter strings correctly', () => {
       const shorthand =
-        'EventType:EQ:LOGIN_FAILURE,CreatedAt:GTE:2026-08-01,Status:IN:ACTIVE|PENDING';
+        'event_type:EQ:LOGIN_FAILURE,created_at:GTE:2026-08-01,status:IN:ACTIVE|PENDING';
       const parsed = parseFilterQuery(shorthand);
       expect(parsed).toHaveLength(3);
       expect(parsed[0]).toEqual({
@@ -162,7 +162,7 @@ describe('Step 0 Cross-Cutting Foundation', () => {
         value: '2026-08-01',
       });
       expect(parsed[2]).toEqual({
-        field: 'Status',
+        field: 'status',
         operator: FilterOperator.IN,
         value: ['ACTIVE', 'PENDING'],
       });

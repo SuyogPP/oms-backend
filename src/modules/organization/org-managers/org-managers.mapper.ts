@@ -25,7 +25,6 @@ export class OrgManagersMapper {
           ? row.effectiveTo
           : new Date(row.effectiveTo).toISOString().split('T')[0]
         : null,
-      assignmentReason: row.assignmentReason ?? null,
       isActive: Boolean(row.isActive),
     };
   }

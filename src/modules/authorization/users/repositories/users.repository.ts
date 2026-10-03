@@ -52,15 +52,15 @@ export class UsersRepository {
           lc.password_changed_at AS passwordChangedAt,
           (
             SELECT STRING_AGG(r.role_code, ',')
-            FROM [auth].tbl_User_Roles] ur
-            INNER JOIN [auth].tbl_Roles] r ON r.role_id = ur.role_id
+            FROM [auth].[tbl_User_Roles] ur
+            INNER JOIN [auth].[tbl_Roles] r ON r.role_id = ur.role_id
             WHERE ur.user_id = u.user_id
-              AND ur.is_active = 1
+              AND ur.IsActive = 1
               AND (ur.effective_from IS NULL OR ur.effective_from <= SYSUTCDATETIME())
               AND (ur.effective_to IS NULL OR ur.effective_to > SYSUTCDATETIME())
           ) AS roles
-      FROM [auth].tbl_Users] u
-      LEFT JOIN [auth].tbl_Local_Credentials] lc ON lc.user_id = u.user_id
+      FROM [auth].[tbl_Users] u
+      LEFT JOIN [auth].[tbl_Local_Credentials] lc ON lc.user_id = u.user_id
       WHERE u.user_id = @0 ;
       `,
       [userId],
@@ -104,15 +104,15 @@ export class UsersRepository {
           lc.password_changed_at AS passwordChangedAt,
           (
             SELECT STRING_AGG(r.role_code, ',')
-            FROM [auth].tbl_User_Roles] ur
-            INNER JOIN [auth].tbl_Roles] r ON r.role_id = ur.role_id
+            FROM [auth].[tbl_User_Roles] ur
+            INNER JOIN [auth].[tbl_Roles] r ON r.role_id = ur.role_id
             WHERE ur.user_id = u.user_id
-              AND ur.is_active = 1
+              AND ur.IsActive = 1
               AND (ur.effective_from IS NULL OR ur.effective_from <= SYSUTCDATETIME())
               AND (ur.effective_to IS NULL OR ur.effective_to > SYSUTCDATETIME())
           ) AS roles
-      FROM [auth].tbl_Users] u
-      LEFT JOIN [auth].tbl_Local_Credentials] lc ON lc.user_id = u.user_id
+      FROM [auth].[tbl_Users] u
+      LEFT JOIN [auth].[tbl_Local_Credentials] lc ON lc.user_id = u.user_id
       WHERE u.user_id = @0;
       `,
       [userId],
@@ -143,7 +143,7 @@ export class UsersRepository {
           u.ADObjectID AS adObjectId,
           u.created_at AS createdAt,
           u.updated_at AS updatedAt
-      FROM [auth].tbl_Users] u
+      FROM [auth].[tbl_Users] u
       WHERE LOWER(u.Email) = LOWER(@0);
       `,
       [email],
@@ -177,7 +177,7 @@ export class UsersRepository {
           u.ADObjectID AS adObjectId,
           u.created_at AS createdAt,
           u.updated_at AS updatedAt
-      FROM [auth].tbl_Users] u
+      FROM [auth].[tbl_Users] u
       WHERE LOWER(u.Username) = LOWER(@0);
       `,
       [username],
@@ -286,9 +286,9 @@ export class UsersRepository {
 
     if (options.hasNoRole) {
       whereClause += ` AND NOT EXISTS (
-        SELECT 1 FROM [auth].tbl_User_Roles] ur
+        SELECT 1 FROM [auth].[tbl_User_Roles] ur
         WHERE ur.user_id = u.user_id
-          AND ur.is_active = 1
+          AND ur.IsActive = 1
           AND (ur.effective_from IS NULL OR ur.effective_from <= SYSUTCDATETIME())
           AND (ur.effective_to IS NULL OR ur.effective_to > SYSUTCDATETIME())
       )`;
@@ -296,10 +296,10 @@ export class UsersRepository {
 
     if (options.role) {
       whereClause += ` AND EXISTS (
-        SELECT 1 FROM [auth].tbl_User_Roles] ur
-        INNER JOIN [auth].tbl_Roles] r ON r.role_id = ur.role_id
+        SELECT 1 FROM [auth].[tbl_User_Roles] ur
+        INNER JOIN [auth].[tbl_Roles] r ON r.role_id = ur.role_id
         WHERE ur.user_id = u.user_id
-          AND ur.is_active = 1
+          AND ur.IsActive = 1
           AND (ur.effective_from IS NULL OR ur.effective_from <= SYSUTCDATETIME())
           AND (ur.effective_to IS NULL OR ur.effective_to > SYSUTCDATETIME())
           AND (LOWER(r.role_code) = LOWER(@${paramIndex}) OR CAST(r.role_id AS NVARCHAR(50)) = @${paramIndex})
@@ -322,9 +322,9 @@ export class UsersRepository {
       } else if (status === 'ACTIVE') {
         whereClause += ` AND u.is_active = 1 AND (u.locked_until IS NULL OR u.locked_until <= SYSUTCDATETIME())`;
       } else if (status === 'INACTIVE') {
-        whereClause += ` AND u.is_active = 0 AND EXISTS (SELECT 1 FROM [auth].tbl_Local_Credentials] lc WHERE lc.user_id = u.user_id)`;
+        whereClause += ` AND u.is_active = 0 AND EXISTS (SELECT 1 FROM [auth].[tbl_Local_Credentials] lc WHERE lc.user_id = u.user_id)`;
       } else if (status === 'INVITED') {
-        whereClause += ` AND u.is_active = 0 AND NOT EXISTS (SELECT 1 FROM [auth].tbl_Local_Credentials] lc WHERE lc.user_id = u.user_id)`;
+        whereClause += ` AND u.is_active = 0 AND NOT EXISTS (SELECT 1 FROM [auth].[tbl_Local_Credentials] lc WHERE lc.user_id = u.user_id)`;
       }
     }
 
@@ -341,7 +341,7 @@ export class UsersRepository {
 
     const countSql = `
       SELECT COUNT(1) AS total
-      FROM [auth].tbl_Users] u
+      FROM [auth].[tbl_Users] u
       ${whereClause};
     `;
 
@@ -372,16 +372,16 @@ export class UsersRepository {
               lc.password_changed_at AS passwordChangedAt,
               (
                 SELECT STRING_AGG(r.role_code, ',')
-                FROM [auth].tbl_User_Roles] ur
-                INNER JOIN [auth].tbl_Roles] r ON r.role_id = ur.role_id
+                FROM [auth].[tbl_User_Roles] ur
+                INNER JOIN [auth].[tbl_Roles] r ON r.role_id = ur.role_id
                 WHERE ur.user_id = u.user_id
-                  AND ur.is_active = 1
+                  AND ur.IsActive = 1
                   AND (ur.effective_from IS NULL OR ur.effective_from <= SYSUTCDATETIME())
                   AND (ur.effective_to IS NULL OR ur.effective_to > SYSUTCDATETIME())
               ) AS roles,
               ROW_NUMBER() OVER (ORDER BY ${orderCol} ${orderDirection}) AS RowNum
-          FROM [auth].tbl_Users] u
-          LEFT JOIN [auth].tbl_Local_Credentials] lc ON lc.user_id = u.user_id
+          FROM [auth].[tbl_Users] u
+          LEFT JOIN [auth].[tbl_Local_Credentials] lc ON lc.user_id = u.user_id
           ${whereClause}
       )
       SELECT 
@@ -452,7 +452,7 @@ export class UsersRepository {
   ): Promise<void> {
     await this.getExecutor(qr).query(
       `
-      UPDATE [auth].tbl_Login_Sessions]
+      UPDATE [auth].[tbl_Login_Sessions]
       SET is_active = 0, RevokedAt = SYSUTCDATETIME(), RevokeReason = @1
       WHERE user_id = @0 AND is_active = 1 AND revoked_at IS NULL;
       `,
@@ -478,7 +478,7 @@ export class UsersRepository {
           se.IPAddress AS ipAddress,
           se.user_agent AS userAgent,
           se.created_at AS createdAt
-      FROM [auth].tbl_Security_Events] se
+      FROM [auth].[tbl_Security_Events] se
       WHERE se.user_id = @0
       ORDER BY se.created_at DESC;
       `,
@@ -565,7 +565,7 @@ export class UsersRepository {
   async create(data: ICreateUserData, qr?: QueryRunner): Promise<string> {
     const rows = await this.getExecutor(qr).query(
       `
-      INSERT INTO [auth].tbl_Users] (
+      INSERT INTO [auth].[tbl_Users] (
           UserID,
           EmployeeID,
           Username,
@@ -615,7 +615,7 @@ export class UsersRepository {
   ): Promise<void> {
     await this.getExecutor(qr).query(
       `
-      UPDATE [auth].tbl_Users]
+      UPDATE [auth].[tbl_Users]
       SET 
           EmployeeID = COALESCE(@1, EmployeeID),
           Username = COALESCE(@2, Username),
@@ -652,7 +652,7 @@ export class UsersRepository {
   async activate(userId: string, qr?: QueryRunner): Promise<void> {
     await this.getExecutor(qr).query(
       `
-      UPDATE [auth].tbl_Users]
+      UPDATE [auth].[tbl_Users]
       SET is_active = 1, UpdatedAt = SYSUTCDATETIME()
       WHERE user_id = @0 ;
       `,
@@ -666,7 +666,7 @@ export class UsersRepository {
   async deactivate(userId: string, qr?: QueryRunner): Promise<void> {
     await this.getExecutor(qr).query(
       `
-      UPDATE [auth].tbl_Users]
+      UPDATE [auth].[tbl_Users]
       SET is_active = 0, UpdatedAt = SYSUTCDATETIME()
       WHERE user_id = @0 ;
       `,
@@ -684,7 +684,7 @@ export class UsersRepository {
   ): Promise<void> {
     await this.getExecutor(qr).query(
       `
-      UPDATE [auth].tbl_Users]
+      UPDATE [auth].[tbl_Users]
       SET is_active = 0, UpdatedAt = SYSUTCDATETIME()
       WHERE user_id = @0 ;
       `,
@@ -698,7 +698,7 @@ export class UsersRepository {
   async unlock(userId: string, qr?: QueryRunner): Promise<void> {
     await this.getExecutor(qr).query(
       `
-      UPDATE [auth].tbl_Users]
+      UPDATE [auth].[tbl_Users]
       SET 
           FailedLoginCount = 0,
           LockedUntil = NULL,
@@ -720,7 +720,7 @@ export class UsersRepository {
   ): Promise<{ failedCount: number; isLocked: boolean }> {
     const rows = await this.getExecutor(qr).query(
       `
-      UPDATE [auth].tbl_Users]
+      UPDATE [auth].[tbl_Users]
       SET 
           FailedLoginCount = FailedLoginCount + 1,
           LockedUntil = CASE 
@@ -748,7 +748,7 @@ export class UsersRepository {
   async resetFailedLoginCount(userId: string, qr?: QueryRunner): Promise<void> {
     await this.getExecutor(qr).query(
       `
-      UPDATE [auth].tbl_Users]
+      UPDATE [auth].[tbl_Users]
       SET failed_login_count = 0, LockedUntil = NULL, UpdatedAt = SYSUTCDATETIME()
       WHERE user_id = @0;
       `,
@@ -767,9 +767,9 @@ export class UsersRepository {
   ): Promise<void> {
     await this.getExecutor(qr).query(
       `
-      IF EXISTS (SELECT 1 FROM [auth].tbl_Local_Credentials] WHERE user_id = @0)
+      IF EXISTS (SELECT 1 FROM [auth].[tbl_Local_Credentials] WHERE user_id = @0)
       BEGIN
-          UPDATE [auth].tbl_Local_Credentials]
+          UPDATE [auth].[tbl_Local_Credentials]
           SET password_hash = @1,
               PasswordChangedAt = SYSUTCDATETIME(),
               MustChangePassword = @2,
@@ -778,7 +778,7 @@ export class UsersRepository {
       END
       ELSE
       BEGIN
-          INSERT INTO [auth].tbl_Local_Credentials] (
+          INSERT INTO [auth].[tbl_Local_Credentials] (
               CredentialID,
               UserID,
               PasswordHash,
@@ -812,7 +812,7 @@ export class UsersRepository {
   ): Promise<void> {
     await this.getExecutor(qr).query(
       `
-      UPDATE [auth].tbl_Local_Credentials]
+      UPDATE [auth].[tbl_Local_Credentials]
       SET must_change_password = @1
       WHERE user_id = @0;
       `,
@@ -830,7 +830,7 @@ export class UsersRepository {
   ): Promise<void> {
     await this.getExecutor(qr).query(
       `
-      INSERT INTO [auth].tbl_Logout_History] (
+      INSERT INTO [auth].[tbl_Logout_History] (
           LoginSessionID,
           UserID,
           Username,
@@ -847,8 +847,8 @@ export class UsersRepository {
           ls.user_agent,
           SYSUTCDATETIME(),
           @1
-      FROM [auth].tbl_Login_Sessions] ls
-      INNER JOIN [auth].tbl_Users] u ON u.user_id = ls.user_id
+      FROM [auth].[tbl_Login_Sessions] ls
+      INNER JOIN [auth].[tbl_Users] u ON u.user_id = ls.user_id
       WHERE ls.user_id = @0 AND ls.is_active = 1;
       `,
       [userId, reason],
@@ -862,13 +862,13 @@ export class UsersRepository {
     const rows = await this.getExecutor(qr).query(
       `
       SELECT COUNT(DISTINCT u.user_id) AS adminCount
-      FROM [auth].tbl_Users] u
-      INNER JOIN [auth].tbl_User_Roles] ur ON ur.user_id = u.user_id
-      INNER JOIN [auth].tbl_Roles] r ON r.role_id = ur.role_id
+      FROM [auth].[tbl_Users] u
+      INNER JOIN [auth].[tbl_User_Roles] ur ON ur.user_id = u.user_id
+      INNER JOIN [auth].[tbl_Roles] r ON r.role_id = ur.role_id
       WHERE r.role_code = 'SYSTEM_ADMIN'
         AND u.is_active = 1
         
-        AND ur.is_active = 1
+        AND ur.IsActive = 1
         AND ur.effective_from <= SYSUTCDATETIME()
         AND (ur.effective_to IS NULL OR ur.effective_to > SYSUTCDATETIME());
       `,

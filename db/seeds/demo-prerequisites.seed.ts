@@ -50,9 +50,9 @@ async function seedPrerequisites() {
         .input('name', sql.NVarChar, r.name)
         .input('desc', sql.NVarChar, r.desc)
         .query(`
-          IF NOT EXISTS (SELECT 1 FROM [auth].tbl_Roles] WHERE UPPER(RoleCode) = UPPER(@code))
+          IF NOT EXISTS (SELECT 1 FROM [auth].tbl_Roles] WHERE UPPER(role_code) = UPPER(@code))
           BEGIN
-              INSERT INTO [auth].tbl_Roles] (RoleID, RoleCode, RoleName, Description, IsSystemRole, IsActive, CreatedAt)
+              INSERT INTO [auth].tbl_Roles] (role_id, role_code, role_name, Description, is_system_role, is_active, created_at)
               VALUES (NEWID(), @code, @name, @desc, 0, 1, SYSUTCDATETIME());
           END
         `);
@@ -81,9 +81,9 @@ async function seedPrerequisites() {
         .input('action', sql.NVarChar, p.action)
         .input('desc', sql.NVarChar, p.desc)
         .query(`
-          IF NOT EXISTS (SELECT 1 FROM [auth].tbl_Permissions] WHERE UPPER(PermissionCode) = UPPER(@code))
+          IF NOT EXISTS (SELECT 1 FROM [auth].tbl_Permissions] WHERE UPPER(permission_code) = UPPER(@code))
           BEGIN
-              INSERT INTO [auth].tbl_Permissions] (PermissionID, PermissionCode, ModuleName, ActionName, Description, CreatedAt)
+              INSERT INTO [auth].tbl_Permissions] (permission_id, permission_code, module_name, ActionName, Description, created_at)
               VALUES (NEWID(), @code, @module, @action, @desc, SYSUTCDATETIME());
           END
         `);
@@ -108,7 +108,7 @@ async function seedPrerequisites() {
     for (const [roleCode, permCodes] of Object.entries(roleGrants)) {
       const roleRow = await pool.request()
         .input('roleCode', sql.NVarChar, roleCode)
-        .query('SELECT role_id FROM [auth].tbl_Roles] WHERE UPPER(RoleCode) = UPPER(@roleCode)');
+        .query('SELECT role_id FROM [auth].tbl_Roles] WHERE UPPER(role_code) = UPPER(@roleCode)');
 
       if (roleRow.recordset.length === 0) continue;
       const roleId = roleRow.recordset[0].RoleID;
@@ -116,7 +116,7 @@ async function seedPrerequisites() {
       for (const permCode of permCodes) {
         const permRow = await pool.request()
           .input('permCode', sql.NVarChar, permCode)
-          .query('SELECT permission_id FROM [auth].tbl_Permissions] WHERE UPPER(PermissionCode) = UPPER(@permCode)');
+          .query('SELECT permission_id FROM [auth].tbl_Permissions] WHERE UPPER(permission_code) = UPPER(@permCode)');
 
         if (permRow.recordset.length === 0) continue;
         const permId = permRow.recordset[0].PermissionID;
@@ -127,7 +127,7 @@ async function seedPrerequisites() {
           .query(`
             IF NOT EXISTS (SELECT 1 FROM [auth].tbl_Role_Permissions] WHERE role_id = @roleId AND permission_id = @permId)
             BEGIN
-                INSERT INTO [auth].tbl_Role_Permissions] (RolePermissionID, RoleID, PermissionID, GrantedAt)
+                INSERT INTO [auth].tbl_Role_Permissions] (role_permission_id, role_id, permission_id, GrantedAt)
                 VALUES (NEWID(), @roleId, @permId, SYSUTCDATETIME());
             END
           `);
@@ -165,7 +165,7 @@ async function seedPrerequisites() {
 
           INSERT INTO [org].[OrgUnits] (
               OrgUnitId, OrgUnitTypeId, ParentOrgUnitId, Code, Name, ShortName,
-              MaterializedPath, Depth, SortOrder, EffectiveFrom, IsActive, IsDeleted, CreatedAt
+              MaterializedPath, Depth, SortOrder, effective_from, is_active, IsDeleted, created_at
           )
           OUTPUT INSERTED.OrgUnitId
           VALUES (
@@ -212,7 +212,7 @@ async function seedPrerequisites() {
 
             INSERT INTO [org].[OrgUnits] (
                 OrgUnitId, OrgUnitTypeId, ParentOrgUnitId, Code, Name, ShortName, Description,
-                MaterializedPath, Depth, SortOrder, EffectiveFrom, IsActive, IsDeleted, CreatedAt
+                MaterializedPath, Depth, SortOrder, effective_from, is_active, IsDeleted, created_at
             )
             VALUES (
                 @NewDeptId, 3, @parentId, @code, @name, @shortName, @desc,

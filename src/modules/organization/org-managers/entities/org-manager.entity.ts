@@ -1,11 +1,11 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class OrgManagerEntity {
-  @ApiProperty({ example: '88888888-9999-0000-1111-222222222222' })
-  orgUnitManagerId: string;
+  @ApiProperty({ example: 12345 })
+  orgUnitManagerId: number;
 
   @ApiProperty({ example: '77777777-8888-9999-0000-111111111111' })
-  orgUnitId: string;
+  orgUnitId: number;
 
   @ApiPropertyOptional({ example: 'Information Technology' })
   orgUnitName?: string;
@@ -37,8 +37,6 @@ export class OrgManagerEntity {
   @ApiPropertyOptional({ example: null })
   effectiveTo?: string | null;
 
-  @ApiPropertyOptional({ example: 'Department head assignment' })
-  assignmentReason?: string | null;
 
   @ApiProperty({ example: true })
   isActive: boolean;

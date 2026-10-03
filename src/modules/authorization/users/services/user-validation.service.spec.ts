@@ -528,14 +528,14 @@ describe('UserValidationService (Domain 3, §§5.1, 5.5, 6.1, 6.2, 7, 9.1)', () 
       );
     });
 
-    it('U7: rejects if profile DepartmentID is inactive or mismatched with 400 USER_ORG_UNIT_INVALID', async () => {
+    it('U7: rejects if OrgUnitId is inactive or mismatched with 400 USER_ORG_UNIT_INVALID', async () => {
       // Return inactive department
       mockDataSource.query.mockResolvedValueOnce([
         { OrgUnitId: 'dept-1', OrgUnitTypeId: 3, IsActive: 0, IsDeleted: 0 },
       ]);
 
       await expect(
-        service.validateU7_OrgUnitReferences({ departmentId: 'dept-1' }),
+        service.validateU7_OrgUnitReferences('dept-1'),
       ).rejects.toThrow(
         expect.objectContaining({
           status: HttpStatus.BAD_REQUEST,
@@ -598,11 +598,9 @@ describe('UserValidationService (Domain 3, §§5.1, 5.5, 6.1, 6.2, 7, 9.1)', () 
       );
     });
 
-    it('V5: rejects vendor user with internal org unit on profile with 400 VENDOR_ORG_UNIT_NOT_ALLOWED', () => {
+    it('V5: rejects vendor user with internal org unit with 400 VENDOR_ORG_UNIT_NOT_ALLOWED', () => {
       expect(() => {
-        service.validateV5_VendorOrgUnitProfile(USER_TYPES.VENDOR, {
-          departmentId: 'dept-123',
-        });
+        service.validateV5_VendorOrgUnitProfile(USER_TYPES.VENDOR, 'dept-123');
       }).toThrow(
         expect.objectContaining({
           status: HttpStatus.BAD_REQUEST,

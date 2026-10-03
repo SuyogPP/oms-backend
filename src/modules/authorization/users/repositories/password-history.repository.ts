@@ -24,7 +24,7 @@ export class PasswordHistoryRepository {
   ): Promise<string> {
     const rows = await this.getExecutor(qr).query(
       `
-      INSERT INTO [auth].tbl_Password_History] (
+      INSERT INTO [auth].[tbl_Password_History] (
           PasswordHistoryID,
           UserID,
           PasswordHash,
@@ -59,7 +59,7 @@ export class PasswordHistoryRepository {
           ph.user_id AS userId,
           ph.password_hash AS passwordHash,
           ph.created_at AS changedAt
-      FROM [auth].tbl_Password_History] ph
+      FROM [auth].[tbl_Password_History] ph
       WHERE ph.user_id = @0
       ORDER BY ph.created_at DESC;
       `,
@@ -88,10 +88,10 @@ export class PasswordHistoryRepository {
           SELECT 
               PasswordHistoryID,
               ROW_NUMBER() OVER (ORDER BY created_at DESC) as rn
-          FROM [auth].tbl_Password_History]
+          FROM [auth].[tbl_Password_History]
           WHERE user_id = @0
       )
-      DELETE FROM [auth].tbl_Password_History]
+      DELETE FROM [auth].[tbl_Password_History]
       WHERE password_history_id IN (
           SELECT password_history_id 
           FROM RankedHistory 

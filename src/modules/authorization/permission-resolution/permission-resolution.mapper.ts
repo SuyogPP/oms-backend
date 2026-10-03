@@ -11,7 +11,7 @@ import { PERMISSION_SOURCES } from './permission-resolution.constants';
 export class PermissionResolutionMapper {
   /**
    * Combines and transforms raw SQL data layers into the structured audit preview model.
-   * Enforces REVOKE-BEATS-GRANT: any permission present in revokeOverrides is strictly excluded from permissions.
+   * Enforces REVOKE-BEATS-GRANT: any permission present in revokeOverrides is strictly excluded from tbl_Permissions.
    */
   static toPreviewModel(
     rolePermissions: RawPermissionRow[],

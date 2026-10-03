@@ -1,3 +1,4 @@
+import { UserOrgUnitAssignmentRepository } from '../../../organization/org-units/repositories/user-org-unit-assignment.repository';
 import { Test, TestingModule } from '@nestjs/testing';
 import { NotFoundException } from '@nestjs/common';
 import { DataSource } from 'typeorm';
@@ -24,6 +25,10 @@ describe('UsersService (Domain 3, §§5.1, 5.2, 8, 9.2)', () => {
     rollbackTransaction: jest.fn().mockResolvedValue(undefined),
     release: jest.fn().mockResolvedValue(undefined),
   };
+
+const mockUserOrgUnitAssignmentRepository = {
+  reassignUser: jest.fn(),
+};
 
   const mockDataSource = {
     createQueryRunner: jest.fn().mockReturnValue(mockQueryRunner),
@@ -62,6 +67,7 @@ describe('UsersService (Domain 3, §§5.1, 5.2, 8, 9.2)', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
+        { provide: UserOrgUnitAssignmentRepository, useValue: mockUserOrgUnitAssignmentRepository },
         UsersService,
         { provide: UsersRepository, useValue: mockUsersRepository },        {
           provide: UserInvitationsRepository,

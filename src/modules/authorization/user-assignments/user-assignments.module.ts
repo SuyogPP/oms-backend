@@ -1,3 +1,4 @@
+import { UserOrgUnitAssignmentRepository } from '../../organization/org-units';
 import { Module, forwardRef } from '@nestjs/common';
 import { AuthModule } from '../../auth/auth.module';
 import { CommonModule } from '../../../common/common.module';
@@ -8,20 +9,19 @@ import {
   UserRolesController,
   RolesController,
 } from './controllers/user-roles.controller';
-import { UserScopesController } from './controllers/user-scopes.controller';
 import { UserOverridesController } from './controllers/user-overrides.controller';
 import { UserRolesService } from './services/user-roles.service';
-import { UserScopesService } from './services/user-scopes.service';
 import { UserOverridesService } from './services/user-overrides.service';
 import { UserRolesRepository } from './repositories/user-roles.repository';
-import { UserScopesRepository } from './repositories/user-scopes.repository';
 import { UserOverridesRepository } from './repositories/user-overrides.repository';
 import { UserAssignmentsMapper } from './user-assignments.mapper';
+import { OrganizationModule } from '../../organization/organization.module';
 
 @Module({
   imports: [
     forwardRef(() => AuthModule),
     forwardRef(() => UsersModule),
+    forwardRef(() => OrganizationModule),
     SecurityEventsModule,
     AuditModule,
     CommonModule,
@@ -29,13 +29,12 @@ import { UserAssignmentsMapper } from './user-assignments.mapper';
   controllers: [
     UserRolesController,
     RolesController,
-    UserScopesController,
     UserOverridesController,
   ],
   providers: [
+    UserOrgUnitAssignmentRepository,
     // Repositories
     UserRolesRepository,
-    UserScopesRepository,
     UserOverridesRepository,
 
     // Mapper
@@ -43,15 +42,12 @@ import { UserAssignmentsMapper } from './user-assignments.mapper';
 
     // Services
     UserRolesService,
-    UserScopesService,
     UserOverridesService,
   ],
   exports: [
     UserRolesRepository,
-    UserScopesRepository,
     UserOverridesRepository,
     UserRolesService,
-    UserScopesService,
     UserOverridesService,
   ],
 })

@@ -154,8 +154,8 @@ IF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'auth' 
     ALTER TABLE [auth].[UserOrganizationScopes] DROP COLUMN [assigned_at];
 GO
 
-IF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'auth' AND TABLE_NAME = 'UserOrganizationScopes' AND COLUMN_NAME = 'Reason')
-    ALTER TABLE [auth].[UserOrganizationScopes] DROP COLUMN [Reason];
+IF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'auth' AND TABLE_NAME = 'UserOrganizationScopes' AND COLUMN_NAME = 'reason')
+    ALTER TABLE [auth].[UserOrganizationScopes] DROP COLUMN [reason];
 GO
 
 

@@ -20,14 +20,13 @@ describe('OrgManagersService (Domain 2 — Section 7.4 & 8.3 Rules G1–G7)', ()
   let mockQueryRunner: any;
 
   const sampleManager = {
-    orgUnitManagerId: '88888888-9999-0000-1111-222222222222',
+    orgUnitManagerId: 12345,
     orgUnitId: '77777777-8888-9999-0000-111111111111',
     userId: '1053433E-F36B-1410-85ED-009A959FB122',
     managerRoleCode: ORG_MANAGER_ROLES.HEAD,
     isPrimary: true,
     effectiveFrom: '2026-01-01',
     effectiveTo: null,
-    assignmentReason: 'HOD appointment',
     isActive: true,
     isDeleted: false,
     username: 'john.doe',
@@ -63,7 +62,7 @@ describe('OrgManagersService (Domain 2 — Section 7.4 & 8.3 Rules G1–G7)', ()
         {
           step: 1,
           distance: 0,
-          orgUnitId: 'u-1',
+          orgUnitId: 1,
           orgUnitCode: 'IT_OPS',
           orgUnitName: 'IT Operations',
           orgUnitDepth: 3,
@@ -101,7 +100,7 @@ describe('OrgManagersService (Domain 2 — Section 7.4 & 8.3 Rules G1–G7)', ()
     mockValidationService = {
       validateAssignManager: jest
         .fn()
-        .mockResolvedValue({ unit: { orgUnitId: 'u-1' } }),
+        .mockResolvedValue({ unit: { orgUnitId: 1 } }),
     };
 
     mockChangeLogRepo = {
@@ -138,18 +137,18 @@ describe('OrgManagersService (Domain 2 — Section 7.4 & 8.3 Rules G1–G7)', ()
         assignmentReason: 'New HOD assignment',
       };
 
-      const res = await service.assignManager('u-1', dto, 'actor-admin');
+      const res = await service.assignManager(1, dto, 'actor-admin');
 
       // 1. Validation called with transaction runner
       expect(mockValidationService.validateAssignManager).toHaveBeenCalledWith(
-        'u-1',
+        1,
         dto,
         mockQueryRunner,
       );
 
       // 2. G2: Auto-end previous primary HEAD
       expect(mockManagersRepo.endPreviousPrimaryHead).toHaveBeenCalledWith(
-        'u-1',
+        1,
         '2026-09-01',
         'actor-admin',
         mockQueryRunner,
@@ -158,7 +157,7 @@ describe('OrgManagersService (Domain 2 — Section 7.4 & 8.3 Rules G1–G7)', ()
       // 3. Manager inserted
       expect(mockManagersRepo.create).toHaveBeenCalledWith(
         expect.objectContaining({
-          orgUnitId: 'u-1',
+          orgUnitId: 1,
           userId: dto.userId,
           managerRoleCode: ORG_MANAGER_ROLES.HEAD,
           isPrimary: true,
@@ -169,7 +168,7 @@ describe('OrgManagersService (Domain 2 — Section 7.4 & 8.3 Rules G1–G7)', ()
 
       // 4. G6: HeadUserId refreshed on OrgUnits
       expect(mockUnitsRepo.updateHeadUser).toHaveBeenCalledWith(
-        'u-1',
+        1,
         dto.userId,
         'actor-admin',
         mockQueryRunner,
@@ -194,7 +193,7 @@ describe('OrgManagersService (Domain 2 — Section 7.4 & 8.3 Rules G1–G7)', ()
         effectiveFrom: '2026-09-01',
       };
 
-      await service.assignManager('u-1', dto, 'actor-admin');
+      await service.assignManager(1, dto, 'actor-admin');
 
       expect(mockManagersRepo.endPreviousPrimaryHead).not.toHaveBeenCalled();
       expect(mockUnitsRepo.updateHeadUser).not.toHaveBeenCalled();
@@ -255,7 +254,7 @@ describe('OrgManagersService (Domain 2 — Section 7.4 & 8.3 Rules G1–G7)', ()
 
   describe('getApprovalChain (§8.4 / Rule G7)', () => {
     it('returns hierarchical approval chain resolved through OrgUnitManagers with effective dates', async () => {
-      const chain = await service.getApprovalChain('u-1');
+      const chain = await service.getApprovalChain(1);
       expect(chain).toHaveLength(2);
       expect(chain[0].step).toBe(1);
       expect(chain[0].head.userId).toBe('user-ops');

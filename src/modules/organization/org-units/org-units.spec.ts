@@ -1,4 +1,6 @@
 import { HttpStatus } from '@nestjs/common';
+import { OrgManagersRepository } from '../org-managers/repositories/org-managers.repository';
+import { ORG_UNIT_REFERENCE_CHECKS } from './interfaces/org-unit-reference-check.interface';
 import { Test, TestingModule } from '@nestjs/testing';
 import { AuditService } from '../../audit/service/audit.services';
 import { ORG_ERROR_CODES } from './org-units.constants';
@@ -24,8 +26,8 @@ describe('OrgUnitsService & OrgUnitTypesService', () => {
   let mockScopeResolver: any;
 
   const sampleUnitType = {
-    orgUnitTypeId: 3,
-    code: 'DEPARTMENT',
+    unitTypeId: 3,
+    orgUnitCode: 'DEPARTMENT',
     name: 'Department',
     canonicalLevel: 3,
     scopeLevelCode: 'DEPARTMENT',
@@ -38,10 +40,10 @@ describe('OrgUnitsService & OrgUnitTypesService', () => {
   };
 
   const sampleUnit = {
-    orgUnitId: '33333333-4444-5555-6666-777777777777',
-    orgUnitTypeId: 3,
+    orgUnitId: 33,
+    unitTypeId: 3,
     parentOrgUnitId: '22222222-3333-4444-5555-666666666666',
-    code: 'IT',
+    orgCode: 'IT',
     name: 'Information Technology',
     depth: 2,
     materializedPath:
@@ -61,6 +63,7 @@ describe('OrgUnitsService & OrgUnitTypesService', () => {
       findChildren: jest.fn().mockResolvedValue([]),
       findChildrenVisible: jest.fn().mockResolvedValue([]),
       findAncestors: jest.fn().mockResolvedValue([]),
+      countPeople: jest.fn().mockResolvedValue(0),
       findAncestorsVisible: jest.fn().mockResolvedValue([]),
       findDescendants: jest.fn().mockResolvedValue([]),
       findDescendantsVisible: jest.fn().mockResolvedValue([]),
@@ -69,8 +72,8 @@ describe('OrgUnitsService & OrgUnitTypesService', () => {
       countForExport: jest.fn().mockResolvedValue(1),
       findForExport: jest.fn().mockResolvedValue([
         {
-          orgUnitId: sampleUnit.orgUnitId,
-          code: sampleUnit.code,
+          orgUnitId: 33,
+          orgCode: sampleUnit.orgCode,
           name: sampleUnit.name,
           nameAr: null,
           typeName: 'Department',
@@ -102,7 +105,7 @@ describe('OrgUnitsService & OrgUnitTypesService', () => {
       findAllowedParentTypes: jest
         .fn()
         .mockResolvedValue([
-          { orgUnitTypeId: 2, code: 'BUSINESS_UNIT', name: 'Business Unit' },
+          { orgUnitTypeId: 2, orgUnitCode: 'BUSINESS_UNIT', name: 'Business Unit' },
         ]),
     };
 
@@ -145,8 +148,10 @@ describe('OrgUnitsService & OrgUnitTypesService', () => {
         { provide: OrgUnitTreeService, useValue: mockTreeService },
         { provide: OrgUnitValidationService, useValue: mockValidationService },
         { provide: OrgUnitChangeLogRepository, useValue: mockChangeLogRepo },
+        { provide: OrgManagersRepository, useValue: { findCurrentHead: jest.fn().mockResolvedValue(null) } },
         { provide: AuditService, useValue: mockAuditService },
         { provide: OrgScopeResolverService, useValue: mockScopeResolver },
+        { provide: ORG_UNIT_REFERENCE_CHECKS, useValue: [] },
       ],
     }).compile();
 
@@ -162,16 +167,16 @@ describe('OrgUnitsService & OrgUnitTypesService', () => {
       );
       expect(res.data).toHaveLength(1);
       expect(res.total).toBe(1);
-      expect(res.data[0].code).toBe('IT');
+      expect(res.data[0].orgCode).toBe('IT');
     });
 
     it('findById returns detail entity with child count and descendant count', async () => {
-      const res = await unitsService.findById(sampleUnit.orgUnitId, 'user-1');
-      expect(res.orgUnitId).toBe(sampleUnit.orgUnitId);
+      const res = await unitsService.findById(33, 'user-1');
+      expect(res.orgUnitId).toBe(33);
       expect(res.childCount).toBe(2);
       expect(res.descendantCount).toBe(5);
       expect(mockUnitsRepo.findByIdVisible).toHaveBeenCalledWith(
-        sampleUnit.orgUnitId,
+        33,
         'user-1',
       );
     });
@@ -180,7 +185,7 @@ describe('OrgUnitsService & OrgUnitTypesService', () => {
       mockUnitsRepo.findByIdVisible.mockResolvedValue(null);
 
       await expect(
-        unitsService.findById('out-of-scope-unit', 'user-restricted'),
+        unitsService.findById(999, 'user-restricted'),
       ).rejects.toMatchObject({
         status: HttpStatus.NOT_FOUND,
         response: { code: ORG_ERROR_CODES.ORG_NOT_FOUND },
@@ -191,7 +196,7 @@ describe('OrgUnitsService & OrgUnitTypesService', () => {
       mockUnitsRepo.findByIdVisible.mockResolvedValue(null);
 
       await expect(
-        unitsService.findChildren('out-of-scope-unit', 'user-restricted'),
+        unitsService.findChildren(999, 'user-restricted'),
       ).rejects.toMatchObject({
         status: HttpStatus.NOT_FOUND,
         response: { code: ORG_ERROR_CODES.ORG_NOT_FOUND },
@@ -208,9 +213,9 @@ describe('OrgUnitsService & OrgUnitTypesService', () => {
 
     it('create delegates to treeService.createNode and emits audit log', async () => {
       const dto = {
-        orgUnitTypeId: 3,
-        code: 'IT',
-        name: 'Information Technology',
+        unitTypeId: 3,
+        orgCode: 'IT',
+        orgName: 'Information Technology',
       };
 
       const res = await unitsService.create(dto, 'user-admin');
@@ -223,14 +228,14 @@ describe('OrgUnitsService & OrgUnitTypesService', () => {
       expect(mockAuditService.logOrgUnitChange).toHaveBeenCalledWith(
         expect.objectContaining({ operationType: 'INSERT' }),
       );
-      expect(res.orgUnitId).toBe(sampleUnit.orgUnitId);
+      expect(res.orgUnitId).toBe(33);
     });
 
     it('update REJECTS parentOrgUnitId modification with 400', async () => {
       await expect(
         unitsService.update(
-          sampleUnit.orgUnitId,
-          { parentOrgUnitId: 'new-parent' } as any,
+          33,
+          { parentId: 99 } as any,
           'user-admin',
         ),
       ).rejects.toMatchObject({
@@ -240,14 +245,13 @@ describe('OrgUnitsService & OrgUnitTypesService', () => {
     });
 
     it('update modifies attributes and emits change log + audit event', async () => {
-      const dto = { name: 'Updated IT Dept' };
-      await unitsService.update(sampleUnit.orgUnitId, dto, 'user-admin');
+      const dto = { orgName: 'Updated IT Dept' };
+      await unitsService.update(33, dto, 'user-admin');
 
       expect(mockUnitsRepo.update).toHaveBeenCalledWith(
-        sampleUnit.orgUnitId,
+        33,
         expect.objectContaining({
-          name: 'Updated IT Dept',
-          updatedBy: 'user-admin',
+          orgName: 'Updated IT Dept',
         }),
       );
       expect(mockChangeLogRepo.create).toHaveBeenCalledWith(
@@ -260,20 +264,19 @@ describe('OrgUnitsService & OrgUnitTypesService', () => {
 
     it('move delegates to treeService.moveSubtree and emits audit event', async () => {
       const dto = {
-        newParentOrgUnitId: '22222222-3333-4444-5555-666666666666',
+        newParentId: 99,
         reason: 'Restructuring',
-        rowVersion: '0x00000000000007D1',
       };
 
-      await unitsService.move(sampleUnit.orgUnitId, dto, 'user-admin');
+      await unitsService.move(33, dto, 'user-admin');
 
       expect(mockValidationService.validateMove).toHaveBeenCalledWith(
-        sampleUnit.orgUnitId,
+        33,
         dto,
         'user-admin',
       );
       expect(mockTreeService.moveSubtree).toHaveBeenCalledWith(
-        sampleUnit.orgUnitId,
+        33,
         dto,
         'user-admin',
       );
@@ -283,9 +286,9 @@ describe('OrgUnitsService & OrgUnitTypesService', () => {
     });
 
     it('activate sets isActive=true and emits audit event', async () => {
-      await unitsService.activate(sampleUnit.orgUnitId, 'user-admin');
+      await unitsService.activate(33, 'user-admin');
       expect(mockUnitsRepo.setActiveStatus).toHaveBeenCalledWith(
-        sampleUnit.orgUnitId,
+        33,
         true,
         null,
         'user-admin',
@@ -294,21 +297,21 @@ describe('OrgUnitsService & OrgUnitTypesService', () => {
     });
 
     it('deactivate validates and sets isActive=false with effectiveTo', async () => {
-      await unitsService.deactivate(sampleUnit.orgUnitId, 'user-admin');
+      await unitsService.deactivate(33, 'user-admin');
       expect(mockValidationService.validateDeactivate).toHaveBeenCalledWith(
-        sampleUnit.orgUnitId,
+        33,
       );
       expect(mockUnitsRepo.setActiveStatus).toHaveBeenCalled();
       expect(mockAuditService.logOrgUnitChange).toHaveBeenCalled();
     });
 
     it('softDelete validates and performs soft delete', async () => {
-      await unitsService.softDelete(sampleUnit.orgUnitId, 'user-admin');
+      await unitsService.softDelete(33, 'user-admin');
       expect(mockValidationService.validateDelete).toHaveBeenCalledWith(
-        sampleUnit.orgUnitId,
+        33,
       );
       expect(mockUnitsRepo.softDelete).toHaveBeenCalledWith(
-        sampleUnit.orgUnitId,
+        33,
         'user-admin',
       );
       expect(mockAuditService.logOrgUnitChange).toHaveBeenCalledWith(
@@ -321,7 +324,7 @@ describe('OrgUnitsService & OrgUnitTypesService', () => {
 
       expect(res.queued).toBe(false);
       expect(res.buffer).toBeInstanceOf(Buffer);
-      expect(res.filename).toMatch(/organization_units_export_.*\.xlsx/);
+      expect(res.filename).toMatch(/OrganizationUnits_Export_.*\.xlsx/);
       expect(res.totalRows).toBe(1);
       expect(mockUnitsRepo.findForExport).toHaveBeenCalledWith(
         'user-admin',
@@ -358,13 +361,13 @@ describe('OrgUnitsService & OrgUnitTypesService', () => {
     it('findAllTypes returns types with allowed child type IDs', async () => {
       const types = await typesService.findAllTypes();
       expect(types).toHaveLength(1);
-      expect(types[0].code).toBe('DEPARTMENT');
+      expect(types[0].orgUnitCode).toBe('DEPARTMENT');
     });
 
     it('findAllowedParents returns permitted parent types', async () => {
       const parents = await typesService.findAllowedParents(3);
       expect(parents).toHaveLength(1);
-      expect(parents[0].code).toBe('BUSINESS_UNIT');
+      expect(parents[0].orgUnitCode).toBe('BUSINESS_UNIT');
     });
   });
 });

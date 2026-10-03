@@ -126,7 +126,7 @@ export class UserLifecycleService {
    * - Validates U15 (cannot delete the last active SYSTEM_ADMIN)
    * - Validates U16 (cannot delete a user who is current primary head of an active org unit)
    * - Transactional:
-   *   1. Soft delete auth.tbl_Users (IsDeleted = 1, DeletedAt = now, DeletedBy = operator, IsActive = 0)
+   *   1. Soft delete auth.tbl_Users (IsActive = 0)
    *   2. Revoke active sessions
    *   3. End active roles (EffectiveTo = now, IsActive = 0)
    *   4. End active delegations (EndDate = now, IsActive = 0)

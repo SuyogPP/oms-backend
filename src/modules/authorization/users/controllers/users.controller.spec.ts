@@ -105,7 +105,8 @@ describe('UsersController (Domain 3, Section 8)', () => {
       username: 'new.user',
       email: 'new@diez.ae',
       userType: USER_TYPES.INTERNAL,
-      profile: { firstName: 'New', lastName: 'User' },
+      firstName: 'New',
+      lastName: 'User',
     };
     mockUsersService.create.mockResolvedValueOnce({
       user: { userId: sampleUserId },

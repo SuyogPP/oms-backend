@@ -1,3 +1,5 @@
+import { OrgScopeRepository } from '../../../organization/org-scope/repositories/org-scope.repository';
+import { AuditLogRepository } from '../../../audit/repositories/audit-log.repository';
 import { Test, TestingModule } from '@nestjs/testing';
 import {
   ConflictException,
@@ -38,6 +40,13 @@ describe('DelegationsService (Domain 3, Section 9.3 Rules D1-D7 & Section 8)', (
     findById: jest.fn(),
   };
 
+
+  const mockOrgScopeRepository = {
+    getVisibleOrgUnitIds: jest.fn().mockResolvedValue([100, 200, 300]),
+  };
+  const mockAuditLogRepository = {
+    insert: jest.fn().mockResolvedValue(null),
+  };
   const mockSecurityEventsService = {
     log: jest.fn().mockResolvedValue(undefined),
   };
@@ -59,6 +68,8 @@ describe('DelegationsService (Domain 3, Section 9.3 Rules D1-D7 & Section 8)', (
         { provide: UsersRepository, useValue: mockUsersRepository },
         { provide: SecurityEventsService, useValue: mockSecurityEventsService },
         { provide: AuditService, useValue: mockAuditService },
+        { provide: OrgScopeRepository, useValue: mockOrgScopeRepository },
+        { provide: AuditLogRepository, useValue: mockAuditLogRepository },
         { provide: DataSource, useValue: mockDataSource },
       ],
     }).compile();

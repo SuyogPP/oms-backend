@@ -388,12 +388,12 @@ export class DelegationsService {
   ): Promise<boolean> {
     const rows = await this.dataSource.query(
       `
-      SELECT 1 FROM [auth].tbl_User_Roles] ur
-      INNER JOIN [auth].tbl_Role_Permissions] rp ON rp.role_id = ur.role_id
-      INNER JOIN [auth].tbl_Permissions] p ON p.permission_id = rp.permission_id
-      INNER JOIN [auth].tbl_Roles] r ON r.role_id = ur.role_id
+      SELECT 1 FROM [auth].[tbl_User_Roles] ur
+      INNER JOIN [auth].[tbl_Role_Permissions] rp ON rp.role_id = ur.role_id
+      INNER JOIN [auth].[tbl_Permissions] p ON p.permission_id = rp.permission_id
+      INNER JOIN [auth].[tbl_Roles] r ON r.role_id = ur.role_id
       WHERE ur.user_id = @0
-        AND ur.is_active = 1
+        AND ur.IsActive = 1
         AND r.is_active = 1
         AND (r.role_code = 'SYSTEM_ADMIN' OR p.permission_code = @1)
         AND ur.effective_from <= SYSUTCDATETIME()

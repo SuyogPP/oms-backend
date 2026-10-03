@@ -3,13 +3,13 @@ import { DataSource } from 'typeorm';
 import { UserSessionDto } from '../dto/security-settings.dto';
 
 export interface RawSecuritySettingRow {
-  SettingCode: string;
-  SettingValue: string;
-  SettingType: string;
-  Description?: string;
-  IsEditable: boolean;
-  UpdatedAt?: Date;
-  UpdatedBy?: string;
+  setting_code: string;
+  setting_value: string;
+  setting_type: string;
+  description?: string;
+  is_editable: boolean;
+  updated_at?: Date;
+  updated_by?: string;
 }
 
 @Injectable()
@@ -19,14 +19,14 @@ export class SecuritySettingsRepository {
   async getAllSettings(): Promise<RawSecuritySettingRow[]> {
     const query = `
             SELECT
-                SettingCode,
-                SettingValue,
-                SettingType,
-                Description,
-                IsEditable,
-                UpdatedAt,
-                UpdatedBy
-            FROM [auth].tbl_Security_Settings]
+                setting_code,
+                setting_value,
+                setting_type,
+                description,
+                is_editable,
+                updated_at,
+                updated_by
+            FROM [auth].[tbl_Security_Settings]
         `;
     return this.dataSource.query(query);
   }
@@ -42,11 +42,11 @@ export class SecuritySettingsRepository {
       updatedBy && UUID_REGEX.test(updatedBy) ? updatedBy : null;
 
     const query = `
-            UPDATE [auth].tbl_Security_Settings]
+            UPDATE [auth].[tbl_Security_Settings]
             SET
-                SettingValue = @1,
-                UpdatedAt = SYSUTCDATETIME(),
-                UpdatedBy = @2
+                setting_value = @1,
+                updated_at = SYSUTCDATETIME(),
+                updated_by = @2
             WHERE setting_code = @0
         `;
     await this.dataSource.query(query, [
@@ -71,7 +71,7 @@ export class SecuritySettingsRepository {
                 LastActivityAt,
                 IsActive,
                 RevokedAt
-            FROM [auth].tbl_Login_Sessions]
+            FROM [auth].[tbl_Login_Sessions]
             WHERE user_id = @0
             ORDER BY login_at DESC
         `;
@@ -111,7 +111,7 @@ export class SecuritySettingsRepository {
 
   async revokeSession(sessionId: string): Promise<number> {
     const query = `
-            UPDATE [auth].tbl_Login_Sessions]
+            UPDATE [auth].[tbl_Login_Sessions]
             SET
                 IsActive = 0,
                 RevokedAt = SYSUTCDATETIME(),
@@ -125,7 +125,7 @@ export class SecuritySettingsRepository {
 
   async revokeAllSessionsForUser(userId: string): Promise<number> {
     const query = `
-            UPDATE [auth].tbl_Login_Sessions]
+            UPDATE [auth].[tbl_Login_Sessions]
             SET
                 IsActive = 0,
                 RevokedAt = SYSUTCDATETIME(),
@@ -139,7 +139,7 @@ export class SecuritySettingsRepository {
 
   async revokeAllSessionsSystemWide(): Promise<number> {
     const query = `
-            UPDATE [auth].tbl_Login_Sessions]
+            UPDATE [auth].[tbl_Login_Sessions]
             SET
                 IsActive = 0,
                 RevokedAt = SYSUTCDATETIME(),

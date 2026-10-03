@@ -10,25 +10,10 @@ export interface IUserRoleAssignment {
   isActive: boolean;
   assignedBy?: string | null;
   assignedAt: Date;
+  orgUnitId?: string | null;
 }
 
-export interface IUserScopeAssignment {
-  userOrganizationScopeId: string;
-  userId: string;
-  scopeDefinitionId: string;
-  scopeCode: string;
-  scopeName: string;
-  orgUnitId?: string | null;
-  organizationId?: string | null;
-  businessUnitId?: string | null;
-  departmentId?: string | null;
-  sectionId?: string | null;
-  orgUnitName?: string | null;
-  orgUnitCode?: string | null;
-  effectiveFrom?: Date | null;
-  effectiveTo?: Date | null;
-  isActive?: boolean;
-}
+
 
 export interface IUserOverrideAssignment {
   userPermissionOverrideId: string;
@@ -50,20 +35,10 @@ export interface IAssignRoleData {
   effectiveFrom?: Date;
   effectiveTo?: Date | null;
   assignedBy?: string;
+  orgUnitId?: string | null;
 }
 
-export interface IAssignScopeData {
-  userId: string;
-  scopeDefinitionId: string;
-  orgUnitId?: string | null;
-  organizationId?: string | null;
-  businessUnitId?: string | null;
-  departmentId?: string | null;
-  sectionId?: string | null;
-  effectiveFrom?: Date;
-  effectiveTo?: Date | null;
-  isActive?: boolean;
-}
+
 
 export interface IManageOverrideData {
   userId: string;

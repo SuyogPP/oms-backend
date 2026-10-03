@@ -1,47 +1,48 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
+import { Transform } from 'class-transformer';
 import {
-  IsBoolean,
-  IsInt,
+  IsNumber,
   IsOptional,
   IsString,
-  IsUUID,
+  Min,
+  IsBoolean,
 } from 'class-validator';
-import { Transform, Type } from 'class-transformer';
-import { PaginationQueryDto } from '../../../../common/dto/pagination.dto';
 
-export class ListOrgUnitsDto extends PaginationQueryDto {
-  @ApiPropertyOptional({
-    description: 'Filter by OrgUnitTypeId (1=ORG, 2=BU, 3=DEPT, 4=SECTION)',
-  })
+export class ListOrgUnitsDto {
+  @ApiPropertyOptional({ description: 'Filter by org unit type ID' })
   @IsOptional()
-  @Type(() => Number)
-  @IsInt()
-  orgUnitTypeId?: number;
+  @IsNumber()
+  @Transform(({ value }) => parseInt(value, 10))
+  unitTypeId?: number;
 
-  @ApiPropertyOptional({
-    description:
-      'Filter by hierarchy depth level (0=root, 1=BU, 2=DEPT, 3=SECTION)',
-  })
+  @ApiPropertyOptional({ description: 'Filter by parent unit ID' })
   @IsOptional()
-  @Type(() => Number)
-  @IsInt()
-  depth?: number;
-
-  @ApiPropertyOptional({
-    description: 'Filter direct children of specified parent',
-  })
-  @IsOptional()
-  @IsUUID()
-  parentOrgUnitId?: string;
-
-  @ApiPropertyOptional({ description: 'Search term for name or code' })
-  @IsOptional()
-  @IsString()
-  search?: string;
+  @IsNumber()
+  @Transform(({ value }) => parseInt(value, 10))
+  parentId?: number;
 
   @ApiPropertyOptional({ description: 'Filter by active status' })
   @IsOptional()
   @IsBoolean()
-  @Transform(({ value }) => value === 'true' || value === true)
+  @Transform(({ value }) => value === 'true')
   isActive?: boolean;
+
+  @ApiPropertyOptional({ description: 'Search term for Code or Name' })
+  @IsOptional()
+  @IsString()
+  search?: string;
+
+  @ApiPropertyOptional({ description: 'Page number', default: 1 })
+  @IsOptional()
+  @IsNumber()
+  @Min(1)
+  @Transform(({ value }) => parseInt(value, 10))
+  page?: number = 1;
+
+  @ApiPropertyOptional({ description: 'Page size', default: 20 })
+  @IsOptional()
+  @IsNumber()
+  @Min(1)
+  @Transform(({ value }) => parseInt(value, 10))
+  pageSize?: number = 20;
 }

@@ -1,14 +1,13 @@
 import { OrgManagerRole } from '../org-managers.constants';
 
 export interface IOrgUnitManager {
-  orgUnitManagerId: string;
-  orgUnitId: string;
+  orgUnitManagerId: number;
+  orgUnitId: number;
   userId: string;
   managerRoleCode: OrgManagerRole;
   isPrimary: boolean;
   effectiveFrom: string | Date;
   effectiveTo: string | Date | null;
-  assignmentReason: string | null;
   isActive: boolean;
   isDeleted: boolean;
   createdBy?: string | null;
@@ -26,7 +25,7 @@ export interface IOrgUnitManager {
 }
 
 export interface IManagerAssignmentInput {
-  orgUnitId: string;
+  orgUnitId: number;
   userId: string;
   managerRoleCode: OrgManagerRole;
   isPrimary?: boolean;

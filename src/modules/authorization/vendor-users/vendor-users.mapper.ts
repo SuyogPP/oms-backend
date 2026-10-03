@@ -10,14 +10,12 @@ export class VendorUsersMapper {
       email: model.email,
       userType: model.userType,
       isActive: model.isActive,
-      isDeleted: model.isDeleted,
-      failedLoginCount: model.failedLoginCount,
+            failedLoginCount: model.failedLoginCount,
       lockedUntil: model.lockedUntil,
       status: model.status,
       vendorId: model.vendorId,
       vendorName: model.vendorName,
-      profile: model.profile ? { ...model.profile } : null,
-      createdAt: model.createdAt,
+            createdAt: model.createdAt,
       updatedAt: model.updatedAt,
     };
   }

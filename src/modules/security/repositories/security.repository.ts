@@ -32,60 +32,60 @@ export class SecurityRepository {
             SELECT
                 (
                     SELECT COUNT(*)
-                    FROM [auth].tbl_Login_Sessions]
+                    FROM [auth].[tbl_Login_Sessions]
                     WHERE is_active = 1
                     AND revoked_at IS NULL
                 ) AS ActiveSessions,
 
                 (
                     SELECT COUNT(*)
-                    FROM [auth].tbl_Users]
+                    FROM [auth].[tbl_Users]
                     WHERE locked_until IS NOT NULL
                     AND locked_until > SYSUTCDATETIME()
                 ) AS LockedUsers,
 
                 (
                     SELECT COUNT(*)
-                    FROM [auth].tbl_Failed_Login_Attempts]
+                    FROM [auth].[tbl_Failed_Login_Attempts]
                     WHERE attempted_at >= DATEADD(HOUR, -24, SYSUTCDATETIME())
                 ) AS FailedLogins24Hours,
 
                 (
                     SELECT COUNT(*)
-                    FROM [auth].tbl_Login_History]
+                    FROM [auth].[tbl_Login_History]
                     WHERE login_result = 'SUCCESS'
                     AND login_at >= DATEADD(HOUR, -24, SYSUTCDATETIME())
                 ) AS SuccessfulLogins24Hours,
 
                 (
                     SELECT COUNT(*)
-                    FROM [auth].tbl_Security_Events]
+                    FROM [auth].[tbl_Security_Events]
                     WHERE created_at >= DATEADD(HOUR, -24, SYSUTCDATETIME())
                 ) AS SecurityEvents24Hours,
 
                 (
                     SELECT COUNT(*)
-                    FROM [auth].tbl_Rate_Limit_Events]
+                    FROM [auth].[tbl_Rate_Limit_Events]
                     WHERE created_at >= DATEADD(HOUR, -24, SYSUTCDATETIME())
                 ) AS RateLimitEvents24Hours,
 
                 (
                     SELECT COUNT(DISTINCT UserID)
-                    FROM [auth].tbl_Login_History]
+                    FROM [auth].[tbl_Login_History]
                     WHERE login_result = 'SUCCESS'
                     AND login_at >= DATEADD(DAY, -1, SYSUTCDATETIME())
                 ) AS ActiveUsersToday,
 
                 (
                     SELECT COUNT(*)
-                    FROM [auth].tbl_Login_Sessions]
+                    FROM [auth].[tbl_Login_Sessions]
                     WHERE revoked_at IS NOT NULL
                     AND revoked_at >= DATEADD(HOUR, -24, SYSUTCDATETIME())
                 ) AS RevokedSessions24Hours,
 
                 (
                     SELECT COUNT(*)
-                    FROM [auth].tbl_Security_Events]
+                    FROM [auth].[tbl_Security_Events]
                     WHERE event_type = 'REFRESH_TOKEN_REPLAY'
                     AND created_at >= DATEADD(HOUR, -24, SYSUTCDATETIME())
                 ) AS RefreshTokenReplayEvents24Hours
@@ -114,7 +114,7 @@ export class SecurityRepository {
             SELECT
                 (
                     SELECT COUNT(*)
-                    FROM [auth].tbl_Login_Sessions]
+                    FROM [auth].[tbl_Login_Sessions]
                     WHERE user_id = @0
                     AND is_active = 1
                     AND revoked_at IS NULL
@@ -122,14 +122,14 @@ export class SecurityRepository {
 
                 (
                     SELECT COUNT(*)
-                    FROM [auth].tbl_Failed_Login_Attempts]
+                    FROM [auth].[tbl_Failed_Login_Attempts]
                     WHERE user_id = @0
                     AND attempted_at >= DATEADD(DAY, -30, SYSUTCDATETIME())
                 ) AS FailedLoginsLast30Days,
 
                 (
                     SELECT COUNT(*)
-                    FROM [auth].tbl_Login_History]
+                    FROM [auth].[tbl_Login_History]
                     WHERE user_id = @0
                     AND login_result = 'SUCCESS'
                     AND login_at >= DATEADD(DAY, -30, SYSUTCDATETIME())
@@ -137,14 +137,14 @@ export class SecurityRepository {
 
                 (
                     SELECT COUNT(*)
-                    FROM [auth].tbl_Security_Events]
+                    FROM [auth].[tbl_Security_Events]
                     WHERE user_id = @0
                     AND created_at >= DATEADD(DAY, -30, SYSUTCDATETIME())
                 ) AS SecurityEventsLast30Days,
 
                 (
                     SELECT TOP 1 LoginAt
-                    FROM [auth].tbl_Login_History]
+                    FROM [auth].[tbl_Login_History]
                     WHERE user_id = @0
                     AND login_result = 'SUCCESS'
                     ORDER BY login_at DESC
@@ -152,7 +152,7 @@ export class SecurityRepository {
 
                 (
                     SELECT TOP 1 LogoutAt
-                    FROM [auth].tbl_Logout_History]
+                    FROM [auth].[tbl_Logout_History]
                     WHERE user_id = @0
                     ORDER BY logout_at DESC
                 ) AS LastLogoutAt,
@@ -166,7 +166,7 @@ export class SecurityRepository {
                     ELSE CAST(0 AS BIT)
                 END AS AccountLocked
 
-            FROM [auth].tbl_Users] u
+            FROM [auth].[tbl_Users] u
             WHERE u.user_id = @0
         `;
 
@@ -205,8 +205,8 @@ export class SecurityRepository {
                 ls.login_at,
                 ls.expires_at,
                 ls.is_active
-            FROM [auth].tbl_Login_Sessions] ls
-            INNER JOIN [auth].tbl_Users] u
+            FROM [auth].[tbl_Login_Sessions] ls
+            INNER JOIN [auth].[tbl_Users] u
                 ON u.user_id = ls.user_id
             WHERE ls.is_active = 1
             AND ls.revoked_at IS NULL
@@ -286,7 +286,7 @@ export class SecurityRepository {
 
     const countQuery = `
             SELECT COUNT(*) AS Total
-            FROM [auth].tbl_Security_Events]
+            FROM [auth].[tbl_Security_Events]
             ${finalWhere}
         `;
 
@@ -309,7 +309,7 @@ export class SecurityRepository {
                     UserAgent,
                     CreatedAt,
                     ROW_NUMBER() OVER (ORDER BY ${sortColumn} ${sortOrder}) AS RowNum
-                FROM [auth].tbl_Security_Events]
+                FROM [auth].[tbl_Security_Events]
                 ${finalWhere}
             )
             SELECT
@@ -395,7 +395,7 @@ export class SecurityRepository {
 
     const countQuery = `
             SELECT COUNT(*) AS Total
-            FROM [auth].tbl_Failed_Login_Attempts]
+            FROM [auth].[tbl_Failed_Login_Attempts]
             ${finalWhere}
         `;
 
@@ -418,7 +418,7 @@ export class SecurityRepository {
                     BrowserName,
                     DeviceType,
                     ROW_NUMBER() OVER (ORDER BY ${sortColumn} ${sortOrder}) AS RowNum
-                FROM [auth].tbl_Failed_Login_Attempts]
+                FROM [auth].[tbl_Failed_Login_Attempts]
                 ${finalWhere}
             )
             SELECT
@@ -468,7 +468,7 @@ export class SecurityRepository {
             SELECT
                 CAST(AttemptedAt AS DATE) AS [Date],
                 COUNT(*) AS Total
-            FROM [auth].tbl_Failed_Login_Attempts]
+            FROM [auth].[tbl_Failed_Login_Attempts]
             WHERE attempted_at >= DATEADD(DAY, -30, SYSUTCDATETIME())
             GROUP BY CAST(AttemptedAt AS DATE)
             ORDER BY [Date]
@@ -489,7 +489,7 @@ export class SecurityRepository {
             SELECT
                 EventType,
                 COUNT(*) AS Total
-            FROM [auth].tbl_Security_Events]
+            FROM [auth].[tbl_Security_Events]
             GROUP BY event_type
             ORDER BY Total DESC
         `;
@@ -506,7 +506,7 @@ export class SecurityRepository {
             SELECT
                 DeviceInfo,
                 COUNT(*) AS Total
-            FROM [auth].tbl_Login_Sessions]
+            FROM [auth].[tbl_Login_Sessions]
             WHERE is_active = 1
             AND revoked_at IS NULL
             GROUP BY device_info
@@ -524,10 +524,10 @@ export class SecurityRepository {
             SELECT
                 r.role_code,
                 COUNT(DISTINCT ls.login_session_id) AS Total
-            FROM [auth].tbl_Login_Sessions] ls
-            INNER JOIN [auth].tbl_User_Roles] ur
+            FROM [auth].[tbl_Login_Sessions] ls
+            INNER JOIN [auth].[tbl_User_Roles] ur
                 ON ur.user_id = ls.user_id
-            INNER JOIN [auth].tbl_Roles] r
+            INNER JOIN [auth].[tbl_Roles] r
                 ON r.role_id = ur.role_id
             WHERE ls.is_active = 1
             AND ls.revoked_at IS NULL
@@ -560,7 +560,7 @@ export class SecurityRepository {
                         ELSE 0
                     END
                 ) AS Failures
-            FROM [auth].tbl_Login_History]
+            FROM [auth].[tbl_Login_History]
             GROUP BY CAST(LoginAt AS DATE)
             ORDER BY [Date]
         `;
@@ -581,7 +581,7 @@ export class SecurityRepository {
             SELECT
                 CAST(CreatedAt AS DATE) AS [Date],
                 COUNT(*) AS Total
-            FROM [auth].tbl_Security_Events]
+            FROM [auth].[tbl_Security_Events]
             WHERE event_type = 'REFRESH_TOKEN_REPLAY'
             GROUP BY CAST(CreatedAt AS DATE)
             ORDER BY [Date]
@@ -602,7 +602,7 @@ export class SecurityRepository {
             SELECT
                 Username,
                 FailedLoginCount
-            FROM [auth].tbl_Users]
+            FROM [auth].[tbl_Users]
             WHERE locked_until > SYSUTCDATETIME()
             ORDER BY failed_login_count DESC
         `;
@@ -619,7 +619,7 @@ export class SecurityRepository {
             SELECT
                 CAST(LoginAt AS DATE) AS [Date],
                 COUNT(*) AS Total
-            FROM [auth].tbl_Login_Sessions]
+            FROM [auth].[tbl_Login_Sessions]
             GROUP BY CAST(LoginAt AS DATE)
             ORDER BY [Date]
         `;

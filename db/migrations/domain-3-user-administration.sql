@@ -137,7 +137,7 @@ BEGIN
         [revoked_at]        DATETIME2(3)     NULL,
         [issued_by_user_id]   UNIQUEIDENTIFIER NULL,
         [issued_to_email]    NVARCHAR(255)    NOT NULL,
-        [IPAddress]        VARCHAR(45)      NULL,
+        [ip_address]        VARCHAR(45)      NULL,
         [created_at]        DATETIME2(3)     NOT NULL CONSTRAINT [DF_UserInv_CreatedAt] DEFAULT (SYSUTCDATETIME()),
 
         CONSTRAINT [PK_UserInvitations]      PRIMARY KEY CLUSTERED ([user_invitation_id]),
@@ -255,7 +255,7 @@ BEGIN
         [is_active]      BIT              NOT NULL CONSTRAINT [DF_UOS_IsActive] DEFAULT (1),
         [assigned_by]    UNIQUEIDENTIFIER NULL,
         [assigned_at]    DATETIME2(3)     NOT NULL CONSTRAINT [DF_UOS_AssignedAt] DEFAULT (SYSUTCDATETIME()),
-        [Reason]        NVARCHAR(500)    NULL;
+        [reason]        NVARCHAR(500)    NULL;
 
     PRINT '    [+] Added temporal and audit columns to [auth].[UserOrganizationScopes].';
 END
@@ -452,7 +452,7 @@ USING (VALUES
     ('USER.IMPORT',            'USER_ADMIN', 'IMPORT',            'Bulk import users'),
     ('USER.EXPORT',            'USER_ADMIN', 'EXPORT',            'Export the user list'),
     ('VENDORUSER.MANAGE',      'USER_ADMIN', 'VENDOR_MANAGE',     'Manage vendor portal users')
-) AS Source (PermissionCode, ModuleName, ActionName, Description)
+) AS Source (permission_code, module_name, ActionName, Description)
 ON Target.permission_code = Source.permission_code
 WHEN MATCHED THEN
     UPDATE SET 
@@ -460,7 +460,7 @@ WHEN MATCHED THEN
         Target.ActionName  = Source.ActionName,
         Target.Description = Source.Description
 WHEN NOT MATCHED THEN
-    INSERT (PermissionID, PermissionCode, ModuleName, ActionName, Description, CreatedAt)
+    INSERT (permission_id, permission_code, module_name, ActionName, Description, created_at)
     VALUES (NEWID(), Source.permission_code, Source.module_name, Source.ActionName, Source.Description, @Now);
 
 -- 2. Seed Role Permission Grants
@@ -470,12 +470,12 @@ DECLARE @ProcurementRoleId UNIQUEIDENTIFIER = '68AA9343-481C-4ACD-A153-C58056068
 DECLARE @HodRoleId         UNIQUEIDENTIFIER = 'D8C2BD36-6047-4E77-8290-055BE5D4C8FC';
 
 DECLARE @RoleGrants TABLE (
-    RoleID UNIQUEIDENTIFIER,
-    PermissionCode NVARCHAR(150)
+    role_id UNIQUEIDENTIFIER,
+    permission_code NVARCHAR(150)
 );
 
 -- SYSTEM_ADMIN gets all 15 Domain 3 permissions
-INSERT INTO @RoleGrants (RoleID, PermissionCode) VALUES
+INSERT INTO @RoleGrants (role_id, permission_code) VALUES
 (@SystemAdminRoleId, 'USER.VIEW'),
 (@SystemAdminRoleId, 'USER.CREATE'),
 (@SystemAdminRoleId, 'USER.UPDATE'),
@@ -493,7 +493,7 @@ INSERT INTO @RoleGrants (RoleID, PermissionCode) VALUES
 (@SystemAdminRoleId, 'VENDORUSER.MANAGE');
 
 -- HR gets User Lifecycle, Reset, Unlock, Delegation, and Import/Export
-INSERT INTO @RoleGrants (RoleID, PermissionCode) VALUES
+INSERT INTO @RoleGrants (role_id, permission_code) VALUES
 (@HrRoleId, 'USER.VIEW'),
 (@HrRoleId, 'USER.CREATE'),
 (@HrRoleId, 'USER.UPDATE'),
@@ -506,15 +506,15 @@ INSERT INTO @RoleGrants (RoleID, PermissionCode) VALUES
 (@HrRoleId, 'USER.EXPORT');
 
 -- PROCUREMENT gets Vendor User Management
-INSERT INTO @RoleGrants (RoleID, PermissionCode) VALUES
+INSERT INTO @RoleGrants (role_id, permission_code) VALUES
 (@ProcurementRoleId, 'VENDORUSER.MANAGE');
 
 -- HOD gets Scoped User Viewing
-INSERT INTO @RoleGrants (RoleID, PermissionCode) VALUES
+INSERT INTO @RoleGrants (role_id, permission_code) VALUES
 (@HodRoleId, 'USER.VIEW');
 
 -- Grant permissions idempotently
-INSERT INTO [auth].tbl_Role_Permissions] (RolePermissionID, RoleID, PermissionID, GrantedAt)
+INSERT INTO [auth].tbl_Role_Permissions] (role_permission_id, role_id, permission_id, GrantedAt)
 SELECT 
     NEWID(),
     rg.role_id,

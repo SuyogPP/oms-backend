@@ -46,7 +46,7 @@ export class UsersRepository {
       const existingUsers = await queryRunner.query(
         `
                 SELECT
-                    UserID,
+                    user_id,
                     Username,
                     Email
                 FROM auth.tbl_Users
@@ -69,15 +69,15 @@ export class UsersRepository {
         `
                 INSERT INTO auth.tbl_Users
                 (
-                    UserID,
-                    EmployeeID,
+                    user_id,
+                    employee_id,
                     Username,
                     Email,
                     UserType,
-                    IsActive,
-                    CreatedAt,
+                    is_active,
+                    created_at,
                     IsDeleted,
-                    FailedLoginCount
+                    failed_login_count
                 )
                 OUTPUT INSERTED.user_id AS userId
                 VALUES
@@ -103,11 +103,11 @@ export class UsersRepository {
                 INSERT INTO auth.UserProfiles
                 (
                     UserProfileID,
-                    UserID,
-                    FirstName,
-                    LastName,
-                    MobileNo,
-                    JobTitle,
+                    user_id,
+                    first_name,
+                    last_name,
+                    mobile_no,
+                    job_title,
                     DepartmentID,
                     BusinessUnitID,
                     SectionID
@@ -159,7 +159,7 @@ export class UsersRepository {
     const existingUser = await this.dataSource.query(
       `
             SELECT
-                UserID,
+                user_id,
                 IsDeleted
             FROM auth.tbl_Users
             WHERE user_id = @0
@@ -187,7 +187,7 @@ export class UsersRepository {
             SET
                 IsDeleted = 1,
                 DeletedAt = SYSUTCDATETIME(),
-                IsActive = 0
+                is_active = 0
             WHERE user_id = @0
             `,
       [id],

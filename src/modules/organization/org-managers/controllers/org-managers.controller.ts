@@ -1,4 +1,4 @@
-import {
+import { ParseIntPipe,
   Body,
   Controller,
   Delete,
@@ -47,7 +47,7 @@ export class OrgManagersController {
     type: [OrgManagerEntity],
   })
   async findByUnitId(@Param('id') unitId: string) {
-    return this.managersService.findByUnitId(unitId);
+    return this.managersService.findByUnitId(Number(unitId));
   }
 
   @Get('units/:id/managers/current')
@@ -64,7 +64,7 @@ export class OrgManagersController {
     @Param('id') unitId: string,
     @Query('asOfDate') asOfDate?: string,
   ) {
-    return this.managersService.findCurrentHead(unitId, asOfDate);
+    return this.managersService.findCurrentHead(Number(unitId), asOfDate);
   }
 
   @Get('users/:userId/managed-units')
@@ -97,7 +97,7 @@ export class OrgManagersController {
     @Body() dto: AssignManagerDto,
     @CurrentUser() user: ICurrentUser,
   ) {
-    return this.managersService.assignManager(unitId, dto, user.userId);
+    return this.managersService.assignManager(Number(unitId), dto, user.userId);
   }
 
   @Patch('managers/:managerId')
@@ -109,7 +109,7 @@ export class OrgManagersController {
     type: OrgManagerEntity,
   })
   async updateManager(
-    @Param('managerId') managerId: string,
+    @Param('managerId', ParseIntPipe) managerId: number,
     @Body() dto: UpdateManagerDto,
     @CurrentUser() user: ICurrentUser,
   ) {
@@ -124,7 +124,7 @@ export class OrgManagersController {
     description: 'Manager assignment removed successfully',
   })
   async removeManager(
-    @Param('managerId') managerId: string,
+    @Param('managerId', ParseIntPipe) managerId: number,
     @CurrentUser() user: ICurrentUser,
   ) {
     await this.managersService.removeManager(managerId, user.userId);

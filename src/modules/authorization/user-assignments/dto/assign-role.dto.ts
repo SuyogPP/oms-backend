@@ -16,4 +16,8 @@ export class AssignRoleDto {
   @IsDateString()
   @IsOptional()
   effectiveTo?: string;
+
+  @ApiProperty({ example: '100', required: false, description: 'Org unit ID for the scope of this role. If null, role is global.' })
+  @IsOptional()
+  orgUnitId?: string;
 }

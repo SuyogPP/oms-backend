@@ -2,8 +2,8 @@ import {
   IsString,
   IsEmail,
   IsNotEmpty,
-  IsUUID,
-  IsOptional,
+  IsInt,
+  IsNumber,  IsOptional,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
@@ -18,10 +18,10 @@ export class CreateVendorUserDto {
   @IsNotEmpty()
   email!: string;
 
-  @ApiProperty({ example: '1053433E-F36B-1410-85ED-009A959FB122' })
-  @IsUUID()
+  @ApiProperty({ example: 101 })
+  @IsInt()
   @IsNotEmpty()
-  vendorId!: string;
+  vendorId!: number;
 
   @ApiProperty({ example: 'Ahmed' })
   @IsString()

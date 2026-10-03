@@ -34,8 +34,8 @@ export class UserOverridesRepository {
           upo.approved_by AS approvedBy,
           upo.effective_from AS effectiveFrom,
           upo.effective_to AS effectiveTo
-      FROM [auth].tbl_User_Permission_Overrides] upo
-      INNER JOIN [auth].tbl_Permissions] p ON p.permission_id = upo.permission_id
+      FROM [auth].[tbl_User_Permission_Overrides] upo
+      INNER JOIN [auth].[tbl_Permissions] p ON p.permission_id = upo.permission_id
       WHERE upo.user_id = @0
       ORDER BY upo.effective_from DESC;
       `,
@@ -78,8 +78,8 @@ export class UserOverridesRepository {
           upo.approved_by AS approvedBy,
           upo.effective_from AS effectiveFrom,
           upo.effective_to AS effectiveTo
-      FROM [auth].tbl_User_Permission_Overrides] upo
-      INNER JOIN [auth].tbl_Permissions] p ON p.permission_id = upo.permission_id
+      FROM [auth].[tbl_User_Permission_Overrides] upo
+      INNER JOIN [auth].[tbl_Permissions] p ON p.permission_id = upo.permission_id
       WHERE upo.user_id = @0
         AND upo.effective_from <= SYSUTCDATETIME()
         AND (upo.effective_to IS NULL OR upo.effective_to > SYSUTCDATETIME())
@@ -124,8 +124,8 @@ export class UserOverridesRepository {
           upo.approved_by AS approvedBy,
           upo.effective_from AS effectiveFrom,
           upo.effective_to AS effectiveTo
-      FROM [auth].tbl_User_Permission_Overrides] upo
-      INNER JOIN [auth].tbl_Permissions] p ON p.permission_id = upo.permission_id
+      FROM [auth].[tbl_User_Permission_Overrides] upo
+      INNER JOIN [auth].[tbl_Permissions] p ON p.permission_id = upo.permission_id
       WHERE upo.user_permission_override_id = @0;
       `,
       [userPermissionOverrideId],
@@ -160,7 +160,7 @@ export class UserOverridesRepository {
   ): Promise<string> {
     const rows = await this.getExecutor(qr).query(
       `
-      INSERT INTO [auth].tbl_User_Permission_Overrides] (
+      INSERT INTO [auth].[tbl_User_Permission_Overrides] (
           UserPermissionOverrideID,
           UserID,
           PermissionID,
@@ -205,7 +205,7 @@ export class UserOverridesRepository {
   ): Promise<void> {
     await this.getExecutor(qr).query(
       `
-      UPDATE [auth].tbl_User_Permission_Overrides]
+      UPDATE [auth].[tbl_User_Permission_Overrides]
       SET effective_to = SYSUTCDATETIME()
       WHERE user_permission_override_id = @0;
       `,
@@ -219,7 +219,7 @@ export class UserOverridesRepository {
   async revokeAllForUser(userId: string, qr?: QueryRunner): Promise<void> {
     await this.getExecutor(qr).query(
       `
-      UPDATE [auth].tbl_User_Permission_Overrides]
+      UPDATE [auth].[tbl_User_Permission_Overrides]
       SET effective_to = SYSUTCDATETIME()
       WHERE user_id = @0
         AND (EffectiveTo IS NULL OR effective_to > SYSUTCDATETIME());

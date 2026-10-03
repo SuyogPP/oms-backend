@@ -1,3 +1,4 @@
+import { AuditLogRepository } from '../../../audit/repositories/audit-log.repository';
 import { Test, TestingModule } from '@nestjs/testing';
 import { BadRequestException } from '@nestjs/common';
 import { DataSource } from 'typeorm';
@@ -35,6 +36,10 @@ describe('UserImportService (Domain 3, Section 5.1, 6.2, Two-Phase Import)', () 
     findScopeDefinitions: jest.fn().mockResolvedValue([]),
   };
 
+
+  const mockAuditLogRepository = {
+    insert: jest.fn().mockResolvedValue(null),
+  };
   const mockSecurityEventsService = {
     log: jest.fn().mockResolvedValue(undefined),
   };
@@ -52,11 +57,14 @@ describe('UserImportService (Domain 3, Section 5.1, 6.2, Two-Phase Import)', () 
         { provide: UserImportRepository, useValue: mockUserImportRepository },
         { provide: SecurityEventsService, useValue: mockSecurityEventsService },
         { provide: AuditService, useValue: mockAuditService },
+        { provide: AuditLogRepository, useValue: mockAuditLogRepository },
         { provide: DataSource, useValue: mockDataSource },
       ],
     }).compile();
 
     service = module.get<UserImportService>(UserImportService);
+    mockQueryRunner.query.mockReset();
+    mockQueryRunner.query.mockResolvedValue([]);
     userImportRepository =
       module.get<UserImportRepository>(UserImportRepository);
     securityEventsService = module.get<SecurityEventsService>(
@@ -207,7 +215,6 @@ describe('UserImportService (Domain 3, Section 5.1, 6.2, Two-Phase Import)', () 
 
       mockQueryRunner.query
         .mockResolvedValueOnce([{ userId: 'created-user-id-1' }]) // insert user
-        .mockResolvedValueOnce([]) // insert profile
         .mockResolvedValueOnce([]); // insert invitation
 
       const commitResult = await service.commitImport(

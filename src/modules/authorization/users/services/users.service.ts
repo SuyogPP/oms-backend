@@ -2,6 +2,7 @@ import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import * as crypto from 'crypto';
 import { DataSource } from 'typeorm';
 import { UsersRepository } from '../repositories/users.repository';
+import { UserOrgUnitAssignmentRepository } from '../../../organization/org-units/repositories/user-org-unit-assignment.repository';
 import { UserInvitationsRepository } from '../repositories/user-invitations.repository';
 import { UserValidationService } from './user-validation.service';
 import { SecurityEventsService } from '../../../security-events/services/security-events.service';
@@ -33,6 +34,7 @@ export class UsersService {
 
   constructor(
     private readonly usersRepository: UsersRepository,
+    private readonly userOrgUnitAssignmentRepository: UserOrgUnitAssignmentRepository,
     private readonly userInvitationsRepository: UserInvitationsRepository,
     private readonly userValidationService: UserValidationService,
     private readonly securityEventsService: SecurityEventsService,
@@ -138,7 +140,11 @@ export class UsersService {
 
 
 
-      // 4. Generate invitation token if not AD-linked
+      
+      if (dto.orgUnitId) {
+        await this.userOrgUnitAssignmentRepository.reassignUser(createdUserId, dto.orgUnitId, true, queryRunner);
+      }
+// 4. Generate invitation token if not AD-linked
       if (!dto.adObjectId) {
         rawToken = crypto.randomBytes(32).toString('hex');
         const tokenHash = crypto
@@ -235,7 +241,11 @@ export class UsersService {
     try {
       // 1. Update User core fields
       if (true) {
-        await this.usersRepository.update(
+        
+      if (dto.orgUnitId !== undefined && dto.orgUnitId !== existing.orgUnitId) {
+        await this.userOrgUnitAssignmentRepository.reassignUser(userId, dto.orgUnitId, true, queryRunner);
+      }
+      await this.usersRepository.update(
           userId,
                     {
             email: dto.email,

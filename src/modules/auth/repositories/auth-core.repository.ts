@@ -144,13 +144,12 @@ export class AuthCoreRepository {
                 u.UserType,
                 r.role_code,
                 p.permission_code,
-                uoa.org_unit_id AS scope_org_unit_id
+                u.org_unit_id AS scope_org_unit_id
             FROM [auth].[tbl_Users] u
             LEFT JOIN [auth].[tbl_User_Roles] ur ON ur.user_id = u.user_id AND ur.IsActive = 1
             LEFT JOIN [masters].[tbl_Roles] r ON r.role_id = ur.role_id AND r.is_active = 1
             LEFT JOIN [masters].[tbl_Role_Permissions] rp ON rp.role_id = r.role_id
             LEFT JOIN [masters].[tbl_Permissions] p ON p.permission_id = rp.permission_id
-            LEFT JOIN [auth].[tbl_User_Org_Unit_Assignment] uoa ON uoa.user_id = u.user_id AND uoa.is_active = 1
             WHERE u.user_id = @0
             AND u.is_active = 1
         `;
@@ -299,7 +298,7 @@ export class AuthCoreRepository {
                 browser_name,
                 device_type,
                 last_activity_at,
-                Fingerprint,
+                fingerprint,
                 device_fingerprint
             )
             VALUES

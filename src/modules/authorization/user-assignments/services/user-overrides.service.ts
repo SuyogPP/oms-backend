@@ -89,7 +89,7 @@ export class UserOverridesService {
     const permRows = await this.dataSource.query(
       `
       SELECT permission_id, PermissionCode, ModuleName, ActionName
-      FROM [auth].tbl_Permissions]
+      FROM [auth].[tbl_Permissions]
       WHERE permission_id = @0;
       `,
       [dto.permissionId],

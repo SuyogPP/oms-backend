@@ -14,32 +14,21 @@ export class OrgUnitTypesRepository {
   }
 
   /**
-   * Retrieves all non-deleted organization unit types ordered by sort order and ID.
+   * Retrieves all organization unit types.
    */
   async findAllTypes(qr?: QueryRunner): Promise<IOrgUnitType[]> {
     const sql = `
       SELECT
-        OrgUnitTypeId AS orgUnitTypeId,
-        Code AS code,
-        Name AS name,
-        NameAr AS nameAr,
-        Description AS description,
-        CanonicalLevel AS canonicalLevel,
-        ScopeLevelCode AS scopeLevelCode,
-        AllowsBudget AS allowsBudget,
-        AllowsRequisition AS allowsRequisition,
-        AllowsManager AS allowsManager,
-        IsRootType AS isRootType,
-        SortOrder AS sortOrder,
-        IsActive AS isActive,
-        IsDeleted AS isDeleted,
-        CreatedBy AS createdBy,
-        CreatedAt AS createdAt,
-        UpdatedBy AS updatedBy,
-        UpdatedAt AS updatedAt
-      FROM org.OrgUnitTypes
-      WHERE IsDeleted = 0
-      ORDER BY SortOrder ASC, OrgUnitTypeId ASC;
+        unit_type_id AS unitTypeId,
+        parent_unit_type_id AS parentUnitTypeId,
+        org_unit_code AS orgUnitCode,
+        org_unit_name AS orgUnitName,
+        level AS level,
+        allows_budget AS allowsBudget,
+        allows_requisition AS allowsRequisition,
+        is_active AS isActive
+      FROM [masters].[tbl_Org_Unit_Types]
+      ORDER BY level ASC, unit_type_id ASC;
     `;
     return this.getExecutor(qr).query(sql);
   }
@@ -48,33 +37,23 @@ export class OrgUnitTypesRepository {
    * Retrieves an organization unit type by its ID.
    */
   async findTypeById(
-    orgUnitTypeId: number,
+    unitTypeId: number,
     qr?: QueryRunner,
   ): Promise<IOrgUnitType | null> {
     const sql = `
       SELECT
-        OrgUnitTypeId AS orgUnitTypeId,
-        Code AS code,
-        Name AS name,
-        NameAr AS nameAr,
-        Description AS description,
-        CanonicalLevel AS canonicalLevel,
-        ScopeLevelCode AS scopeLevelCode,
-        AllowsBudget AS allowsBudget,
-        AllowsRequisition AS allowsRequisition,
-        AllowsManager AS allowsManager,
-        IsRootType AS isRootType,
-        SortOrder AS sortOrder,
-        IsActive AS isActive,
-        IsDeleted AS isDeleted,
-        CreatedBy AS createdBy,
-        CreatedAt AS createdAt,
-        UpdatedBy AS updatedBy,
-        UpdatedAt AS updatedAt
-      FROM org.OrgUnitTypes
-      WHERE OrgUnitTypeId = @0 AND IsDeleted = 0;
+        unit_type_id AS unitTypeId,
+        parent_unit_type_id AS parentUnitTypeId,
+        org_unit_code AS orgUnitCode,
+        org_unit_name AS orgUnitName,
+        level AS level,
+        allows_budget AS allowsBudget,
+        allows_requisition AS allowsRequisition,
+        is_active AS isActive
+      FROM [masters].[tbl_Org_Unit_Types]
+      WHERE unit_type_id = @0;
     `;
-    const rows = await this.getExecutor(qr).query(sql, [orgUnitTypeId]);
+    const rows = await this.getExecutor(qr).query(sql, [unitTypeId]);
     return rows.length > 0 ? rows[0] : null;
   }
 
@@ -87,47 +66,37 @@ export class OrgUnitTypesRepository {
   ): Promise<IOrgUnitType | null> {
     const sql = `
       SELECT
-        OrgUnitTypeId AS orgUnitTypeId,
-        Code AS code,
-        Name AS name,
-        NameAr AS nameAr,
-        Description AS description,
-        CanonicalLevel AS canonicalLevel,
-        ScopeLevelCode AS scopeLevelCode,
-        AllowsBudget AS allowsBudget,
-        AllowsRequisition AS allowsRequisition,
-        AllowsManager AS allowsManager,
-        IsRootType AS isRootType,
-        SortOrder AS sortOrder,
-        IsActive AS isActive,
-        IsDeleted AS isDeleted,
-        CreatedBy AS createdBy,
-        CreatedAt AS createdAt,
-        UpdatedBy AS updatedBy,
-        UpdatedAt AS updatedAt
-      FROM org.OrgUnitTypes
-      WHERE Code = @0 AND IsDeleted = 0;
+        unit_type_id AS unitTypeId,
+        parent_unit_type_id AS parentUnitTypeId,
+        org_unit_code AS orgUnitCode,
+        org_unit_name AS orgUnitName,
+        level AS level,
+        allows_budget AS allowsBudget,
+        allows_requisition AS allowsRequisition,
+        is_active AS isActive
+      FROM [masters].[tbl_Org_Unit_Types]
+      WHERE org_unit_code = @0;
     `;
     const rows = await this.getExecutor(qr).query(sql, [code]);
     return rows.length > 0 ? rows[0] : null;
   }
 
   /**
-   * Retrieves all active hierarchy rules specifying permitted (child, parent) type pairs.
+   * Retrieves all active hierarchy rules (synthesized from parent_unit_type_id).
    */
   async findAllHierarchyRules(
     qr?: QueryRunner,
   ): Promise<IOrgUnitHierarchyRule[]> {
     const sql = `
       SELECT
-        ChildOrgUnitTypeId AS childOrgUnitTypeId,
-        ParentOrgUnitTypeId AS parentOrgUnitTypeId,
-        IsActive AS isActive,
-        CreatedBy AS createdBy,
-        CreatedAt AS createdAt
-      FROM org.OrgUnitTypeHierarchyRules
-      WHERE is_active = 1
-      ORDER BY ChildOrgUnitTypeId ASC, ParentOrgUnitTypeId ASC;
+        unit_type_id AS childOrgUnitTypeId,
+        parent_unit_type_id AS parentOrgUnitTypeId,
+        is_active AS isActive,
+        NULL AS createdBy,
+        SYSUTCDATETIME() AS createdAt
+      FROM [masters].[tbl_Org_Unit_Types]
+      WHERE parent_unit_type_id IS NOT NULL AND is_active = 1
+      ORDER BY unit_type_id ASC, parent_unit_type_id ASC;
     `;
     return this.getExecutor(qr).query(sql);
   }
@@ -142,14 +111,14 @@ export class OrgUnitTypesRepository {
   ): Promise<IOrgUnitHierarchyRule | null> {
     const sql = `
       SELECT
-        ChildOrgUnitTypeId AS childOrgUnitTypeId,
-        ParentOrgUnitTypeId AS parentOrgUnitTypeId,
-        IsActive AS isActive,
-        CreatedBy AS createdBy,
-        CreatedAt AS createdAt
-      FROM org.OrgUnitTypeHierarchyRules
-      WHERE ChildOrgUnitTypeId = @0 
-        AND ParentOrgUnitTypeId = @1 
+        unit_type_id AS childOrgUnitTypeId,
+        parent_unit_type_id AS parentOrgUnitTypeId,
+        is_active AS isActive,
+        NULL AS createdBy,
+        SYSUTCDATETIME() AS createdAt
+      FROM [masters].[tbl_Org_Unit_Types]
+      WHERE unit_type_id = @0 
+        AND parent_unit_type_id = @1 
         AND is_active = 1;
     `;
     const rows = await this.getExecutor(qr).query(sql, [
@@ -168,32 +137,20 @@ export class OrgUnitTypesRepository {
   ): Promise<IOrgUnitType[]> {
     const sql = `
       SELECT
-        t.OrgUnitTypeId AS orgUnitTypeId,
-        t.Code AS code,
-        t.Name AS name,
-        t.NameAr AS nameAr,
-        t.Description AS description,
-        t.CanonicalLevel AS canonicalLevel,
-        t.ScopeLevelCode AS scopeLevelCode,
+        t.unit_type_id AS unitTypeId,
+        t.parent_unit_type_id AS parentUnitTypeId,
+        t.org_unit_code AS orgUnitCode,
+        t.org_unit_name AS orgUnitName,
+        t.level AS level,
         t.allows_budget AS allowsBudget,
         t.allows_requisition AS allowsRequisition,
-        t.AllowsManager AS allowsManager,
-        t.IsRootType AS isRootType,
-        t.SortOrder AS sortOrder,
-        t.is_active AS isActive,
-        t.IsDeleted AS isDeleted,
-        t.created_by AS createdBy,
-        t.created_at AS createdAt,
-        t.updated_by AS updatedBy,
-        t.updated_at AS updatedAt
-      FROM org.OrgUnitTypes t
-      INNER JOIN org.OrgUnitTypeHierarchyRules r 
-              ON r.ParentOrgUnitTypeId = t.OrgUnitTypeId
-      WHERE r.ChildOrgUnitTypeId = @0
-        AND r.is_active = 1
-        AND t.IsDeleted = 0
+        t.is_active AS isActive
+      FROM [masters].[tbl_Org_Unit_Types] t
+      INNER JOIN [masters].[tbl_Org_Unit_Types] c ON c.parent_unit_type_id = t.unit_type_id
+      WHERE c.unit_type_id = @0
+        AND c.is_active = 1
         AND t.is_active = 1
-      ORDER BY t.SortOrder ASC, t.OrgUnitTypeId ASC;
+      ORDER BY t.level ASC, t.unit_type_id ASC;
     `;
     return this.getExecutor(qr).query(sql, [childTypeId]);
   }

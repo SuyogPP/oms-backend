@@ -57,7 +57,7 @@ export class UserSessionsRepository {
                 LastActivityAt,
                 ExpiresAt,
                 IsActive
-            FROM [auth].tbl_Login_Sessions]
+            FROM [auth].[tbl_Login_Sessions]
             WHERE user_id = @0
             AND is_active = 1
             AND revoked_at IS NULL
@@ -82,8 +82,8 @@ export class UserSessionsRepository {
                 ls.is_active,
                 ls.revoked_at,
                 ls.expires_at
-            FROM [auth].tbl_Login_Sessions] ls
-            LEFT JOIN [auth].tbl_Users] u ON u.user_id = ls.user_id
+            FROM [auth].[tbl_Login_Sessions] ls
+            LEFT JOIN [auth].[tbl_Users] u ON u.user_id = ls.user_id
             WHERE ls.login_session_id = @0
         `;
 
@@ -96,7 +96,7 @@ export class UserSessionsRepository {
     if (!validSessionId) return 0;
 
     const query = `
-            UPDATE [auth].tbl_Login_Sessions]
+            UPDATE [auth].[tbl_Login_Sessions]
             SET
                 IsActive = 0,
                 RevokedAt = SYSUTCDATETIME(),
@@ -130,8 +130,8 @@ export class UserSessionsRepository {
                 ls.is_active,
                 ls.revoked_at,
                 ls.expires_at
-            FROM [auth].tbl_Login_Sessions] ls
-            LEFT JOIN [auth].tbl_Users] u ON u.user_id = ls.user_id
+            FROM [auth].[tbl_Login_Sessions] ls
+            LEFT JOIN [auth].[tbl_Users] u ON u.user_id = ls.user_id
             WHERE ls.user_id = @0
             AND (ls.login_session_id <> @1 OR @1 IS NULL)
             AND ls.is_active = 1
@@ -143,7 +143,7 @@ export class UserSessionsRepository {
     ]);
 
     const updateQuery = `
-            UPDATE [auth].tbl_Login_Sessions]
+            UPDATE [auth].[tbl_Login_Sessions]
             SET
                 IsActive = 0,
                 RevokedAt = SYSUTCDATETIME(),
@@ -168,7 +168,7 @@ export class UserSessionsRepository {
         : null;
 
       const query = `
-                INSERT INTO [auth].tbl_Logout_History]
+                INSERT INTO [auth].[tbl_Logout_History]
                 (
                     LoginSessionID,
                     UserID,

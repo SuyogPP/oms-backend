@@ -9,7 +9,7 @@ export class RetentionRepository {
 
   async purgeSecurityEvents(days: number): Promise<number> {
     const query = `
-            DELETE FROM [auth].tbl_Security_Events]
+            DELETE FROM [auth].[tbl_Security_Events]
             WHERE created_at < DATEADD(DAY, -@0, SYSUTCDATETIME())
         `;
     const result = await this.dataSource.query(query, [days]);
@@ -18,7 +18,7 @@ export class RetentionRepository {
 
   async purgeLoginHistory(days: number): Promise<number> {
     const query = `
-            DELETE FROM [auth].tbl_Login_History]
+            DELETE FROM [auth].[tbl_Login_History]
             WHERE login_at < DATEADD(DAY, -@0, SYSUTCDATETIME())
         `;
     const result = await this.dataSource.query(query, [days]);
@@ -27,7 +27,7 @@ export class RetentionRepository {
 
   async purgeLogoutHistory(days: number): Promise<number> {
     const query = `
-            DELETE FROM [auth].tbl_Logout_History]
+            DELETE FROM [auth].[tbl_Logout_History]
             WHERE logout_at < DATEADD(DAY, -@0, SYSUTCDATETIME())
         `;
     const result = await this.dataSource.query(query, [days]);
@@ -36,7 +36,7 @@ export class RetentionRepository {
 
   async purgeFailedLogins(days: number): Promise<number> {
     const query = `
-            DELETE FROM [auth].tbl_Failed_Login_Attempts]
+            DELETE FROM [auth].[tbl_Failed_Login_Attempts]
             WHERE attempted_at < DATEADD(DAY, -@0, SYSUTCDATETIME())
         `;
     const result = await this.dataSource.query(query, [days]);
@@ -45,7 +45,7 @@ export class RetentionRepository {
 
   async purgeInactiveSessions(days: number): Promise<number> {
     const query = `
-            DELETE FROM [auth].tbl_Login_Sessions]
+            DELETE FROM [auth].[tbl_Login_Sessions]
             WHERE (IsActive = 0 OR revoked_at IS NOT NULL OR expires_at < SYSUTCDATETIME())
             AND last_activity_at < DATEADD(DAY, -@0, SYSUTCDATETIME())
         `;

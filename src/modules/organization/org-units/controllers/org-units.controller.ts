@@ -1,4 +1,4 @@
-import {
+import { ParseIntPipe,
   Body,
   Controller,
   Delete,
@@ -33,7 +33,6 @@ import { UpdateOrgUnitDto } from '../dto/update-org-unit.dto';
 import {
   OrgUnitDetailEntity,
   OrgUnitEntity,
-  OrgUnitMemberEntity,
   OrgUnitTreeItemEntity,
 } from '../entities/org-unit.entity';
 import { ORG_PERMISSIONS } from '../org-units.constants';
@@ -143,7 +142,7 @@ export class OrgUnitsController {
     description: 'Organization unit detailed entity',
     type: OrgUnitDetailEntity,
   })
-  async findById(@Param('id') id: string, @CurrentUser() user: ICurrentUser) {
+  async findById(@Param('id', ParseIntPipe) id: number, @CurrentUser() user: ICurrentUser) {
     return this.orgUnitsService.findById(id, user.userId);
   }
 
@@ -155,10 +154,10 @@ export class OrgUnitsController {
   @ApiResponse({
     status: 200,
     description: 'List of members assigned or scoped to this organization unit',
-    type: [OrgUnitMemberEntity],
+    type: [Object],
   })
   async findMembers(
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe) id: number,
     @CurrentUser() user: ICurrentUser,
   ) {
     return this.orgUnitsService.findMembers(id, user.userId);
@@ -173,7 +172,7 @@ export class OrgUnitsController {
     type: [OrgUnitEntity],
   })
   async findChildren(
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe) id: number,
     @CurrentUser() user: ICurrentUser,
   ) {
     return this.orgUnitsService.findChildren(id, user.userId);
@@ -190,7 +189,7 @@ export class OrgUnitsController {
     type: [OrgUnitEntity],
   })
   async findAncestors(
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe) id: number,
     @CurrentUser() user: ICurrentUser,
   ) {
     return this.orgUnitsService.findAncestors(id, user.userId);
@@ -207,7 +206,7 @@ export class OrgUnitsController {
     type: [OrgUnitEntity],
   })
   async findDescendants(
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe) id: number,
     @CurrentUser() user: ICurrentUser,
   ) {
     return this.orgUnitsService.findDescendants(id, user.userId);
@@ -223,7 +222,7 @@ export class OrgUnitsController {
     description: 'Paginated change history log records',
   })
   async getChangeLog(
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe) id: number,
     @Query('page') page = 1,
     @Query('pageSize') pageSize = 20,
   ) {
@@ -243,7 +242,7 @@ export class OrgUnitsController {
     status: 200,
     description: 'List of hierarchical approval chain steps',
   })
-  async getApprovalChain(@Param('id') id: string) {
+  async getApprovalChain(@Param('id', ParseIntPipe) id: number) {
     return this.orgUnitsService.getApprovalChain(id);
   }
 
@@ -257,7 +256,7 @@ export class OrgUnitsController {
     description: 'Nearest ancestor unit with budget authority',
     type: OrgUnitEntity,
   })
-  async getBudgetOwner(@Param('id') id: string) {
+  async getBudgetOwner(@Param('id', ParseIntPipe) id: number) {
     return this.orgUnitsService.getBudgetOwner(id);
   }
 
@@ -287,7 +286,7 @@ export class OrgUnitsController {
     type: OrgUnitDetailEntity,
   })
   async update(
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateOrgUnitDto,
     @CurrentUser() user: ICurrentUser,
   ) {
@@ -305,7 +304,7 @@ export class OrgUnitsController {
     type: OrgUnitDetailEntity,
   })
   async move(
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe) id: number,
     @Body() dto: MoveOrgUnitDto,
     @CurrentUser() user: ICurrentUser,
   ) {
@@ -320,7 +319,7 @@ export class OrgUnitsController {
     description: 'Activated organization unit',
     type: OrgUnitDetailEntity,
   })
-  async activate(@Param('id') id: string, @CurrentUser() user: ICurrentUser) {
+  async activate(@Param('id', ParseIntPipe) id: number, @CurrentUser() user: ICurrentUser) {
     return this.orgUnitsService.activate(id, user.userId);
   }
 
@@ -332,7 +331,7 @@ export class OrgUnitsController {
     description: 'Deactivated organization unit',
     type: OrgUnitDetailEntity,
   })
-  async deactivate(@Param('id') id: string, @CurrentUser() user: ICurrentUser) {
+  async deactivate(@Param('id', ParseIntPipe) id: number, @CurrentUser() user: ICurrentUser) {
     return this.orgUnitsService.deactivate(id, user.userId);
   }
 
@@ -343,7 +342,7 @@ export class OrgUnitsController {
     status: 200,
     description: 'Unit deleted successfully',
   })
-  async remove(@Param('id') id: string, @CurrentUser() user: ICurrentUser) {
+  async remove(@Param('id', ParseIntPipe) id: number, @CurrentUser() user: ICurrentUser) {
     await this.orgUnitsService.softDelete(id, user.userId);
     return {
       success: true,

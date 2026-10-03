@@ -24,7 +24,7 @@ export class UserInvitationsRepository {
   ): Promise<string> {
     const rows = await this.getExecutor(qr).query(
       `
-      INSERT INTO [auth].tbl_User_Invitations] (
+      INSERT INTO [auth].[tbl_User_Invitations] (
           UserInvitationID,
           UserID,
           TokenHash,
@@ -44,7 +44,7 @@ export class UserInvitationsRepository {
           @4,
           COALESCE(u.Email, 'user@domain.com'),
           SYSUTCDATETIME()
-      FROM [auth].tbl_Users] u
+      FROM [auth].[tbl_Users] u
       WHERE u.user_id = @0;
       `,
       [userId, tokenHash, purpose, expiresAt, createdBy || null],
@@ -71,7 +71,7 @@ export class UserInvitationsRepository {
           i.consumed_at AS consumedAt,
           i.created_at AS createdAt,
           i.issued_by_user_id AS createdBy
-      FROM [auth].tbl_User_Invitations] i
+      FROM [auth].[tbl_User_Invitations] i
       WHERE i.token_hash = CONVERT(VARBINARY(32), @0, 2);
       `,
       [tokenHash],
@@ -100,7 +100,7 @@ export class UserInvitationsRepository {
   async markConsumed(invitationId: string, qr?: QueryRunner): Promise<void> {
     await this.getExecutor(qr).query(
       `
-      UPDATE [auth].tbl_User_Invitations]
+      UPDATE [auth].[tbl_User_Invitations]
       SET consumed_at = SYSUTCDATETIME()
       WHERE user_invitation_id = @0;
       `,
@@ -118,7 +118,7 @@ export class UserInvitationsRepository {
   ): Promise<void> {
     await this.getExecutor(qr).query(
       `
-      UPDATE [auth].tbl_User_Invitations]
+      UPDATE [auth].[tbl_User_Invitations]
       SET consumed_at = SYSUTCDATETIME(), RevokedAt = SYSUTCDATETIME()
       WHERE user_id = @0
         AND Purpose = @1
@@ -148,7 +148,7 @@ export class UserInvitationsRepository {
           i.consumed_at AS consumedAt,
           i.created_at AS createdAt,
           i.issued_by_user_id AS createdBy
-      FROM [auth].tbl_User_Invitations] i
+      FROM [auth].[tbl_User_Invitations] i
       WHERE i.user_id = @0 AND i.Purpose = @1
       ORDER BY i.created_at DESC;
       `,
@@ -203,8 +203,8 @@ export class UserInvitationsRepository {
           u.Email AS email,
           u.is_active AS isActive,
           u.IsDeleted AS isDeleted
-      FROM [auth].tbl_User_Invitations] i
-      INNER JOIN [auth].tbl_Users] u ON u.user_id = i.user_id
+      FROM [auth].[tbl_User_Invitations] i
+      INNER JOIN [auth].[tbl_Users] u ON u.user_id = i.user_id
       WHERE i.token_hash = CONVERT(VARBINARY(32), @0, 2);
       `,
       [tokenHash],

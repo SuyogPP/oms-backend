@@ -10,7 +10,6 @@ import { OrgUnitTreeService } from './org-units/services/org-unit-tree.service';
 import { OrgUnitValidationService } from './org-units/services/org-unit-validation.service';
 import { OrgUnitTypesService } from './org-units/services/org-unit-types.service';
 import { OrgUnitsRepository } from './org-units/repositories/org-units.repository';
-import { OrgUnitClosureRepository } from './org-units/repositories/org-unit-closure.repository';
 import { OrgUnitTypesRepository } from './org-units/repositories/org-unit-types.repository';
 import { OrgUnitChangeLogRepository } from './org-units/repositories/org-unit-change-log.repository';
 import { OrgUnitsMapper } from './org-units/org-units.mapper';
@@ -50,7 +49,6 @@ import { InternalUserGuard } from './org-scope/guards/internal-user.guard';
 
     // Repositories
     OrgUnitsRepository,
-    OrgUnitClosureRepository,
     OrgUnitTypesRepository,
     OrgUnitChangeLogRepository,
     OrgManagersRepository,
@@ -75,6 +73,7 @@ import { InternalUserGuard } from './org-scope/guards/internal-user.guard';
     OrgUnitTreeService,
     OrgManagersService,
     OrgScopeResolverService,
+    OrgScopeRepository,
     InternalUserGuard,
     ORG_UNIT_REFERENCE_CHECKS,
   ],

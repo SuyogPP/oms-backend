@@ -148,7 +148,7 @@ export class VendorUsersController {
     description: 'All vendor users deactivated successfully',
   })
   async deactivateByVendor(
-    @Param('vendorId') vendorId: string,
+    @Param('vendorId') vendorId: number,
     @CurrentUser() currentUser?: ICurrentUser,
   ) {
     await this.vendorUsersService.deactivateAllByVendorId(

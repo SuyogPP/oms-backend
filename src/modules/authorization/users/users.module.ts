@@ -1,3 +1,4 @@
+import { UserOrgUnitAssignmentRepository } from '../../organization/org-units';
 import { Module, forwardRef } from '@nestjs/common';
 import { AuthModule } from '../../auth/auth.module';
 import { CommonModule } from '../../../common/common.module';
@@ -28,6 +29,7 @@ import { AuditModule } from '../../audit/audit.module';
   ],
   controllers: [UsersController, UserCredentialsController],
   providers: [
+    UserOrgUnitAssignmentRepository,
     // Repositories
     UsersRepository,
     UserInvitationsRepository,

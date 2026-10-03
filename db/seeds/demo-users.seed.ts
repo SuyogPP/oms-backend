@@ -302,7 +302,7 @@ async function main() {
 
     // Query Roles
     const rolesResult = await pool.request().query(`
-      SELECT role_id, RoleCode, RoleName, IsActive 
+      SELECT role_id, role_code, role_name, is_active 
       FROM [auth].tbl_Roles]
     `);
     const roleMap = new Map<string, { roleId: string; roleName: string; isActive: boolean }>();
@@ -511,11 +511,11 @@ async function main() {
             UPDATE [auth].tbl_Users]
             SET Email = @email,
                 UserType = @userType,
-                IsActive = 1,
+                is_active = 1,
                 IsDeleted = 0,
-                FailedLoginCount = 0,
-                LockedUntil = NULL,
-                UpdatedAt = SYSUTCDATETIME()
+                failed_login_count = 0,
+                locked_until = NULL,
+                updated_at = SYSUTCDATETIME()
             WHERE user_id = @userId
           `);
         } else {
@@ -525,15 +525,15 @@ async function main() {
           insertUserReq.input('userType', sql.NVarChar, u.userType);
           const insertUserResult = await insertUserReq.query(`
             INSERT INTO [auth].tbl_Users] (
-                UserID,
+                user_id,
                 Username,
                 Email,
                 UserType,
-                IsActive,
+                is_active,
                 IsDeleted,
-                FailedLoginCount,
-                CreatedAt,
-                UpdatedAt
+                failed_login_count,
+                created_at,
+                updated_at
             )
             OUTPUT INSERTED.user_id AS userId
             VALUES (
@@ -563,23 +563,23 @@ async function main() {
           BEGIN
               UPDATE [auth].[UserProfiles]
               SET first_name = @firstName,
-                  LastName = @lastName,
-                  JobTitle = @jobTitle,
+                  last_name = @lastName,
+                  job_title = @jobTitle,
                   DepartmentID = @deptId,
-                  UpdatedAt = SYSUTCDATETIME()
+                  updated_at = SYSUTCDATETIME()
               WHERE user_id = @userId;
           END
           ELSE
           BEGIN
               INSERT INTO [auth].[UserProfiles] (
                   UserProfileID,
-                  UserID,
-                  FirstName,
-                  LastName,
-                  JobTitle,
+                  user_id,
+                  first_name,
+                  last_name,
+                  job_title,
                   DepartmentID,
-                  CreatedAt,
-                  UpdatedAt
+                  created_at,
+                  updated_at
               )
               VALUES (
                   NEWID(),
@@ -603,21 +603,21 @@ async function main() {
           BEGIN
               UPDATE [auth].tbl_Local_Credentials]
               SET password_hash = @passwordHash,
-                  PasswordChangedAt = SYSUTCDATETIME(),
-                  MustChangePassword = 0,
-                  IsActive = 1
+                  password_changed_at = SYSUTCDATETIME(),
+                  must_change_password = 0,
+                  is_active = 1
               WHERE user_id = @userId;
           END
           ELSE
           BEGIN
               INSERT INTO [auth].tbl_Local_Credentials] (
-                  CredentialID,
-                  UserID,
-                  PasswordHash,
-                  PasswordChangedAt,
-                  MustChangePassword,
-                  IsActive,
-                  CreatedAt
+                  credential_id,
+                  user_id,
+                  password_hash,
+                  password_changed_at,
+                  must_change_password,
+                  is_active,
+                  created_at
               )
               VALUES (
                   NEWID(),
@@ -640,20 +640,20 @@ async function main() {
           BEGIN
               UPDATE [auth].tbl_User_Roles]
               SET effective_from = CAST(GETUTCDATE() AS DATE),
-                  EffectiveTo = NULL,
-                  IsActive = 1
+                  effective_to = NULL,
+                  is_active = 1
               WHERE user_id = @userId AND role_id = @roleId;
           END
           ELSE
           BEGIN
               INSERT INTO [auth].tbl_User_Roles] (
-                  UserRoleID,
-                  UserID,
-                  RoleID,
-                  EffectiveFrom,
-                  EffectiveTo,
-                  IsActive,
-                  AssignedAt
+                  user_role_id,
+                  user_id,
+                  role_id,
+                  effective_from,
+                  effective_to,
+                  is_active,
+                  assigned_at
               )
               VALUES (
                   NEWID(),
@@ -696,27 +696,27 @@ async function main() {
                     DepartmentID = @departmentId,
                     SectionID = NULL,
                     OrgUnitId = @orgUnitId,
-                    EffectiveFrom = CAST(GETUTCDATE() AS DATE),
-                    EffectiveTo = NULL,
-                    IsActive = 1,
-                    AssignedAt = SYSUTCDATETIME()
+                    effective_from = CAST(GETUTCDATE() AS DATE),
+                    effective_to = NULL,
+                    is_active = 1,
+                    assigned_at = SYSUTCDATETIME()
                 WHERE user_id = @userId;
             END
             ELSE
             BEGIN
                 INSERT INTO [auth].[UserOrganizationScopes] (
                     UserOrganizationScopeID,
-                    UserID,
+                    user_id,
                     ScopeDefinitionID,
                     OrganizationID,
                     BusinessUnitID,
                     DepartmentID,
                     SectionID,
                     OrgUnitId,
-                    EffectiveFrom,
-                    EffectiveTo,
-                    IsActive,
-                    AssignedAt
+                    effective_from,
+                    effective_to,
+                    is_active,
+                    assigned_at
                 )
                 VALUES (
                     NEWID(),

@@ -25,11 +25,11 @@ export class CandidateTokensRepository {
       INSERT INTO [onboarding].[CandidateAccessTokens] (
           TokenId,
           OnboardingId,
-          TokenHash,
-          ExpiresAt,
+          token_hash,
+          expires_at,
           ConsumedCount,
-          RevokedAt,
-          CreatedAt
+          revoked_at,
+          created_at
       )
       OUTPUT INSERTED.TokenId AS tokenId
       VALUES (
