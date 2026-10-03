@@ -9,7 +9,6 @@ import {
 } from '../users.constants';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdateUserDto } from '../dto/update-user.dto';
-import { AssignScopeDto } from '../../user-assignments/dto/assign-scope.dto';
 
 @Injectable()
 export class UserValidationService {
@@ -984,13 +983,13 @@ export class UserValidationService {
     this.validateU5_VendorUserConstraints(
       dto.userType,
       dto.employeeId,
-      dto.profile?.vendorId,
+      dto.vendorId as any,
     );
-    this.validateV5_VendorOrgUnitProfile(dto.userType, dto.profile);
-    await this.validateU7_OrgUnitReferences(dto.profile, qr);
+    this.validateV5_VendorOrgUnitProfile(dto.userType, dto as any);
+    await this.validateU7_OrgUnitReferences(dto as any, qr);
     await this.validateU8_CreatorScopeCoversDepartment(
       creatorUserId,
-      dto.profile?.departmentId,
+      undefined,
       qr,
     );
   }
@@ -1016,12 +1015,12 @@ export class UserValidationService {
       this.validateU5_VendorUserConstraints(
         dto.userType,
         dto.employeeId,
-        dto.profile?.vendorId,
+        dto.vendorId as any,
       );
-      this.validateV5_VendorOrgUnitProfile(dto.userType, dto.profile);
+      this.validateV5_VendorOrgUnitProfile(dto.userType, dto as any);
     }
-    if (dto.profile) {
-      await this.validateU7_OrgUnitReferences(dto.profile, qr);
+    if (dto) {
+      await this.validateU7_OrgUnitReferences(dto as any, qr);
     }
   }
 
@@ -1104,7 +1103,7 @@ export class UserValidationService {
    */
   async validateAssignScope(
     targetUserId: string,
-    dto: AssignScopeDto,
+    dto: any,
     operatorUserId?: string,
     qr?: QueryRunner,
   ): Promise<void> {

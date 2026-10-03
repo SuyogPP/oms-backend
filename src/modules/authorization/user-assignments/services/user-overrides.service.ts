@@ -36,7 +36,7 @@ export class UserOverridesService {
     requesterUserId?: string,
   ): Promise<IUserOverrideAssignment[]> {
     const user = await this.usersRepository.findById(userId);
-    if (!user || user.isDeleted) {
+    if (!user ) {
       throw new NotFoundException({
         code: USER_ERROR_CODES.USER_NOT_FOUND,
         message: `User [${userId}] not found.`,
@@ -78,7 +78,7 @@ export class UserOverridesService {
     this.userValidationService.validateManageOverride(userId, operatorUserId);
 
     const user = await this.usersRepository.findById(userId);
-    if (!user || user.isDeleted) {
+    if (!user ) {
       throw new NotFoundException({
         code: USER_ERROR_CODES.USER_NOT_FOUND,
         message: `Target user [${userId}] not found.`,

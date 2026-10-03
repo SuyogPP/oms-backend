@@ -1,11 +1,9 @@
 import {
   IUserRoleAssignment,
-  IUserScopeAssignment,
   IUserOverrideAssignment,
 } from './interfaces/user-assignments.interface';
 import {
   UserRoleEntity,
-  UserScopeEntity,
   UserOverrideEntity,
 } from './entities/user-assignments.entity';
 
@@ -18,13 +16,7 @@ export class UserAssignmentsMapper {
     return models.map((m) => this.toRoleEntity(m));
   }
 
-  static toScopeEntity(model: IUserScopeAssignment): UserScopeEntity {
-    return { ...model };
-  }
 
-  static toScopeEntityList(models: IUserScopeAssignment[]): UserScopeEntity[] {
-    return models.map((m) => this.toScopeEntity(m));
-  }
 
   static toOverrideEntity(model: IUserOverrideAssignment): UserOverrideEntity {
     return { ...model };

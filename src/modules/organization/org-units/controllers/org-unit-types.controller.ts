@@ -2,7 +2,7 @@ import {
   Controller,
   Get,
   Param,
-  ParseIntPipe,
+  ParseUUIDPipe,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
@@ -53,7 +53,7 @@ export class OrgUnitTypesController {
     type: [OrgUnitTypeEntity],
   })
   async findAllowedParents(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id', ParseUUIDPipe) id: any,
   ): Promise<OrgUnitTypeEntity[]> {
     return this.typesService.findAllowedParents(id);
   }

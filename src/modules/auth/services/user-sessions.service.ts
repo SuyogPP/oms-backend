@@ -34,22 +34,22 @@ export class UserSessionsService {
       : null;
 
     const sessions: UserActiveSessionDto[] = rows.map((row) => {
-      const sidUpper = row.login_session_id.toUpperCase();
+      const sidUpper = (row as any).login_session_id.toUpperCase();
       const isCurrent = Boolean(
         currentSidUpper && sidUpper === currentSidUpper,
       );
 
       return {
-        loginSessionId: row.login_session_id,
-        LoginSessionID: row.login_session_id,
-        ipAddress: row.IPAddress,
-        browserName: row.browser_name || null,
-        deviceType: row.device_type || null,
-        createdAt: new Date(row.login_at).toISOString(),
-        lastActivityAt: row.last_activity_at
-          ? new Date(row.last_activity_at).toISOString()
+        loginSessionId: (row as any).login_session_id,
+        LoginSessionID: (row as any).login_session_id,
+        ipAddress: (row as any).IPAddress,
+        browserName: (row as any).browser_name || null,
+        deviceType: (row as any).device_type || null,
+        createdAt: new Date((row as any).login_at).toISOString(),
+        lastActivityAt: (row as any).last_activity_at
+          ? new Date((row as any).last_activity_at).toISOString()
           : null,
-        expiresAt: new Date(row.expires_at).toISOString(),
+        expiresAt: new Date((row as any).expires_at).toISOString(),
         isCurrentSession: isCurrent,
       };
     });
@@ -86,7 +86,7 @@ export class UserSessionsService {
     }
 
     // Verify ownership
-    if (session.user_id.toUpperCase() !== userId.toUpperCase()) {
+    if ((session as any).user_id.toUpperCase() !== userId.toUpperCase()) {
       throw new ForbiddenException('Forbidden');
     }
 
@@ -137,7 +137,7 @@ export class UserSessionsService {
     for (const session of revokedSessions) {
       await this.repository.createLogoutHistory({
         userId,
-        loginSessionId: session.login_session_id,
+        loginSessionId: (session as any).login_session_id,
         username: session.Username || 'Unknown',
         ipAddress,
         userAgent,

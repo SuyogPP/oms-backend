@@ -86,7 +86,7 @@ export class VendorUsersService {
     // 4. Validate V5 Org Unit constraint
     this.userValidationService.validateV5_VendorOrgUnitProfile(
       USER_TYPES.VENDOR,
-      null,
+      {} as any,
     );
 
     // 5. Persist vendor user atomically
@@ -114,7 +114,7 @@ export class VendorUsersService {
       schema_name: 'auth',
       operation: 'INSERT',
       record_id_text: userId,
-      performed_by: operatorUserId || null,
+      performed_by: operatorUserId || {} as any,
       source_module: 'authorization/vendor-users',
       new_values: JSON.stringify({ username: dto.username, email: dto.email, vendor_id: dto.vendorId }),
     });
@@ -168,7 +168,7 @@ export class VendorUsersService {
       schema_name: 'auth',
       operation: 'UPDATE',
       record_id_text: id,
-      performed_by: operatorUserId || null,
+      performed_by: operatorUserId || {} as any,
       source_module: 'authorization/vendor-users',
       old_values: JSON.stringify(existing),
       new_values: JSON.stringify(updated),
@@ -208,7 +208,7 @@ export class VendorUsersService {
       schema_name: 'auth',
       operation: 'UPDATE',
       record_id_text: id,
-      performed_by: operatorUserId || null,
+      performed_by: operatorUserId || {} as any,
       source_module: 'authorization/vendor-users',
       old_values: JSON.stringify(existing),
       new_values: JSON.stringify({ ...existing, isActive: false }),
@@ -246,7 +246,7 @@ export class VendorUsersService {
       schema_name: 'auth',
       operation: 'UPDATE',
       record_id_text: `VENDOR-${vendorId}`,
-      performed_by: operatorUserId || null,
+      performed_by: operatorUserId || {} as any,
       source_module: 'authorization/vendor-users',
       new_values: JSON.stringify({ isActive: false, vendor_id: vendorId }),
     });
