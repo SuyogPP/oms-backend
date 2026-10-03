@@ -27,7 +27,7 @@ export class UserLifecycleService {
    */
   async activate(userId: string, operatorUserId?: string): Promise<void> {
     const user = await this.usersRepository.findById(userId);
-    if (!user || user.isDeleted) {
+    if (!user ) {
       throw new NotFoundException({
         code: USER_ERROR_CODES.USER_NOT_FOUND,
         message: `User [${userId}] not found or has been deleted.`,
@@ -59,13 +59,13 @@ export class UserLifecycleService {
    * Rules:
    * - Validates U14 (no self-deactivation)
    * - Validates U15 (cannot deactivate the last active SYSTEM_ADMIN)
-   * - Sets auth.Users.IsActive = 0
+   * - Sets auth.tbl_Users.is_active = 0
    * - Revokes all active sessions immediately
    * - Preserves roles and scopes per U12 (reactivation must restore the user exactly as they were)
    */
   async deactivate(userId: string, operatorUserId?: string): Promise<void> {
     const user = await this.usersRepository.findById(userId);
-    if (!user || user.isDeleted) {
+    if (!user ) {
       throw new NotFoundException({
         code: USER_ERROR_CODES.USER_NOT_FOUND,
         message: `User [${userId}] not found or has been deleted.`,
@@ -87,7 +87,7 @@ export class UserLifecycleService {
     await queryRunner.startTransaction();
 
     try {
-      // 1. Deactivate user in auth.Users
+      // 1. Deactivate user in auth.tbl_Users
       await this.usersRepository.deactivate(userId, queryRunner);
 
       // 2. Revoke active sessions immediately
@@ -126,14 +126,14 @@ export class UserLifecycleService {
    * - Validates U15 (cannot delete the last active SYSTEM_ADMIN)
    * - Validates U16 (cannot delete a user who is current primary head of an active org unit)
    * - Transactional:
-   *   1. Soft delete auth.Users (IsDeleted = 1, DeletedAt = now, DeletedBy = operator, IsActive = 0)
+   *   1. Soft delete auth.tbl_Users (IsActive = 0)
    *   2. Revoke active sessions
    *   3. End active roles (EffectiveTo = now, IsActive = 0)
    *   4. End active delegations (EndDate = now, IsActive = 0)
    */
   async softDelete(userId: string, operatorUserId?: string): Promise<void> {
     const user = await this.usersRepository.findById(userId);
-    if (!user || user.isDeleted) {
+    if (!user ) {
       throw new NotFoundException({
         code: USER_ERROR_CODES.USER_NOT_FOUND,
         message: `User [${userId}] not found or already deleted.`,

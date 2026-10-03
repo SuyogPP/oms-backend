@@ -1,3 +1,4 @@
+import { UserOrgUnitAssignmentRepository } from '../../organization/org-units';
 import { Module, forwardRef } from '@nestjs/common';
 import { AuthModule } from '../../auth/auth.module';
 import { CommonModule } from '../../../common/common.module';
@@ -8,7 +9,6 @@ import { UserLifecycleService } from './services/user-lifecycle.service';
 import { UserCredentialsService } from './services/user-credentials.service';
 import { UserValidationService } from './services/user-validation.service';
 import { UsersRepository } from './repositories/users.repository';
-import { UserProfilesRepository } from './repositories/user-profiles.repository';
 import { UserInvitationsRepository } from './repositories/user-invitations.repository';
 import { PasswordHistoryRepository } from './repositories/password-history.repository';
 import { UsersMapper } from './users.mapper';
@@ -29,9 +29,9 @@ import { AuditModule } from '../../audit/audit.module';
   ],
   controllers: [UsersController, UserCredentialsController],
   providers: [
+    UserOrgUnitAssignmentRepository,
     // Repositories
     UsersRepository,
-    UserProfilesRepository,
     UserInvitationsRepository,
     PasswordHistoryRepository,
 
@@ -46,7 +46,6 @@ import { AuditModule } from '../../audit/audit.module';
   ],
   exports: [
     UsersRepository,
-    UserProfilesRepository,
     UserInvitationsRepository,
     PasswordHistoryRepository,
     UsersService,

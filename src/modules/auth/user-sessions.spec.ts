@@ -19,24 +19,24 @@ describe('UserSessionsModule (Step 3)', () => {
     mockRepository = {
       getActiveSessionsByUserId: jest.fn().mockResolvedValue([
         {
-          LoginSessionID: 'sess-current',
-          IPAddress: '127.0.0.1',
-          BrowserName: 'Chrome',
-          DeviceType: 'Desktop',
-          LoginAt: new Date('2026-08-20T10:00:00Z'),
-          LastActivityAt: new Date('2026-08-20T10:30:00Z'),
-          ExpiresAt: new Date('2026-09-20T10:00:00Z'),
-          IsActive: true,
+          login_session_id: 'sess-current',
+          ip_address: '127.0.0.1',
+          browser_name: 'Chrome',
+          device_type: 'Desktop',
+          login_at: new Date('2026-08-20T10:00:00Z'),
+          last_activity_at: new Date('2026-08-20T10:30:00Z'),
+          expires_at: new Date('2026-09-20T10:00:00Z'),
+          is_active: true,
         },
         {
-          LoginSessionID: 'sess-other',
-          IPAddress: '192.168.1.50',
-          BrowserName: 'Safari',
-          DeviceType: 'Mobile',
-          LoginAt: new Date('2026-08-19T08:00:00Z'),
-          LastActivityAt: new Date('2026-08-19T09:00:00Z'),
-          ExpiresAt: new Date('2026-09-19T08:00:00Z'),
-          IsActive: true,
+          login_session_id: 'sess-other',
+          ip_address: '192.168.1.50',
+          browser_name: 'Safari',
+          device_type: 'Mobile',
+          login_at: new Date('2026-08-19T08:00:00Z'),
+          last_activity_at: new Date('2026-08-19T09:00:00Z'),
+          expires_at: new Date('2026-09-19T08:00:00Z'),
+          is_active: true,
         },
       ]),
       getSessionById: jest
@@ -44,26 +44,26 @@ describe('UserSessionsModule (Step 3)', () => {
         .mockImplementation(async (sessionId: string) => {
           if (sessionId === 'sess-other') {
             return {
-              LoginSessionID: 'sess-other',
-              UserID: 'usr-1',
+              login_session_id: 'sess-other',
+              user_id: 'usr-1',
               Username: 'admin',
-              IPAddress: '192.168.1.50',
-              UserAgent: 'Safari',
-              IsActive: true,
-              RevokedAt: null,
-              ExpiresAt: new Date('2026-09-19T08:00:00Z'),
+              ip_address: '192.168.1.50',
+              user_agent: 'Safari',
+              is_active: true,
+              revoked_at: null,
+              expires_at: new Date('2026-09-19T08:00:00Z'),
             };
           }
           if (sessionId === 'sess-someone-else') {
             return {
-              LoginSessionID: 'sess-someone-else',
-              UserID: 'usr-2',
+              login_session_id: 'sess-someone-else',
+              user_id: 'usr-2',
               Username: 'otheruser',
-              IPAddress: '10.0.0.1',
-              UserAgent: 'Firefox',
-              IsActive: true,
-              RevokedAt: null,
-              ExpiresAt: new Date('2026-09-19T08:00:00Z'),
+              ip_address: '10.0.0.1',
+              user_agent: 'Firefox',
+              is_active: true,
+              revoked_at: null,
+              expires_at: new Date('2026-09-19T08:00:00Z'),
             };
           }
           return null;
@@ -71,8 +71,8 @@ describe('UserSessionsModule (Step 3)', () => {
       revokeSession: jest.fn().mockResolvedValue(1),
       revokeAllOtherSessions: jest.fn().mockResolvedValue([
         {
-          LoginSessionID: 'sess-other',
-          UserID: 'usr-1',
+          login_session_id: 'sess-other',
+          user_id: 'usr-1',
           Username: 'admin',
         },
       ]),

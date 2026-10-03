@@ -18,12 +18,12 @@ export class EffectivePermissionsService {
    * Resolves the distinct list of effective permission codes for a user.
    *
    * Resolution Order (Spec §4.1):
-   * 1. Active roles today (auth.UserRoles, temporal)
-   * 2. + Roles via auth.RoleHierarchy (recursive CTE, cycle-guarded)
-   * 3. -> Permissions via auth.RolePermissions
+   * 1. Active roles today (auth.tbl_User_Roles, temporal)
+   * 2. + Roles via auth.tbl_Role_Hierarchy (recursive CTE, cycle-guarded)
+   * 3. -> Permissions via auth.tbl_Role_Permissions
    * 4. + User overrides where IsGranted = 1
    * 5. - User overrides where IsGranted = 0 (REVOKE BEATS GRANT ALWAYS)
-   * 6. + Active temporal delegations (auth.Delegations / auth.DelegationPermissions)
+   * 6. + Active temporal delegations (auth.tbl_Delegations / auth.tbl_Delegation_Permissions)
    *
    * Caching (§4.5): Cached exclusively within the active HTTP Request Context.
    * Never cached across requests to ensure immediate revocation.
@@ -100,7 +100,7 @@ export class EffectivePermissionsService {
   /**
    * Generates the detailed audit preview model for GET /users/:id/effective-permissions per Spec §4.6.
    * Includes the exact source (ROLE, ROLE_INHERITED, OVERRIDE_GRANT, DELEGATION),
-   * inheritance path, justification reason, expiration timestamp, and revoked permissions.
+   * inheritance path, justification Reason, expiration timestamp, and revoked permissions.
    *
    * Scope Filtering (§9.2):
    * Inspecting a user outside requester's visible scope returns 404 (Not Found),

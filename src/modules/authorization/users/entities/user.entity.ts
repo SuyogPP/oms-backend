@@ -1,72 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
-  IUserProfile,
   IUserWithProfile,
   IUserListResult,
 } from '../interfaces/users.interface';
 import type { UserType } from '../users.constants';
-
-export class UserProfileEntity implements IUserProfile {
-  @ApiProperty({ example: '1053433E-F36B-1410-85ED-009A959FB122' })
-  userProfileId!: string;
-
-  @ApiProperty({ example: '1053433E-F36B-1410-85ED-009A959FB122' })
-  userId!: string;
-
-  @ApiProperty({ example: 'Tariq' })
-  firstName!: string;
-
-  @ApiProperty({ example: 'Al Hashimi' })
-  lastName!: string;
-
-  @ApiProperty({ example: 'Tariq Al Hashimi', required: false })
-  displayName?: string | null;
-
-  @ApiProperty({ example: '+971501234567', required: false })
-  phoneNumber?: string | null;
-
-  @ApiProperty({ example: 'Finance Director', required: false })
-  jobTitle?: string | null;
-
-  @ApiProperty({
-    example: '1053433E-F36B-1410-85ED-009A959FB122',
-    required: false,
-  })
-  organizationId?: string | null;
-
-  @ApiProperty({
-    example: '1053433E-F36B-1410-85ED-009A959FB122',
-    required: false,
-  })
-  businessUnitId?: string | null;
-
-  @ApiProperty({
-    example: '1053433E-F36B-1410-85ED-009A959FB122',
-    required: false,
-  })
-  departmentId?: string | null;
-
-  @ApiProperty({
-    example: '1053433E-F36B-1410-85ED-009A959FB122',
-    required: false,
-  })
-  sectionId?: string | null;
-
-  @ApiProperty({ example: null, required: false })
-  vendorId?: string | null;
-
-  @ApiProperty({ example: false })
-  mustChangePassword!: boolean;
-
-  @ApiProperty({ example: '2026-08-20T10:00:00.000Z', required: false })
-  passwordChangedAt?: Date | null;
-
-  @ApiProperty({ example: '2026-08-01T00:00:00.000Z' })
-  createdAt!: Date;
-
-  @ApiProperty({ example: '2026-08-22T00:00:00.000Z' })
-  updatedAt!: Date;
-}
 
 export class UserEntity implements IUserWithProfile {
   @ApiProperty({ example: '1053433E-F36B-1410-85ED-009A959FB122' })
@@ -90,9 +27,6 @@ export class UserEntity implements IUserWithProfile {
   @ApiProperty({ example: true })
   isActive!: boolean;
 
-  @ApiProperty({ example: false })
-  isDeleted!: boolean;
-
   @ApiProperty({ example: 0 })
   failedLoginCount!: number;
 
@@ -105,8 +39,23 @@ export class UserEntity implements IUserWithProfile {
   })
   status?: 'ACTIVE' | 'INACTIVE' | 'INVITED' | 'LOCKED';
 
-  @ApiProperty({ type: UserProfileEntity, required: false })
-  profile?: UserProfileEntity | null;
+  @ApiProperty({ example: 'Tariq', required: false })
+  firstName?: string | null;
+
+  @ApiProperty({ example: 'Al Hashimi', required: false })
+  lastName?: string | null;
+
+  @ApiProperty({ example: '+971501234567', required: false })
+  mobileNo?: string | null;
+
+  @ApiProperty({ example: 'Finance Director', required: false })
+  jobTitle?: string | null;
+
+  @ApiProperty({ example: '123', required: false })
+  orgUnitId?: string | null;
+
+  @ApiProperty({ example: 456, required: false })
+  vendorId?: number | null;
 
   @ApiProperty({ example: ['SYSTEM_ADMIN'], type: [String], required: false })
   roles?: string[];

@@ -20,35 +20,23 @@ import {
 export class OrgUnitsMapper {
   toOrgUnitTypeEntity(
     row: IOrgUnitType,
-    rules: IOrgUnitHierarchyRule[] = [],
   ): OrgUnitTypeEntity {
-    const allowedChildTypes = rules
-      .filter((r) => r.parentOrgUnitTypeId === row.orgUnitTypeId)
-      .map((r) => r.childOrgUnitTypeId);
-
     return {
-      orgUnitTypeId: row.orgUnitTypeId,
-      code: row.code,
-      name: row.name,
-      nameAr: row.nameAr ?? null,
-      description: row.description ?? null,
-      canonicalLevel: row.canonicalLevel,
-      scopeLevelCode: row.scopeLevelCode,
+      unitTypeId: row.unitTypeId,
+      parentUnitTypeId: row.parentUnitTypeId,
+      orgUnitCode: row.orgUnitCode,
+      orgUnitName: row.orgUnitName,
+      level: row.level,
       allowsBudget: Boolean(row.allowsBudget),
       allowsRequisition: Boolean(row.allowsRequisition),
-      allowsManager: Boolean(row.allowsManager),
-      isRootType: Boolean(row.isRootType),
-      sortOrder: row.sortOrder,
       isActive: Boolean(row.isActive),
-      allowedChildTypeIds: allowedChildTypes,
     };
   }
 
   toOrgUnitTypeEntities(
     types: IOrgUnitType[],
-    rules: IOrgUnitHierarchyRule[] = [],
   ): OrgUnitTypeEntity[] {
-    return types.map((t) => this.toOrgUnitTypeEntity(t, rules));
+    return types.map((t) => this.toOrgUnitTypeEntity(t));
   }
 
   toHierarchyRuleEntities(
@@ -71,32 +59,15 @@ export class OrgUnitsMapper {
     return {
       orgUnitId: row.orgUnitId,
       orgUnitType: this.toOrgUnitTypeEntity(type),
-      parentOrgUnitId: row.parentOrgUnitId ?? null,
-      code: row.code,
-      name: row.name,
-      nameAr: row.nameAr ?? null,
-      shortName: row.shortName ?? null,
-      description: row.description ?? null,
-      depth: row.depth,
+      parentId: row.parentId ?? null,
+      orgCode: row.orgCode,
+      orgName: row.orgName,
       costCenterCode: row.costCenterCode ?? null,
-      oracleOrgCode: row.oracleOrgCode ?? null,
-      emailAddress: row.emailAddress ?? null,
-      phoneNumber: row.phoneNumber ?? null,
+      adObjectGuid: row.adObjectGuid ?? null,
       head: head ?? null,
       allowsBudget: Boolean(type?.allowsBudget),
       allowsRequisition: Boolean(type?.allowsRequisition),
-      sortOrder: row.sortOrder,
-      effectiveFrom:
-        typeof row.effectiveFrom === 'string'
-          ? row.effectiveFrom
-          : new Date(row.effectiveFrom).toISOString().split('T')[0],
-      effectiveTo: row.effectiveTo
-        ? typeof row.effectiveTo === 'string'
-          ? row.effectiveTo
-          : new Date(row.effectiveTo).toISOString().split('T')[0]
-        : null,
       isActive: Boolean(row.isActive),
-      rowVersion: row.rowVersion,
     };
   }
 
@@ -119,42 +90,37 @@ export class OrgUnitsMapper {
     };
   }
 
-  /**
-   * Constructs nested N-ary tree from flat list of visible organization units.
-   */
   toOrgUnitTree(
     rows: IOrgUnit[],
     typesMap: Map<number, IOrgUnitType>,
-    headsMap: Map<string, OrgHeadSummaryEntity> = new Map(),
+    headsMap: Map<number, OrgHeadSummaryEntity> = new Map(),
   ): OrgUnitTreeItemEntity[] {
-    const nodeMap = new Map<string, OrgUnitTreeItemEntity>();
+    const nodeMap = new Map<number, OrgUnitTreeItemEntity>();
     const roots: OrgUnitTreeItemEntity[] = [];
 
     // 1. Initialize node representations
     for (const r of rows) {
-      const type = typesMap.get(r.orgUnitTypeId);
+      const type = typesMap.get(r.unitTypeId);
       const node: OrgUnitTreeItemEntity = {
         orgUnitId: r.orgUnitId,
-        orgUnitTypeId: r.orgUnitTypeId,
-        parentOrgUnitId: r.parentOrgUnitId ?? null,
-        code: r.code,
-        name: r.name,
-        nameAr: r.nameAr ?? null,
-        depth: r.depth,
+        unitTypeId: r.unitTypeId,
+        parentId: r.parentId ?? null,
+        orgCode: r.orgCode,
+        orgName: r.orgName,
         allowsBudget: Boolean(type?.allowsBudget),
         allowsRequisition: Boolean(type?.allowsRequisition),
         isActive: Boolean(r.isActive),
         head: headsMap.get(r.orgUnitId) ?? null,
         children: [],
       };
-      nodeMap.set(r.orgUnitId.toLowerCase(), node);
+      nodeMap.set(r.orgUnitId, node);
     }
 
     // 2. Build parent-child hierarchy
     for (const r of rows) {
-      const node = nodeMap.get(r.orgUnitId.toLowerCase())!;
-      if (r.parentOrgUnitId && nodeMap.has(r.parentOrgUnitId.toLowerCase())) {
-        const parent = nodeMap.get(r.parentOrgUnitId.toLowerCase())!;
+      const node = nodeMap.get(r.orgUnitId)!;
+      if (r.parentId && nodeMap.has(r.parentId)) {
+        const parent = nodeMap.get(r.parentId)!;
         parent.children = parent.children || [];
         parent.children.push(node);
       } else {

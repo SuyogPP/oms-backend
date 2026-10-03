@@ -52,7 +52,7 @@ export class UserCredentialsService {
     operatorUserId?: string,
   ): Promise<InvitationDispatchResultDto> {
     const user = await this.usersRepository.findById(userId);
-    if (!user || user.isDeleted) {
+    if (!user) {
       throw new NotFoundException({
         code: USER_ERROR_CODES.USER_NOT_FOUND,
         message: `User [${userId}] not found.`,
@@ -145,8 +145,7 @@ export class UserCredentialsService {
     if (
       !record ||
       record.invitation.consumedAt !== null ||
-      record.invitation.expiresAt.getTime() <= Date.now() ||
-      record.user.isDeleted
+      record.invitation.expiresAt.getTime() <= Date.now()
     ) {
       throw new BadRequestException({
         code: USER_ERROR_CODES.INVITATION_INVALID_OR_EXPIRED,
@@ -186,8 +185,7 @@ export class UserCredentialsService {
     if (
       !record ||
       record.invitation.consumedAt !== null ||
-      record.invitation.expiresAt.getTime() <= Date.now() ||
-      record.user.isDeleted
+      record.invitation.expiresAt.getTime() <= Date.now()
     ) {
       throw new BadRequestException({
         code: USER_ERROR_CODES.INVITATION_INVALID_OR_EXPIRED,
@@ -291,15 +289,15 @@ export class UserCredentialsService {
    * - ADMINS NEVER SET OR SEE A PASSWORD (no password argument).
    * - Issues a 1-hour PASSWORD_RESET token.
    * - Sets MustChangePassword = 1.
-   * - Terminates all active sessions in auth.LoginSessions.
-   * - Records auth.LogoutHistory with reason PASSWORD_RESET.
+   * - Terminates all active sessions in auth.tbl_Login_Sessions.
+   * - Records auth.tbl_Logout_History with reason PASSWORD_RESET.
    */
   async resetPassword(
     userId: string,
     operatorUserId?: string,
   ): Promise<InvitationDispatchResultDto> {
     const user = await this.usersRepository.findById(userId);
-    if (!user || user.isDeleted) {
+    if (!user) {
       throw new NotFoundException({
         code: USER_ERROR_CODES.USER_NOT_FOUND,
         message: `User [${userId}] not found.`,
@@ -388,7 +386,7 @@ export class UserCredentialsService {
     operatorUserId?: string,
   ): Promise<GenericSuccessResponseDto> {
     const user = await this.usersRepository.findById(userId);
-    if (!user || user.isDeleted) {
+    if (!user) {
       throw new NotFoundException({
         code: USER_ERROR_CODES.USER_NOT_FOUND,
         message: `User [${userId}] not found.`,

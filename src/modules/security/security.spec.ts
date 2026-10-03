@@ -1,3 +1,4 @@
+import { SecurityEventsService } from '../security-events/services/security-events.service';
 import { Test, TestingModule } from '@nestjs/testing';
 import { SecurityDashboardService } from './services/security-dashboard.service';
 import { SecurityChartsService } from './services/security-charts.service';
@@ -116,11 +117,14 @@ describe('SecurityModule (Step 1)', () => {
         .mockResolvedValue([{ date: '2026-08-20', count: 5 }]),
     };
 
+    const mockSecurityEventsService = {};
     const module: TestingModule = await Test.createTestingModule({
       controllers: [SecurityDashboardController, SecurityChartsController],
       providers: [
         SecurityDashboardService,
         SecurityChartsService,
+        { provide: SecurityEventsService, useValue: mockSecurityEventsService },
+
         AuthorizationService,
         Reflector,
         {

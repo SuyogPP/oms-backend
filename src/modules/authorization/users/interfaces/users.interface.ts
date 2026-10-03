@@ -7,44 +7,23 @@ export interface IUser {
   email: string;
   userType: UserType;
   isActive: boolean;
-  isDeleted: boolean;
-  deletedAt?: Date | null;
-  deletedBy?: string | null;
   failedLoginCount: number;
-  lastFailedLoginAt?: Date | null;
   lockedUntil?: Date | null;
   adObjectId?: string | null;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-export interface IUserProfile {
-  userProfileId: string;
-  userId: string;
-  firstName: string;
-  lastName: string;
-  displayName?: string | null;
-  phoneNumber?: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
+  mobileNo?: string | null;
   jobTitle?: string | null;
-  organizationId?: string | null;
-  businessUnitId?: string | null;
-  departmentId?: string | null;
-  sectionId?: string | null;
-  vendorId?: string | null;
-  mustChangePassword: boolean;
-  passwordChangedAt?: Date | null;
-  createdAt: Date;
-  updatedAt: Date;
-  createdBy?: string | null;
-  updatedBy?: string | null;
-}
-
-export interface IUserWithProfile extends IUser {
-  profile?: IUserProfile | null;
+  orgUnitId?: string | null;
+  vendorId?: number | null;
   roles?: string[];
   scopes?: string[];
   status?: 'ACTIVE' | 'INACTIVE' | 'INVITED' | 'LOCKED';
+  createdAt: Date;
+  updatedAt: Date;
 }
+
+export interface IUserWithProfile extends IUser {}
 
 export interface IUserInvitation {
   invitationId: string;
@@ -64,34 +43,6 @@ export interface IPasswordHistory {
   changedAt: Date;
 }
 
-export interface ICreateUserProfileData {
-  firstName: string;
-  lastName: string;
-  displayName?: string;
-  phoneNumber?: string;
-  jobTitle?: string;
-  organizationId?: string;
-  businessUnitId?: string;
-  departmentId?: string;
-  sectionId?: string;
-  vendorId?: string;
-  createdBy?: string;
-}
-
-export interface IUpdateUserProfileData {
-  firstName?: string;
-  lastName?: string;
-  displayName?: string;
-  phoneNumber?: string;
-  jobTitle?: string;
-  organizationId?: string | null;
-  businessUnitId?: string | null;
-  departmentId?: string | null;
-  sectionId?: string | null;
-  vendorId?: string | null;
-  updatedBy?: string;
-}
-
 export interface ICreateUserData {
   userId?: string;
   employeeId?: string | null;
@@ -100,7 +51,12 @@ export interface ICreateUserData {
   userType: UserType;
   adObjectId?: string | null;
   isActive?: boolean;
-  profile?: ICreateUserProfileData;
+  firstName?: string;
+  lastName?: string;
+  mobileNo?: string;
+  jobTitle?: string;
+  orgUnitId?: string;
+  vendorId?: number;
 }
 
 export interface IUpdateUserData {
@@ -108,7 +64,12 @@ export interface IUpdateUserData {
   email?: string;
   username?: string;
   userType?: UserType;
-  profile?: IUpdateUserProfileData;
+  firstName?: string;
+  lastName?: string;
+  mobileNo?: string;
+  jobTitle?: string;
+  orgUnitId?: string;
+  vendorId?: number;
 }
 
 export interface IUserFilterOptions {

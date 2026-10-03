@@ -10,6 +10,7 @@ import { UsersRepository } from '../../users/repositories/users.repository';
 import { UserValidationService } from '../../users/services/user-validation.service';
 import { SecurityEventsService } from '../../../security-events/services/security-events.service';
 import { AuditService } from '../../../audit/service/audit.services';
+import { AuditLogRepository } from '../../../audit/repositories/audit-log.repository';
 import {
   CreateVendorUserDto,
   UpdateVendorUserDto,
@@ -27,6 +28,7 @@ export class VendorUsersService {
     private readonly userValidationService: UserValidationService,
     private readonly securityEventsService: SecurityEventsService,
     private readonly auditService: AuditService,
+    private readonly auditLogRepository: AuditLogRepository,
     private readonly dataSource: DataSource,
   ) {}
 
@@ -71,7 +73,7 @@ export class VendorUsersService {
     this.userValidationService.validateV1_VendorUserType(USER_TYPES.VENDOR);
 
     // 2. Validate V2 Vendor Link shape
-    this.userValidationService.validateV2_VendorLink(dto.vendorId);
+    this.userValidationService.validateV2_VendorLink(dto.vendorId.toString());
     this.validateVendorIdShape(dto.vendorId);
 
     // TODO(domain-6): validate against vendor.Vendors
@@ -84,7 +86,7 @@ export class VendorUsersService {
     // 4. Validate V5 Org Unit constraint
     this.userValidationService.validateV5_VendorOrgUnitProfile(
       USER_TYPES.VENDOR,
-      {},
+      null,
     );
 
     // 5. Persist vendor user atomically
@@ -107,6 +109,16 @@ export class VendorUsersService {
     }
 
     // 6. Security Event & Audit Logging
+    await this.auditLogRepository.insert({
+      table_name: 'tbl_Users',
+      schema_name: 'auth',
+      operation: 'INSERT',
+      record_id_text: userId,
+      performed_by: operatorUserId || null,
+      source_module: 'authorization/vendor-users',
+      new_values: JSON.stringify({ username: dto.username, email: dto.email, vendor_id: dto.vendorId }),
+    });
+
     await this.securityEventsService.log('VENDOR_USER_CREATED', {
       userId,
       description: `Vendor user [${dto.username}] created and linked to Vendor [${dto.vendorId}] by [${operatorUserId || 'SYSTEM'}].`,
@@ -151,6 +163,16 @@ export class VendorUsersService {
 
     const updated = await this.vendorUsersRepository.findById(id);
 
+        await this.auditLogRepository.insert({
+      table_name: 'tbl_Users',
+      schema_name: 'auth',
+      operation: 'UPDATE',
+      record_id_text: id,
+      performed_by: operatorUserId || null,
+      source_module: 'authorization/vendor-users',
+      old_values: JSON.stringify(existing),
+      new_values: JSON.stringify(updated),
+    });
     await this.securityEventsService.log('VENDOR_USER_UPDATED', {
       userId: id,
       description: `Vendor user [${existing.username}] updated by [${operatorUserId || 'SYSTEM'}].`,
@@ -181,6 +203,16 @@ export class VendorUsersService {
 
     await this.vendorUsersRepository.deactivate(id);
 
+        await this.auditLogRepository.insert({
+      table_name: 'tbl_Users',
+      schema_name: 'auth',
+      operation: 'UPDATE',
+      record_id_text: id,
+      performed_by: operatorUserId || null,
+      source_module: 'authorization/vendor-users',
+      old_values: JSON.stringify(existing),
+      new_values: JSON.stringify({ ...existing, isActive: false }),
+    });
     await this.securityEventsService.log('VENDOR_USER_DEACTIVATED', {
       userId: id,
       description: `Vendor user [${existing.username}] deactivated by [${operatorUserId || 'SYSTEM'}].`,
@@ -201,7 +233,7 @@ export class VendorUsersService {
    * Called when a vendor organization is deactivated/suspended.
    */
   async deactivateAllByVendorId(
-    vendorId: string,
+    vendorId: number,
     operatorUserId?: string,
   ): Promise<void> {
     this.validateVendorIdShape(vendorId);
@@ -209,6 +241,15 @@ export class VendorUsersService {
     // TODO(domain-6): validate against vendor.Vendors
     await this.vendorUsersRepository.deactivateAllByVendorId(vendorId);
 
+        await this.auditLogRepository.insert({
+      table_name: 'tbl_Users',
+      schema_name: 'auth',
+      operation: 'UPDATE',
+      record_id_text: `VENDOR-${vendorId}`,
+      performed_by: operatorUserId || null,
+      source_module: 'authorization/vendor-users',
+      new_values: JSON.stringify({ isActive: false, vendor_id: vendorId }),
+    });
     await this.securityEventsService.log('VENDOR_DEACTIVATED_CASCADE', {
       description: `All vendor users for Vendor [${vendorId}] deactivated by [${operatorUserId || 'SYSTEM'}].`,
     });
@@ -217,13 +258,11 @@ export class VendorUsersService {
   /**
    * Validates the UUID format of a vendor reference.
    */
-  private validateVendorIdShape(vendorId: string): void {
-    const uuidRegex =
-      /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
-    if (!uuidRegex.test(vendorId)) {
+  private validateVendorIdShape(vendorId: number): void {
+    if (!Number.isInteger(vendorId) || vendorId <= 0) {
       throw new BadRequestException({
         code: USER_ERROR_CODES.VENDOR_REQUIRED,
-        message: `Invalid vendor ID shape [${vendorId}]. Must be a valid UUID.`,
+        message: `Invalid vendor ID shape [${vendorId}]. Must be a positive integer.`,
       });
     }
   }

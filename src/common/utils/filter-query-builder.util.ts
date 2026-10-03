@@ -1,7 +1,7 @@
 import { FilterCondition, FilterOperator } from '../dto/filtering.dto';
 
 export interface ColumnMapping {
-  [field: string]: string; // e.g. { userId: 'e.UserID', eventType: 'e.EventType' }
+  [field: string]: string; // e.g. { userId: 'e.user_id', eventType: 'e.event_type' }
 }
 
 export interface BuildWhereOptions {
@@ -12,7 +12,7 @@ export interface BuildWhereOptions {
 }
 
 export interface ParameterizedWhereResult {
-  whereClause: string; // e.g. "WHERE e.UserID = @0 AND e.EventType = @1"
+  whereClause: string; // e.g. "WHERE e.user_id = @0 AND e.event_type = @1"
   params: any[];
 }
 

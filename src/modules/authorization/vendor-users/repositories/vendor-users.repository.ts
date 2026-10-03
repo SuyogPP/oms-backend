@@ -21,28 +21,26 @@ export class VendorUsersRepository {
     const rows = await this.getExecutor(qr).query(
       `
       SELECT 
-          u.UserID AS userId,
+          u.user_id AS userId,
           u.Username AS username,
           u.Email AS email,
           u.UserType AS userType,
-          u.IsActive AS isActive,
-          u.IsDeleted AS isDeleted,
-          u.FailedLoginCount AS failedLoginCount,
-          u.LockedUntil AS lockedUntil,
-          u.CreatedAt AS createdAt,
-          u.UpdatedAt AS updatedAt,
-          p.UserProfileID AS userProfileId,
-          p.FirstName AS firstName,
-          p.LastName AS lastName,
-          RTRIM(LTRIM(p.FirstName + ' ' + ISNULL(p.LastName, ''))) AS displayName,
-          p.MobileNo AS phoneNumber,
-          p.JobTitle AS jobTitle,
-          CAST(NULL AS UNIQUEIDENTIFIER) AS vendorId
-      FROM [auth].[Users] u
-      INNER JOIN [auth].[UserProfiles] p ON p.UserID = u.UserID
-      WHERE u.UserType = 'VENDOR'
-        AND u.IsDeleted = 0
-      ORDER BY u.CreatedAt DESC;
+          u.is_active AS isActive,
+          0 AS isDeleted,
+          u.failed_login_count AS failedLoginCount,
+          u.locked_until AS lockedUntil,
+          u.created_at AS createdAt,
+          u.updated_at AS updatedAt,
+          NEWID() AS userProfileId,
+          u.first_name AS firstName,
+          u.last_name AS lastName,
+          RTRIM(LTRIM(u.first_name + ' ' + ISNULL(u.last_name, ''))) AS displayName,
+          u.mobile_no AS phoneNumber,
+          u.job_title AS jobTitle,
+          u.vendor_id AS vendorId
+      FROM [auth].[tbl_Users] u
+      WHERE u.user_type = 'VENDOR'
+      ORDER BY u.created_at DESC;
       `,
     );
 
@@ -84,28 +82,26 @@ export class VendorUsersRepository {
     const rows = await this.getExecutor(qr).query(
       `
       SELECT 
-          u.UserID AS userId,
+          u.user_id AS userId,
           u.Username AS username,
           u.Email AS email,
           u.UserType AS userType,
-          u.IsActive AS isActive,
-          u.IsDeleted AS isDeleted,
-          u.FailedLoginCount AS failedLoginCount,
-          u.LockedUntil AS lockedUntil,
-          u.CreatedAt AS createdAt,
-          u.UpdatedAt AS updatedAt,
-          p.UserProfileID AS userProfileId,
-          p.FirstName AS firstName,
-          p.LastName AS lastName,
-          RTRIM(LTRIM(p.FirstName + ' ' + ISNULL(p.LastName, ''))) AS displayName,
-          p.MobileNo AS phoneNumber,
-          p.JobTitle AS jobTitle,
-          CAST(NULL AS UNIQUEIDENTIFIER) AS vendorId
-      FROM [auth].[Users] u
-      INNER JOIN [auth].[UserProfiles] p ON p.UserID = u.UserID
-      WHERE u.UserID = @0
-        AND u.UserType = 'VENDOR'
-        AND u.IsDeleted = 0;
+          u.is_active AS isActive,
+          0 AS isDeleted,
+          u.failed_login_count AS failedLoginCount,
+          u.locked_until AS lockedUntil,
+          u.created_at AS createdAt,
+          u.updated_at AS updatedAt,
+          NEWID() AS userProfileId,
+          u.first_name AS firstName,
+          u.last_name AS lastName,
+          RTRIM(LTRIM(u.first_name + ' ' + ISNULL(u.last_name, ''))) AS displayName,
+          u.mobile_no AS phoneNumber,
+          u.job_title AS jobTitle,
+          u.vendor_id AS vendorId
+      FROM [auth].[tbl_Users] u
+      WHERE u.user_id = @0
+        AND u.user_type = 'VENDOR';
       `,
       [userId],
     );
@@ -159,18 +155,22 @@ export class VendorUsersRepository {
     try {
       const userRows = await runner.query(
         `
-        INSERT INTO [auth].[Users] (
-            UserID,
-            Username,
-            Email,
-            UserType,
-            IsActive,
-            IsDeleted,
-            FailedLoginCount,
-            CreatedAt,
-            UpdatedAt
+        INSERT INTO [auth].[tbl_Users] (
+            user_id,
+            username,
+            email,
+            user_type,
+            is_active,
+            failed_login_count,
+            vendor_id,
+            first_name,
+            last_name,
+            mobile_no,
+            job_title,
+            created_at,
+            updated_at
         )
-        OUTPUT INSERTED.UserID AS userId
+        OUTPUT INSERTED.user_id AS userId
         VALUES (
             NEWID(),
             @0,
@@ -178,51 +178,19 @@ export class VendorUsersRepository {
             'VENDOR',
             1,
             0,
-            0,
+            @2,
+            @3,
+            @4,
+            @5,
+            @6,
             SYSUTCDATETIME(),
             SYSUTCDATETIME()
         );
         `,
-        [data.username, data.email],
+        [data.username, data.email, data.vendorId, data.firstName, data.lastName, data.phoneNumber || null, data.jobTitle || null],
       );
 
       const userId = userRows[0].userId;
-      const displayName = `${data.firstName} ${data.lastName}`.trim();
-
-      // Insert profile with V5 invariant (no org unit references)
-      await runner.query(
-        `
-        INSERT INTO [auth].[UserProfiles] (
-            UserProfileID,
-            UserID,
-            FirstName,
-            LastName,
-            MobileNo,
-            JobTitle,
-            BusinessUnitID,
-            DepartmentID,
-            SectionID
-        )
-        VALUES (
-            NEWID(),
-            @0,
-            @1,
-            @2,
-            @3,
-            @4,
-            NULL,
-            NULL,
-            NULL
-        );
-        `,
-        [
-          userId,
-          data.firstName,
-          data.lastName,
-          data.phoneNumber || null,
-          data.jobTitle || null,
-        ],
-      );
 
       if (shouldManageTransaction) {
         await runner.commitTransaction();
@@ -258,35 +226,42 @@ export class VendorUsersRepository {
     }
 
     try {
-      if (data.email) {
-        await runner.query(
-          `
-          UPDATE [auth].[Users]
-          SET Email = @1, UpdatedAt = SYSUTCDATETIME()
-          WHERE UserID = @0 AND UserType = 'VENDOR';
-          `,
-          [userId, data.email],
-        );
+      const updates: string[] = [];
+      const params: any[] = [userId];
+      let pIdx = 1;
+
+      if (data.email !== undefined) {
+        updates.push(`email = @${pIdx++}`);
+        params.push(data.email);
+      }
+      if (data.firstName !== undefined) {
+        updates.push(`first_name = @${pIdx++}`);
+        params.push(data.firstName);
+      }
+      if (data.lastName !== undefined) {
+        updates.push(`last_name = @${pIdx++}`);
+        params.push(data.lastName);
+      }
+      if (data.phoneNumber !== undefined) {
+        updates.push(`mobile_no = @${pIdx++}`);
+        params.push(data.phoneNumber);
+      }
+      if (data.jobTitle !== undefined) {
+        updates.push(`job_title = @${pIdx++}`);
+        params.push(data.jobTitle);
       }
 
-      await runner.query(
-        `
-        UPDATE [auth].[UserProfiles]
-        SET 
-            FirstName = COALESCE(@1, FirstName),
-            LastName = COALESCE(@2, LastName),
-            MobileNo = COALESCE(@3, MobileNo),
-            JobTitle = COALESCE(@4, JobTitle)
-        WHERE UserID = @0;
-        `,
-        [
-          userId,
-          data.firstName || null,
-          data.lastName || null,
-          data.phoneNumber || null,
-          data.jobTitle || null,
-        ],
-      );
+      if (updates.length > 0) {
+        updates.push(`updated_at = SYSUTCDATETIME()`);
+        await runner.query(
+          `
+          UPDATE [auth].[tbl_Users]
+          SET ${updates.join(', ')}
+          WHERE user_id = @0 AND user_type = 'VENDOR';
+          `,
+          params,
+        );
+      }
 
       if (shouldManageTransaction) {
         await runner.commitTransaction();
@@ -309,9 +284,9 @@ export class VendorUsersRepository {
   async deactivate(userId: string, qr?: QueryRunner): Promise<void> {
     await this.getExecutor(qr).query(
       `
-      UPDATE [auth].[Users]
-      SET IsActive = 0, UpdatedAt = SYSUTCDATETIME()
-      WHERE UserID = @0 AND UserType = 'VENDOR';
+      UPDATE [auth].[tbl_Users]
+      SET is_active = 0, updated_at = SYSUTCDATETIME()
+      WHERE user_id = @0 AND user_type = 'VENDOR';
       `,
       [userId],
     );
@@ -321,14 +296,14 @@ export class VendorUsersRepository {
    * Deactivates all users associated with a specific vendor ID (V10 rule).
    */
   async deactivateAllByVendorId(
-    vendorId: string,
+    vendorId: number,
     qr?: QueryRunner,
   ): Promise<void> {
     await this.getExecutor(qr).query(
       `
-      UPDATE [auth].[Users]
-      SET IsActive = 0, UpdatedAt = SYSUTCDATETIME()
-      WHERE UserType = 'VENDOR' AND IsDeleted = 0;
+      UPDATE [auth].[tbl_Users]
+      SET is_active = 0, updated_at = SYSUTCDATETIME()
+      WHERE user_type = 'VENDOR' AND vendor_id = @0;
       `,
     );
   }

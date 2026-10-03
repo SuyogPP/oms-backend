@@ -15,21 +15,17 @@ export class OrgUnitChangeLogRepository {
    *
    * @param data The change log record to insert
    * @param qr Optional QueryRunner for transactional atomicity
-   * @returns The generated OrgUnitChangeLogId
+   * @returns The generated org_unit_change_log_id
    */
   async create(
     data: {
-      orgUnitId: string;
+      orgUnitId: number;
       changeType: string;
-      oldParentOrgUnitId?: string | null;
-      newParentOrgUnitId?: string | null;
+      oldParentId?: number | null;
+      newParentId?: number | null;
       oldValues?: any;
       newValues?: any;
-      affectedNodeCount?: number | null;
       reason?: string | null;
-      correlationId?: string | null;
-      ipAddress?: string | null;
-      userAgent?: string | null;
       performedBy?: string | null;
     },
     qr?: QueryRunner,
@@ -49,39 +45,31 @@ export class OrgUnitChangeLogRepository {
         : null;
 
     const sql = `
-      INSERT INTO org.OrgUnitChangeLog (
-        OrgUnitId,
-        ChangeType,
-        OldParentOrgUnitId,
-        NewParentOrgUnitId,
-        OldValues,
-        NewValues,
-        AffectedNodeCount,
-        Reason,
-        CorrelationId,
-        IPAddress,
-        UserAgent,
-        PerformedBy,
-        PerformedAt
+      INSERT INTO auth.org_unit_change_log (
+        org_unit_id,
+        change_type,
+        old_parent_id,
+        new_parent_id,
+        old_values,
+        new_values,
+        reason,
+        performed_by,
+        performed_at
       )
-      OUTPUT INSERTED.OrgUnitChangeLogId AS logId
+      OUTPUT INSERTED.org_unit_change_log_id AS logId
       VALUES (
-        @0, @1, @2, @3, @4, @5, @6, @7, @8, @9, @10, @11, SYSUTCDATETIME()
+        @0, @1, @2, @3, @4, @5, @6, @7, SYSUTCDATETIME()
       );
     `;
 
     const params = [
       data.orgUnitId,
       data.changeType,
-      data.oldParentOrgUnitId ?? null,
-      data.newParentOrgUnitId ?? null,
+      data.oldParentId ?? null,
+      data.newParentId ?? null,
       oldValuesJson,
       newValuesJson,
-      data.affectedNodeCount ?? null,
       data.reason ?? null,
-      data.correlationId ?? null,
-      data.ipAddress ?? null,
-      data.userAgent ?? null,
       data.performedBy ?? null,
     ];
 
@@ -93,7 +81,7 @@ export class OrgUnitChangeLogRepository {
    * Retrieves paginated change log history for a specific organization unit.
    */
   async findByOrgUnitId(
-    orgUnitId: string,
+    orgUnitId: number,
     page = 1,
     pageSize = 20,
     qr?: QueryRunner,
@@ -102,8 +90,8 @@ export class OrgUnitChangeLogRepository {
 
     const countSql = `
       SELECT COUNT(*) AS total
-      FROM org.OrgUnitChangeLog
-      WHERE OrgUnitId = @0;
+      FROM auth.org_unit_change_log
+      WHERE org_unit_id = @0;
     `;
     const countRes = await this.getExecutor(qr).query(countSql, [orgUnitId]);
     const total = Number(countRes[0]?.total || 0);
@@ -111,37 +99,29 @@ export class OrgUnitChangeLogRepository {
     const dataSql = `
       WITH NumberedRows AS (
         SELECT
-          OrgUnitChangeLogId AS orgUnitChangeLogId,
-          OrgUnitId AS orgUnitId,
-          ChangeType AS changeType,
-          OldParentOrgUnitId AS oldParentOrgUnitId,
-          NewParentOrgUnitId AS newParentOrgUnitId,
-          OldValues AS oldValues,
-          NewValues AS newValues,
-          AffectedNodeCount AS affectedNodeCount,
-          Reason AS reason,
-          CorrelationId AS correlationId,
-          IPAddress AS ipAddress,
-          UserAgent AS userAgent,
-          PerformedBy AS performedBy,
-          PerformedAt AS performedAt,
-          ROW_NUMBER() OVER (ORDER BY PerformedAt DESC, OrgUnitChangeLogId DESC) AS RowNum
-        FROM org.OrgUnitChangeLog
-        WHERE OrgUnitId = @0
+          org_unit_change_log_id AS orgUnitChangeLogId,
+          org_unit_id AS orgUnitId,
+          change_type AS changeType,
+          old_parent_id AS oldParentId,
+          new_parent_id AS newParentId,
+          old_values AS oldValues,
+          new_values AS newValues,
+          reason AS reason,
+          performed_by AS performedBy,
+          performed_at AS performedAt,
+          ROW_NUMBER() OVER (ORDER BY performed_at DESC, org_unit_change_log_id DESC) AS RowNum
+        FROM auth.org_unit_change_log
+        WHERE org_unit_id = @0
       )
       SELECT
         orgUnitChangeLogId,
         orgUnitId,
         changeType,
-        oldParentOrgUnitId,
-        newParentOrgUnitId,
+        oldParentId,
+        newParentId,
         oldValues,
         newValues,
-        affectedNodeCount,
         reason,
-        correlationId,
-        ipAddress,
-        userAgent,
         performedBy,
         performedAt
       FROM NumberedRows
@@ -170,7 +150,7 @@ export class OrgUnitChangeLogRepository {
 
     const countSql = `
       SELECT COUNT(*) AS total
-      FROM org.OrgUnitChangeLog;
+      FROM auth.org_unit_change_log;
     `;
     const countRes = await this.getExecutor(qr).query(countSql);
     const total = Number(countRes[0]?.total || 0);
@@ -178,36 +158,28 @@ export class OrgUnitChangeLogRepository {
     const dataSql = `
       WITH NumberedRows AS (
         SELECT
-          OrgUnitChangeLogId AS orgUnitChangeLogId,
-          OrgUnitId AS orgUnitId,
-          ChangeType AS changeType,
-          OldParentOrgUnitId AS oldParentOrgUnitId,
-          NewParentOrgUnitId AS newParentOrgUnitId,
-          OldValues AS oldValues,
-          NewValues AS newValues,
-          AffectedNodeCount AS affectedNodeCount,
-          Reason AS reason,
-          CorrelationId AS correlationId,
-          IPAddress AS ipAddress,
-          UserAgent AS userAgent,
-          PerformedBy AS performedBy,
-          PerformedAt AS performedAt,
-          ROW_NUMBER() OVER (ORDER BY PerformedAt DESC, OrgUnitChangeLogId DESC) AS RowNum
-        FROM org.OrgUnitChangeLog
+          org_unit_change_log_id AS orgUnitChangeLogId,
+          org_unit_id AS orgUnitId,
+          change_type AS changeType,
+          old_parent_id AS oldParentId,
+          new_parent_id AS newParentId,
+          old_values AS oldValues,
+          new_values AS newValues,
+          reason AS reason,
+          performed_by AS performedBy,
+          performed_at AS performedAt,
+          ROW_NUMBER() OVER (ORDER BY performed_at DESC, org_unit_change_log_id DESC) AS RowNum
+        FROM auth.org_unit_change_log
       )
       SELECT
         orgUnitChangeLogId,
         orgUnitId,
         changeType,
-        oldParentOrgUnitId,
-        newParentOrgUnitId,
+        oldParentId,
+        newParentId,
         oldValues,
         newValues,
-        affectedNodeCount,
         reason,
-        correlationId,
-        ipAddress,
-        userAgent,
         performedBy,
         performedAt
       FROM NumberedRows

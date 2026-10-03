@@ -26,11 +26,11 @@
  * 4. 16 demo users from Part 3.1 with password Demo@2026!, MustChangePassword = false, IsActive = true.
  * 5. Layla Hassan: UserType = VENDOR, NO auth.UserOrganizationScopes row (Domain 3 Rule V4).
  * 6. Internal users: exactly one auth.UserOrganizationScopes row matching their org scope.
- * 7. Role assignments: auth.UserRoles with EffectiveFrom = today, EffectiveTo = null, IsActive = true.
+ * 7. Role assignments: auth.tbl_User_Roles with EffectiveFrom = today, EffectiveTo = null, IsActive = true.
  * 8. Strict dependency check: if any role or org unit is missing from the database, STOP and report
  *    exactly what's missing rather than silently skipping that user.
  *    (Use --allow-partial to seed only users whose prerequisites are met).
- *    Do NOT touch org.OrgUnits, auth.Roles, or auth.Permissions structurally in this script.
+ *    Do NOT touch org.OrgUnits, auth.tbl_Roles, or auth.tbl_Permissions structurally in this script.
  * 9. Loud demo-only header block.
  * 10. Print credential table: Username | Email | Role | Password.
  */
@@ -302,15 +302,15 @@ async function main() {
 
     // Query Roles
     const rolesResult = await pool.request().query(`
-      SELECT RoleID, RoleCode, RoleName, IsActive 
-      FROM [auth].[Roles]
+      SELECT role_id, role_code, role_name, is_active 
+      FROM [auth].tbl_Roles]
     `);
     const roleMap = new Map<string, { roleId: string; roleName: string; isActive: boolean }>();
     for (const row of rolesResult.recordset) {
-      roleMap.set(row.RoleCode.toUpperCase(), {
-        roleId: row.RoleID,
-        roleName: row.RoleName,
-        isActive: row.IsActive,
+      roleMap.set(row.role_code.toUpperCase(), {
+        roleId: row.role_id,
+        roleName: row.role_name,
+        isActive: row.is_active,
       });
     }
 
@@ -326,15 +326,15 @@ async function main() {
 
     // Query Org Units (search by code, name, and shortname)
     const orgUnitsResult = await pool.request().query(`
-      SELECT OrgUnitID, Code, Name, ShortName, Depth, OrgUnitTypeId
+      SELECT org_unit_id, Code, Name, ShortName, Depth, OrgUnitTypeId
       FROM [org].[OrgUnits]
       WHERE IsDeleted = 0
     `);
     const orgUnitMap = new Map<string, { orgUnitId: string; name: string; code: string }>();
     for (const row of orgUnitsResult.recordset) {
-      if (row.Code) orgUnitMap.set(row.Code.toUpperCase(), { orgUnitId: row.OrgUnitID, name: row.Name, code: row.Code });
-      if (row.Name) orgUnitMap.set(row.Name.toUpperCase(), { orgUnitId: row.OrgUnitID, name: row.Name, code: row.Code });
-      if (row.ShortName) orgUnitMap.set(row.ShortName.toUpperCase(), { orgUnitId: row.OrgUnitID, name: row.Name, code: row.Code });
+      if (row.Code) orgUnitMap.set(row.Code.toUpperCase(), { orgUnitId: row.org_unit_id, name: row.Name, code: row.Code });
+      if (row.Name) orgUnitMap.set(row.Name.toUpperCase(), { orgUnitId: row.org_unit_id, name: row.Name, code: row.Code });
+      if (row.ShortName) orgUnitMap.set(row.ShortName.toUpperCase(), { orgUnitId: row.org_unit_id, name: row.Name, code: row.Code });
     }
 
     // Identify DIEZ Root OrgUnit
@@ -360,10 +360,10 @@ async function main() {
       // Check Role
       const role = roleMap.get(user.roleCode.toUpperCase());
       if (!role) {
-        reasons.push(`Missing role '${user.roleCode}' in auth.Roles`);
+        reasons.push(`Missing role '${user.roleCode}' in auth.tbl_Roles`);
         missingRoles.add(user.roleCode);
       } else if (!role.isActive) {
-        reasons.push(`Role '${user.roleCode}' is inactive in auth.Roles`);
+        reasons.push(`Role '${user.roleCode}' is inactive in auth.tbl_Roles`);
       } else {
         roleId = role.roleId;
       }
@@ -429,12 +429,12 @@ async function main() {
       console.log('Per Requirement 8: If any role or org unit is missing from the database,');
       console.log('this script stops and reports exactly what is missing rather than silently');
       console.log('skipping those users.');
-      console.log('Per specification: Do not touch org.OrgUnits, auth.Roles, or auth.Permissions');
+      console.log('Per specification: Do not touch org.OrgUnits, auth.tbl_Roles, or auth.tbl_Permissions');
       console.log('structurally in this script.');
       console.log('-'.repeat(80));
 
       if (missingRoles.size > 0) {
-        console.log('Missing Roles in [auth].[Roles]:');
+        console.log('Missing Roles in [auth].tbl_Roles]:');
         for (const r of missingRoles) {
           console.log(`  • ${r}`);
         }
@@ -493,12 +493,12 @@ async function main() {
         const orgUnitId = item.orgUnitId;
         const scopeDefId = item.scopeDefId;
 
-        // 1. auth.Users (Idempotent: check Username before insert, update on rerun)
+        // 1. auth.tbl_Users (Idempotent: check Username before insert, update on rerun)
         let userId: string;
         const existingUserReq = new sql.Request(transaction);
         existingUserReq.input('username', sql.NVarChar, u.username);
         const existingUserResult = await existingUserReq.query(`
-          SELECT UserID FROM [auth].[Users] WHERE LOWER(Username) = LOWER(@username)
+          SELECT user_id FROM [auth].tbl_Users] WHERE LOWER(Username) = LOWER(@username)
         `);
 
         if (existingUserResult.recordset.length > 0) {
@@ -508,15 +508,15 @@ async function main() {
           updateUserReq.input('email', sql.NVarChar, u.email);
           updateUserReq.input('userType', sql.NVarChar, u.userType);
           await updateUserReq.query(`
-            UPDATE [auth].[Users]
+            UPDATE [auth].tbl_Users]
             SET Email = @email,
                 UserType = @userType,
-                IsActive = 1,
+                is_active = 1,
                 IsDeleted = 0,
-                FailedLoginCount = 0,
-                LockedUntil = NULL,
-                UpdatedAt = SYSUTCDATETIME()
-            WHERE UserID = @userId
+                failed_login_count = 0,
+                locked_until = NULL,
+                updated_at = SYSUTCDATETIME()
+            WHERE user_id = @userId
           `);
         } else {
           const insertUserReq = new sql.Request(transaction);
@@ -524,18 +524,18 @@ async function main() {
           insertUserReq.input('email', sql.NVarChar, u.email);
           insertUserReq.input('userType', sql.NVarChar, u.userType);
           const insertUserResult = await insertUserReq.query(`
-            INSERT INTO [auth].[Users] (
-                UserID,
+            INSERT INTO [auth].tbl_Users] (
+                user_id,
                 Username,
                 Email,
                 UserType,
-                IsActive,
+                is_active,
                 IsDeleted,
-                FailedLoginCount,
-                CreatedAt,
-                UpdatedAt
+                failed_login_count,
+                created_at,
+                updated_at
             )
-            OUTPUT INSERTED.UserID AS userId
+            OUTPUT INSERTED.user_id AS userId
             VALUES (
                 NEWID(),
                 @username,
@@ -559,27 +559,27 @@ async function main() {
         profileReq.input('jobTitle', sql.NVarChar, u.jobTitle);
         profileReq.input('deptId', sql.UniqueIdentifier, orgUnitId || null);
         await profileReq.query(`
-          IF EXISTS (SELECT 1 FROM [auth].[UserProfiles] WHERE UserID = @userId)
+          IF EXISTS (SELECT 1 FROM [auth].[UserProfiles] WHERE user_id = @userId)
           BEGIN
               UPDATE [auth].[UserProfiles]
-              SET FirstName = @firstName,
-                  LastName = @lastName,
-                  JobTitle = @jobTitle,
+              SET first_name = @firstName,
+                  last_name = @lastName,
+                  job_title = @jobTitle,
                   DepartmentID = @deptId,
-                  UpdatedAt = SYSUTCDATETIME()
-              WHERE UserID = @userId;
+                  updated_at = SYSUTCDATETIME()
+              WHERE user_id = @userId;
           END
           ELSE
           BEGIN
               INSERT INTO [auth].[UserProfiles] (
                   UserProfileID,
-                  UserID,
-                  FirstName,
-                  LastName,
-                  JobTitle,
+                  user_id,
+                  first_name,
+                  last_name,
+                  job_title,
                   DepartmentID,
-                  CreatedAt,
-                  UpdatedAt
+                  created_at,
+                  updated_at
               )
               VALUES (
                   NEWID(),
@@ -594,30 +594,30 @@ async function main() {
           END
         `);
 
-        // 3. auth.LocalCredentials (Idempotent: update password hash, MustChangePassword = false, IsActive = true)
+        // 3. auth.tbl_Local_Credentials (Idempotent: update password hash, MustChangePassword = false, IsActive = true)
         const credReq = new sql.Request(transaction);
         credReq.input('userId', sql.UniqueIdentifier, userId);
         credReq.input('passwordHash', sql.NVarChar, passwordHash);
         await credReq.query(`
-          IF EXISTS (SELECT 1 FROM [auth].[LocalCredentials] WHERE UserID = @userId)
+          IF EXISTS (SELECT 1 FROM [auth].tbl_Local_Credentials] WHERE user_id = @userId)
           BEGIN
-              UPDATE [auth].[LocalCredentials]
-              SET PasswordHash = @passwordHash,
-                  PasswordChangedAt = SYSUTCDATETIME(),
-                  MustChangePassword = 0,
-                  IsActive = 1
-              WHERE UserID = @userId;
+              UPDATE [auth].tbl_Local_Credentials]
+              SET password_hash = @passwordHash,
+                  password_changed_at = SYSUTCDATETIME(),
+                  must_change_password = 0,
+                  is_active = 1
+              WHERE user_id = @userId;
           END
           ELSE
           BEGIN
-              INSERT INTO [auth].[LocalCredentials] (
-                  CredentialID,
-                  UserID,
-                  PasswordHash,
-                  PasswordChangedAt,
-                  MustChangePassword,
-                  IsActive,
-                  CreatedAt
+              INSERT INTO [auth].tbl_Local_Credentials] (
+                  credential_id,
+                  user_id,
+                  password_hash,
+                  password_changed_at,
+                  must_change_password,
+                  is_active,
+                  created_at
               )
               VALUES (
                   NEWID(),
@@ -631,29 +631,29 @@ async function main() {
           END
         `);
 
-        // 4. auth.UserRoles (Idempotent: EffectiveFrom = today, EffectiveTo = null, IsActive = true)
+        // 4. auth.tbl_User_Roles (Idempotent: EffectiveFrom = today, EffectiveTo = null, IsActive = true)
         const roleAssignReq = new sql.Request(transaction);
         roleAssignReq.input('userId', sql.UniqueIdentifier, userId);
         roleAssignReq.input('roleId', sql.UniqueIdentifier, roleId);
         await roleAssignReq.query(`
-          IF EXISTS (SELECT 1 FROM [auth].[UserRoles] WHERE UserID = @userId AND RoleID = @roleId)
+          IF EXISTS (SELECT 1 FROM [auth].tbl_User_Roles] WHERE user_id = @userId AND role_id = @roleId)
           BEGIN
-              UPDATE [auth].[UserRoles]
-              SET EffectiveFrom = CAST(GETUTCDATE() AS DATE),
-                  EffectiveTo = NULL,
-                  IsActive = 1
-              WHERE UserID = @userId AND RoleID = @roleId;
+              UPDATE [auth].tbl_User_Roles]
+              SET effective_from = CAST(GETUTCDATE() AS DATE),
+                  effective_to = NULL,
+                  is_active = 1
+              WHERE user_id = @userId AND role_id = @roleId;
           END
           ELSE
           BEGIN
-              INSERT INTO [auth].[UserRoles] (
-                  UserRoleID,
-                  UserID,
-                  RoleID,
-                  EffectiveFrom,
-                  EffectiveTo,
-                  IsActive,
-                  AssignedAt
+              INSERT INTO [auth].tbl_User_Roles] (
+                  user_role_id,
+                  user_id,
+                  role_id,
+                  effective_from,
+                  effective_to,
+                  is_active,
+                  assigned_at
               )
               VALUES (
                   NEWID(),
@@ -673,7 +673,7 @@ async function main() {
           const delScopeReq = new sql.Request(transaction);
           delScopeReq.input('userId', sql.UniqueIdentifier, userId);
           await delScopeReq.query(`
-            DELETE FROM [auth].[UserOrganizationScopes] WHERE UserID = @userId
+            DELETE FROM [auth].[UserOrganizationScopes] WHERE user_id = @userId
           `);
         } else if (scopeDefId && orgUnitId) {
           // Requirement 6: Exactly one auth.UserOrganizationScopes row
@@ -687,7 +687,7 @@ async function main() {
           scopeReq.input('departmentId', sql.UniqueIdentifier, !isOrgLevel ? orgUnitId : null);
 
           await scopeReq.query(`
-            IF EXISTS (SELECT 1 FROM [auth].[UserOrganizationScopes] WHERE UserID = @userId)
+            IF EXISTS (SELECT 1 FROM [auth].[UserOrganizationScopes] WHERE user_id = @userId)
             BEGIN
                 UPDATE [auth].[UserOrganizationScopes]
                 SET ScopeDefinitionID = @scopeDefId,
@@ -696,27 +696,27 @@ async function main() {
                     DepartmentID = @departmentId,
                     SectionID = NULL,
                     OrgUnitId = @orgUnitId,
-                    EffectiveFrom = CAST(GETUTCDATE() AS DATE),
-                    EffectiveTo = NULL,
-                    IsActive = 1,
-                    AssignedAt = SYSUTCDATETIME()
-                WHERE UserID = @userId;
+                    effective_from = CAST(GETUTCDATE() AS DATE),
+                    effective_to = NULL,
+                    is_active = 1,
+                    assigned_at = SYSUTCDATETIME()
+                WHERE user_id = @userId;
             END
             ELSE
             BEGIN
                 INSERT INTO [auth].[UserOrganizationScopes] (
                     UserOrganizationScopeID,
-                    UserID,
+                    user_id,
                     ScopeDefinitionID,
                     OrganizationID,
                     BusinessUnitID,
                     DepartmentID,
                     SectionID,
                     OrgUnitId,
-                    EffectiveFrom,
-                    EffectiveTo,
-                    IsActive,
-                    AssignedAt
+                    effective_from,
+                    effective_to,
+                    is_active,
+                    assigned_at
                 )
                 VALUES (
                     NEWID(),

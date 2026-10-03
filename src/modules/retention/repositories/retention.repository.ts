@@ -9,8 +9,8 @@ export class RetentionRepository {
 
   async purgeSecurityEvents(days: number): Promise<number> {
     const query = `
-            DELETE FROM [auth].[SecurityEvents]
-            WHERE CreatedAt < DATEADD(DAY, -@0, SYSUTCDATETIME())
+            DELETE FROM [auth].[tbl_Security_Events]
+            WHERE created_at < DATEADD(DAY, -@0, SYSUTCDATETIME())
         `;
     const result = await this.dataSource.query(query, [days]);
     return typeof result?.[1] === 'number' ? result[1] : 0;
@@ -18,8 +18,8 @@ export class RetentionRepository {
 
   async purgeLoginHistory(days: number): Promise<number> {
     const query = `
-            DELETE FROM [auth].[LoginHistory]
-            WHERE LoginAt < DATEADD(DAY, -@0, SYSUTCDATETIME())
+            DELETE FROM [auth].[tbl_Login_History]
+            WHERE login_at < DATEADD(DAY, -@0, SYSUTCDATETIME())
         `;
     const result = await this.dataSource.query(query, [days]);
     return typeof result?.[1] === 'number' ? result[1] : 0;
@@ -27,8 +27,8 @@ export class RetentionRepository {
 
   async purgeLogoutHistory(days: number): Promise<number> {
     const query = `
-            DELETE FROM [auth].[LogoutHistory]
-            WHERE LogoutAt < DATEADD(DAY, -@0, SYSUTCDATETIME())
+            DELETE FROM [auth].[tbl_Logout_History]
+            WHERE logout_at < DATEADD(DAY, -@0, SYSUTCDATETIME())
         `;
     const result = await this.dataSource.query(query, [days]);
     return typeof result?.[1] === 'number' ? result[1] : 0;
@@ -36,8 +36,8 @@ export class RetentionRepository {
 
   async purgeFailedLogins(days: number): Promise<number> {
     const query = `
-            DELETE FROM [auth].[FailedLoginAttempts]
-            WHERE AttemptedAt < DATEADD(DAY, -@0, SYSUTCDATETIME())
+            DELETE FROM [auth].[tbl_Failed_Login_Attempts]
+            WHERE attempted_at < DATEADD(DAY, -@0, SYSUTCDATETIME())
         `;
     const result = await this.dataSource.query(query, [days]);
     return typeof result?.[1] === 'number' ? result[1] : 0;
@@ -45,9 +45,9 @@ export class RetentionRepository {
 
   async purgeInactiveSessions(days: number): Promise<number> {
     const query = `
-            DELETE FROM [auth].[LoginSessions]
-            WHERE (IsActive = 0 OR RevokedAt IS NOT NULL OR ExpiresAt < SYSUTCDATETIME())
-            AND LastActivityAt < DATEADD(DAY, -@0, SYSUTCDATETIME())
+            DELETE FROM [auth].[tbl_Login_Sessions]
+            WHERE (IsActive = 0 OR revoked_at IS NOT NULL OR expires_at < SYSUTCDATETIME())
+            AND last_activity_at < DATEADD(DAY, -@0, SYSUTCDATETIME())
         `;
     const result = await this.dataSource.query(query, [days]);
     return typeof result?.[1] === 'number' ? result[1] : 0;

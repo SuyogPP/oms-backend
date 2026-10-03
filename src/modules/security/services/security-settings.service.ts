@@ -22,7 +22,7 @@ export class SecuritySettingsService {
     const rows = await this.repository.getAllSettings();
     const map: Record<string, string> = {};
     for (const row of rows) {
-      map[row.SettingCode] = row.SettingValue;
+      map[row.setting_code] = row.setting_value;
     }
 
     return {

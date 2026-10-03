@@ -85,9 +85,7 @@ describe('Vendor User Security Invariants & Internal Endpoint Rejections (Rules 
   describe('3. Rule V5: Vendor Profile Cannot Link to Internal Org Units', () => {
     it('rejects profile with DepartmentID with 400 VENDOR_ORG_UNIT_NOT_ALLOWED', () => {
       expect(() => {
-        validationService.validateV5_VendorOrgUnitProfile(USER_TYPES.VENDOR, {
-          departmentId: 'dept-123',
-        });
+        validationService.validateV5_VendorOrgUnitProfile(USER_TYPES.VENDOR, 'dept-123');
       }).toThrow(
         expect.objectContaining({
           response: expect.objectContaining({
@@ -99,9 +97,7 @@ describe('Vendor User Security Invariants & Internal Endpoint Rejections (Rules 
 
     it('rejects profile with BusinessUnitID with 400 VENDOR_ORG_UNIT_NOT_ALLOWED', () => {
       expect(() => {
-        validationService.validateV5_VendorOrgUnitProfile(USER_TYPES.VENDOR, {
-          businessUnitId: 'bu-123',
-        });
+        validationService.validateV5_VendorOrgUnitProfile(USER_TYPES.VENDOR, 'bu-123');
       }).toThrow(
         expect.objectContaining({
           response: expect.objectContaining({
@@ -113,12 +109,7 @@ describe('Vendor User Security Invariants & Internal Endpoint Rejections (Rules 
 
     it('accepts vendor profile with null org unit references', () => {
       expect(() => {
-        validationService.validateV5_VendorOrgUnitProfile(USER_TYPES.VENDOR, {
-          organizationId: null,
-          businessUnitId: null,
-          departmentId: null,
-          sectionId: null,
-        });
+        validationService.validateV5_VendorOrgUnitProfile(USER_TYPES.VENDOR, null);
       }).not.toThrow();
     });
   });

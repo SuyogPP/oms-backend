@@ -75,7 +75,7 @@ export class DelegationsService {
    * Creates a delegation of authority enforcing Rules D1-D7 (§9.3).
    *
    * G6 Decision:
-   * Option (b) - Permission-Scoped Delegation (via auth.DelegationPermissions) with
+   * Option (b) - Permission-Scoped Delegation (via auth.tbl_Delegation_Permissions) with
    * fallback to Option (a) all-or-nothing delegation if no permissions are specified.
    *
    * Rules Enforced:
@@ -388,16 +388,16 @@ export class DelegationsService {
   ): Promise<boolean> {
     const rows = await this.dataSource.query(
       `
-      SELECT 1 FROM [auth].[UserRoles] ur
-      INNER JOIN [auth].[RolePermissions] rp ON rp.RoleID = ur.RoleID
-      INNER JOIN [auth].[Permissions] p ON p.PermissionID = rp.PermissionID
-      INNER JOIN [auth].[Roles] r ON r.RoleID = ur.RoleID
-      WHERE ur.UserID = @0
+      SELECT 1 FROM [auth].[tbl_User_Roles] ur
+      INNER JOIN [auth].[tbl_Role_Permissions] rp ON rp.role_id = ur.role_id
+      INNER JOIN [auth].[tbl_Permissions] p ON p.permission_id = rp.permission_id
+      INNER JOIN [auth].[tbl_Roles] r ON r.role_id = ur.role_id
+      WHERE ur.user_id = @0
         AND ur.IsActive = 1
-        AND r.IsActive = 1
-        AND (r.RoleCode = 'SYSTEM_ADMIN' OR p.PermissionCode = @1)
-        AND ur.EffectiveFrom <= SYSUTCDATETIME()
-        AND (ur.EffectiveTo IS NULL OR ur.EffectiveTo > SYSUTCDATETIME());
+        AND r.is_active = 1
+        AND (r.role_code = 'SYSTEM_ADMIN' OR p.permission_code = @1)
+        AND ur.effective_from <= SYSUTCDATETIME()
+        AND (ur.effective_to IS NULL OR ur.effective_to > SYSUTCDATETIME());
       `,
       [userId, USER_PERMISSIONS.DELEGATION_MANAGE],
     );
@@ -417,11 +417,11 @@ export class DelegationsService {
       `
       SELECT 1 FROM [auth].[UserOrganizationScopes] s
       INNER JOIN [auth].[ScopeDefinitions] sd ON sd.ScopeDefinitionID = s.ScopeDefinitionID
-      WHERE s.UserID = @0
+      WHERE s.user_id = @0
         AND sd.ScopeCode = 'GLOBAL'
-        AND (s.IsActive = 1 OR s.IsActive IS NULL)
-        AND (s.EffectiveFrom IS NULL OR s.EffectiveFrom <= SYSUTCDATETIME())
-        AND (s.EffectiveTo IS NULL OR s.EffectiveTo > SYSUTCDATETIME());
+        AND (s.is_active = 1 OR s.is_active IS NULL)
+        AND (s.effective_from IS NULL OR s.effective_from <= SYSUTCDATETIME())
+        AND (s.effective_to IS NULL OR s.effective_to > SYSUTCDATETIME());
       `,
       [requesterUserId],
     );

@@ -1,9 +1,14 @@
 import { Injectable } from '@nestjs/common';
+import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
+import { AUDIT_DB_CONNECTION } from '../../../database/database.constants';
 
 @Injectable()
 export class AuditRepository {
-  constructor(private readonly dataSource: DataSource) {}
+  constructor(
+    @InjectDataSource(AUDIT_DB_CONNECTION)
+    private readonly dataSource: DataSource,
+  ) {}
 
   async ensureDevice(data: {
     deviceFingerprint: string;
@@ -16,8 +21,8 @@ export class AuditRepository {
     const existingDevice = await this.dataSource.query(
       `
             SELECT DeviceID
-            FROM [OMS_Audit_DB].[audit].[Devices]
-            WHERE DeviceFingerprint = @0
+            FROM [audit].[Devices]
+            WHERE device_fingerprint = @0
             `,
       [data.deviceFingerprint],
     );
@@ -27,13 +32,13 @@ export class AuditRepository {
 
       await this.dataSource.query(
         `
-                UPDATE [OMS_Audit_DB].[audit].[Devices]
+                UPDATE [audit].[Devices]
                 SET
                     LastSeenAt = SYSUTCDATETIME(),
                     LastKnownIP = @1,
                     SeenCount = SeenCount + 1,
-                    DeviceType = @2,
-                    BrowserName = @3,
+                    device_type = @2,
+                    browser_name = @3,
                     OSName = @4,
                     UserAgentRaw = @5
                 WHERE DeviceID = @0
@@ -53,13 +58,13 @@ export class AuditRepository {
 
     const result = await this.dataSource.query(
       `
-            INSERT INTO [OMS_Audit_DB].[audit].[Devices]
+            INSERT INTO [audit].[Devices]
             (
-                DeviceFingerprint,
-                IPAddress,
+                device_fingerprint,
+                ip_address,
                 LastKnownIP,
-                DeviceType,
-                BrowserName,
+                device_type,
+                browser_name,
                 OSName,
                 UserAgentRaw
             )
@@ -95,7 +100,7 @@ export class AuditRepository {
       const rows = await this.dataSource.query(
         `
         SELECT TOP 1 SessionID
-        FROM [OMS_Audit_DB].[audit].[Sessions]
+        FROM [audit].[Sessions]
         WHERE SessionID = @0
         `,
         [sessionId],
@@ -136,17 +141,17 @@ export class AuditRepository {
 
     const result = await this.dataSource.query(
       `
-            INSERT INTO [OMS_Audit_DB].[audit].[ApiCallLog_Auth]
+            INSERT INTO [audit].[ApiCallLog_Auth]
             (
                 SessionID,
                 DeviceID,
-                IPAddress,
-                DeviceFingerprint,
-                DeviceType,
-                BrowserName,
+                ip_address,
+                device_fingerprint,
+                device_type,
+                browser_name,
                 OSName,
                 UserAgentRaw,
-                UserID,
+                user_id,
                 Username,
                 HttpMethod,
                 Endpoint,
@@ -156,7 +161,7 @@ export class AuditRepository {
                 TargetUserID,
                 HttpStatusCode,
                 IsSuccess,
-                FailureReason
+                failure_reason
             )
             OUTPUT INSERTED.ApiCallID
             VALUES
@@ -238,14 +243,14 @@ export class AuditRepository {
 
     await this.dataSource.query(
       `
-            INSERT INTO [OMS_Audit_DB].[audit].[ChangeLog_Auth]
+            INSERT INTO [audit].[ChangeLog_Auth]
             (
                 SessionID,
                 DeviceID,
-                IPAddress,
-                DeviceFingerprint,
-                DeviceType,
-                BrowserName,
+                ip_address,
+                device_fingerprint,
+                device_type,
+                browser_name,
                 OSName,
                 UserAgentRaw,
                 ApiCallID,
@@ -256,7 +261,7 @@ export class AuditRepository {
                 EntityID,
                 AffectedUserID,
                 OperationType,
-                FieldName,
+                field_name,
                 OldValue,
                 NewValue,
                 RowSnapshotBefore,

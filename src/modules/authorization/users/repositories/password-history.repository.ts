@@ -15,7 +15,7 @@ export class PasswordHistoryRepository {
   }
 
   /**
-   * Adds a new entry into auth.PasswordHistory.
+   * Adds a new entry into auth.tbl_Password_History.
    */
   async add(
     userId: string,
@@ -24,13 +24,13 @@ export class PasswordHistoryRepository {
   ): Promise<string> {
     const rows = await this.getExecutor(qr).query(
       `
-      INSERT INTO [auth].[PasswordHistory] (
+      INSERT INTO [auth].[tbl_Password_History] (
           PasswordHistoryID,
           UserID,
           PasswordHash,
           CreatedAt
       )
-      OUTPUT INSERTED.PasswordHistoryID AS passwordHistoryId
+      OUTPUT INSERTED.password_history_id AS passwordHistoryId
       VALUES (
           NEWID(),
           @0,
@@ -55,13 +55,13 @@ export class PasswordHistoryRepository {
     const rows = await this.getExecutor(qr).query(
       `
       SELECT TOP (@1)
-          ph.PasswordHistoryID AS passwordHistoryId,
-          ph.UserID AS userId,
-          ph.PasswordHash AS passwordHash,
-          ph.CreatedAt AS changedAt
-      FROM [auth].[PasswordHistory] ph
-      WHERE ph.UserID = @0
-      ORDER BY ph.CreatedAt DESC;
+          ph.password_history_id AS passwordHistoryId,
+          ph.user_id AS userId,
+          ph.password_hash AS passwordHash,
+          ph.created_at AS changedAt
+      FROM [auth].[tbl_Password_History] ph
+      WHERE ph.user_id = @0
+      ORDER BY ph.created_at DESC;
       `,
       [userId, count],
     );
@@ -87,13 +87,13 @@ export class PasswordHistoryRepository {
       WITH RankedHistory AS (
           SELECT 
               PasswordHistoryID,
-              ROW_NUMBER() OVER (ORDER BY CreatedAt DESC) as rn
-          FROM [auth].[PasswordHistory]
-          WHERE UserID = @0
+              ROW_NUMBER() OVER (ORDER BY created_at DESC) as rn
+          FROM [auth].[tbl_Password_History]
+          WHERE user_id = @0
       )
-      DELETE FROM [auth].[PasswordHistory]
-      WHERE PasswordHistoryID IN (
-          SELECT PasswordHistoryID 
+      DELETE FROM [auth].[tbl_Password_History]
+      WHERE password_history_id IN (
+          SELECT password_history_id 
           FROM RankedHistory 
           WHERE rn > @1
       );

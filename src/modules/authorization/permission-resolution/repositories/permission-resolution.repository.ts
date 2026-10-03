@@ -35,34 +35,30 @@ export class PermissionResolutionRepository {
     const rows = await this.dataSource.query(
       `
       SELECT TOP 1 1 AS isAllowed
-      FROM [auth].[Users] u
-      LEFT JOIN [auth].[UserProfiles] p ON p.UserID = u.UserID
-      WHERE u.UserID = @0
-        AND u.IsDeleted = 0
+      FROM [auth].[tbl_Users] u
+      WHERE u.user_id = @0
         AND (
             -- Rule 1: Self-inspection
             @1 = @0
             OR
-            -- Rule 2: Requester has GLOBAL scope
+            -- Rule 2: Requester has GLOBAL scope (SYSTEM_ADMIN)
             EXISTS (
                 SELECT 1 
-                FROM [auth].[UserOrganizationScopes] s
-                INNER JOIN [auth].[ScopeDefinitions] sd ON sd.ScopeDefinitionID = s.ScopeDefinitionID
-                WHERE s.UserID = @1
-                  AND sd.ScopeCode = 'GLOBAL'
+                FROM [auth].[tbl_User_Roles] ur
+                INNER JOIN [auth].[tbl_Roles] r ON r.role_id = ur.role_id
+                WHERE ur.user_id = @1
+                  AND r.role_code = 'SYSTEM_ADMIN'
+                  AND ur.IsActive = 1
             )
             OR
-            -- Rule 3: Target user's department/unit is in requester's visible scope
+            -- Rule 3: Target user's org_unit_id is in requester's visible scope (closure table)
             EXISTS (
                 SELECT 1 
-                FROM [auth].[UserOrganizationScopes] s
-                WHERE s.UserID = @1
-                  AND (
-                     (p.DepartmentID IS NOT NULL AND s.DepartmentID = p.DepartmentID)
-                     OR (p.BusinessUnitID IS NOT NULL AND s.BusinessUnitID = p.BusinessUnitID)
-                     OR (p.SectionID IS NOT NULL AND s.SectionID = p.SectionID)
-                     OR s.OrganizationID IS NOT NULL
-                  )
+                FROM [auth].[tbl_User_Roles] ur
+                INNER JOIN [masters].[tbl_Org_Unit_Closure] ouc ON ouc.ancestor_id = ur.org_unit_id
+                WHERE ur.user_id = @1
+                  AND ur.IsActive = 1
+                  AND ouc.descendant_id = u.org_unit_id
             )
         );
       `,
@@ -80,9 +76,9 @@ export class PermissionResolutionRepository {
     const rows = await this.dataSource.query(
       `
       SELECT 
-          CASE WHEN u.IsActive = 1 AND u.IsDeleted = 0 THEN 1 ELSE 0 END AS isLive
-      FROM [auth].[Users] u
-      WHERE u.UserID = @0;
+          CASE WHEN u.IsActive = 1 THEN 1 ELSE 0 END AS isLive
+      FROM [auth].[tbl_Users] u
+      WHERE u.user_id = @0;
       `,
       [userId],
     );
@@ -106,35 +102,35 @@ export class PermissionResolutionRepository {
       WITH RoleClosure AS (
           -- Anchor: Direct active temporal role assignments
           SELECT 
-              ur.RoleID AS roleId,
-              r.RoleCode AS roleCode,
-              r.RoleName AS roleName,
+              ur.role_id AS roleId,
+              r.role_code AS roleCode,
+              r.role_name AS roleName,
               0 AS depth,
-              CAST(r.RoleCode AS NVARCHAR(500)) AS inheritedVia,
-              ur.EffectiveFrom AS effectiveFrom,
-              ur.EffectiveTo AS effectiveTo
-          FROM [auth].[UserRoles] ur
-          INNER JOIN [auth].[Roles] r ON r.RoleID = ur.RoleID
-          WHERE ur.UserID = @0
+              CAST(r.role_code AS NVARCHAR(500)) AS inheritedVia,
+              ur.effective_from AS effectiveFrom,
+              ur.effective_to AS effectiveTo
+          FROM [auth].[tbl_User_Roles] ur
+          INNER JOIN [auth].[tbl_Roles] r ON r.role_id = ur.role_id
+          WHERE ur.user_id = @0
             AND ur.IsActive = 1
             AND r.IsActive = 1
-            AND ur.EffectiveFrom <= SYSUTCDATETIME()
-            AND (ur.EffectiveTo IS NULL OR ur.EffectiveTo > SYSUTCDATETIME())
+            AND ur.effective_from <= SYSUTCDATETIME()
+            AND (ur.effective_to IS NULL OR ur.effective_to > SYSUTCDATETIME())
 
           UNION ALL
 
           -- Recursive: Parent role confers all child role permissions
           SELECT 
-              cr.RoleID AS roleId,
-              cr.RoleCode AS roleCode,
-              cr.RoleName AS roleName,
+              cr.role_id AS roleId,
+              cr.role_code AS roleCode,
+              cr.role_name AS roleName,
               rc.depth + 1 AS depth,
-              CAST(rc.inheritedVia + ' ← ' + cr.RoleCode AS NVARCHAR(500)) AS inheritedVia,
+              CAST(rc.inheritedVia + ' ← ' + cr.role_code AS NVARCHAR(500)) AS inheritedVia,
               rc.effectiveFrom,
               rc.effectiveTo
-          FROM [auth].[RoleHierarchy] rh
+          FROM [auth].[tbl_Role_Hierarchy] rh
           INNER JOIN RoleClosure rc ON rc.roleId = rh.ParentRoleID
-          INNER JOIN [auth].[Roles] cr ON cr.RoleID = rh.ChildRoleID
+          INNER JOIN [auth].[tbl_Roles] cr ON cr.role_id = rh.ChildRoleID
           WHERE rh.IsActive = 1
             AND cr.IsActive = 1
             AND rc.depth < ${MAX_ROLE_HIERARCHY_DEPTH}
@@ -167,7 +163,7 @@ export class PermissionResolutionRepository {
   /**
    * Resolves permissions assigned to a collection of active role IDs.
    *
-   * Note on auth.PermissionConditions / auth.RolePermissionConditions:
+   * Note on auth.tbl_Permission_Conditions / auth.tbl_Role_Permission_Conditions:
    * Per DOMAIN-3-RECONCILIATION.md Section 6, condition evaluation is treated as INERT.
    * Permissions attached to roles are evaluated directly without speculative DSL execution.
    */
@@ -184,14 +180,14 @@ export class PermissionResolutionRepository {
     const rows = await this.dataSource.query(
       `
       SELECT 
-          rp.RoleID AS roleId,
-          p.PermissionID AS permissionId,
-          p.PermissionCode AS permissionCode,
-          p.ModuleName AS moduleName,
+          rp.role_id AS roleId,
+          p.permission_id AS permissionId,
+          p.permission_code AS permissionCode,
+          p.module_name AS moduleName,
           p.ActionName AS actionName
-      FROM [auth].[RolePermissions] rp
-      INNER JOIN [auth].[Permissions] p ON p.PermissionID = rp.PermissionID
-      WHERE rp.RoleID IN (${placeholders});
+      FROM [auth].[tbl_Role_Permissions] rp
+      INNER JOIN [auth].[tbl_Permissions] p ON p.permission_id = rp.permission_id
+      WHERE rp.role_id IN (${placeholders});
       `,
       roleIds,
     );
@@ -226,20 +222,20 @@ export class PermissionResolutionRepository {
     const rows = await this.dataSource.query(
       `
       SELECT 
-          upo.UserPermissionOverrideID AS overrideId,
-          upo.UserID AS userId,
-          upo.PermissionID AS permissionId,
-          p.PermissionCode AS permissionCode,
-          upo.IsGranted AS isGranted,
-          upo.Reason AS reason,
-          upo.ApprovedBy AS approvedBy,
-          upo.EffectiveFrom AS effectiveFrom,
-          upo.EffectiveTo AS effectiveTo
-      FROM [auth].[UserPermissionOverrides] upo
-      INNER JOIN [auth].[Permissions] p ON p.PermissionID = upo.PermissionID
-      WHERE upo.UserID = @0
-        AND upo.EffectiveFrom <= SYSUTCDATETIME()
-        AND (upo.EffectiveTo IS NULL OR upo.EffectiveTo > SYSUTCDATETIME());
+          upo.user_permission_override_id AS overrideId,
+          upo.user_id AS userId,
+          upo.permission_id AS permissionId,
+          p.permission_code AS permissionCode,
+          upo.is_granted AS isGranted,
+          upo.reason AS Reason,
+          upo.approved_by AS approvedBy,
+          upo.effective_from AS effectiveFrom,
+          upo.effective_to AS effectiveTo
+      FROM [auth].[tbl_User_Permission_Overrides] upo
+      INNER JOIN [auth].[tbl_Permissions] p ON p.permission_id = upo.permission_id
+      WHERE upo.user_id = @0
+        AND upo.effective_from <= SYSUTCDATETIME()
+        AND (upo.effective_to IS NULL OR upo.effective_to > SYSUTCDATETIME());
       `,
       [userId],
     );
@@ -250,7 +246,7 @@ export class PermissionResolutionRepository {
       permissionId: r.permissionId,
       permissionCode: r.permissionCode,
       isGranted: r.isGranted === 1 || r.isGranted === true,
-      reason: r.reason,
+      reason: r.Reason,
       approvedBy: r.approvedBy,
       effectiveFrom: new Date(r.effectiveFrom),
       effectiveTo: r.effectiveTo ? new Date(r.effectiveTo) : null,
@@ -271,22 +267,22 @@ export class PermissionResolutionRepository {
       const rows = await this.dataSource.query(
         `
         SELECT 
-            d.DelegationID AS delegationId,
-            d.FromUserID AS fromUserId,
-            CONCAT(fp.FirstName, ' ', fp.LastName) AS fromUserName,
-            d.ToUserID AS toUserId,
-            d.StartDate AS startDate,
-            d.EndDate AS endDate,
-            d.Reason AS reason,
-            p.PermissionCode AS permissionCode
-        FROM [auth].[Delegations] d
-        LEFT JOIN [auth].[UserProfiles] fp ON fp.UserID = d.FromUserID
-        INNER JOIN [auth].[DelegationPermissions] dp ON dp.DelegationID = d.DelegationID
-        INNER JOIN [auth].[Permissions] p ON p.PermissionID = dp.PermissionID
-        WHERE d.ToUserID = @0
+            d.delegation_id AS delegationId,
+            d.from_user_id AS fromUserId,
+            CONCAT(fp.first_name, ' ', fp.last_name) AS fromUserName,
+            d.to_user_id AS toUserId,
+            d.start_date AS startDate,
+            d.end_date AS endDate,
+            d.reason AS Reason,
+            p.permission_code AS permissionCode
+        FROM [auth].[tbl_Delegations] d
+        LEFT JOIN [auth].[tbl_Users] fp ON fp.user_id = d.from_user_id
+        INNER JOIN [auth].[tbl_Delegation_Permissions] dp ON dp.delegation_id = d.delegation_id
+        INNER JOIN [auth].[tbl_Permissions] p ON p.permission_id = dp.permission_id
+        WHERE d.to_user_id = @0
           AND d.IsActive = 1
-          AND d.StartDate <= SYSUTCDATETIME()
-          AND d.EndDate > SYSUTCDATETIME();
+          AND d.start_date <= SYSUTCDATETIME()
+          AND d.end_date > SYSUTCDATETIME();
         `,
         [userId],
       );
@@ -298,7 +294,7 @@ export class PermissionResolutionRepository {
         toUserId: r.toUserId,
         startDate: new Date(r.startDate),
         endDate: new Date(r.endDate),
-        reason: r.reason,
+        reason: r.Reason,
         permissionCode: r.permissionCode,
       }));
     }
@@ -306,19 +302,19 @@ export class PermissionResolutionRepository {
     const fallbackRows = await this.dataSource.query(
       `
       SELECT 
-          d.DelegationID AS delegationId,
-          d.FromUserID AS fromUserId,
-          CONCAT(fp.FirstName, ' ', fp.LastName) AS fromUserName,
-          d.ToUserID AS toUserId,
-          d.StartDate AS startDate,
-          d.EndDate AS endDate,
-          d.Reason AS reason
-      FROM [auth].[Delegations] d
-      LEFT JOIN [auth].[UserProfiles] fp ON fp.UserID = d.FromUserID
-      WHERE d.ToUserID = @0
+          d.delegation_id AS delegationId,
+          d.from_user_id AS fromUserId,
+          CONCAT(fp.first_name, ' ', fp.last_name) AS fromUserName,
+          d.to_user_id AS toUserId,
+          d.start_date AS startDate,
+          d.end_date AS endDate,
+          d.reason AS reason
+      FROM [auth].[tbl_Delegations] d
+      LEFT JOIN [auth].[tbl_Users] fp ON fp.user_id = d.from_user_id
+      WHERE d.to_user_id = @0
         AND d.IsActive = 1
-        AND d.StartDate <= SYSUTCDATETIME()
-        AND d.EndDate > SYSUTCDATETIME();
+        AND d.start_date <= SYSUTCDATETIME()
+        AND d.end_date > SYSUTCDATETIME();
       `,
       [userId],
     );
@@ -330,7 +326,7 @@ export class PermissionResolutionRepository {
       toUserId: r.toUserId,
       startDate: new Date(r.startDate),
       endDate: new Date(r.endDate),
-      reason: r.reason,
+      reason: r.Reason,
     }));
   }
 }

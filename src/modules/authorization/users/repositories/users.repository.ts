@@ -31,47 +31,37 @@ export class UsersRepository {
     const rows = await this.getExecutor(qr).query(
       `
       SELECT 
-          u.UserID AS userId,
-          u.EmployeeID AS employeeId,
+          u.user_id AS userId,
+          u.employee_id AS employeeId,
           u.Username AS username,
           u.Email AS email,
           u.UserType AS userType,
-          u.IsActive AS isActive,
-          u.IsDeleted AS isDeleted,
-          u.DeletedAt AS deletedAt,
-          u.DeletedBy AS deletedBy,
-          u.FailedLoginCount AS failedLoginCount,
-          u.LastFailedLoginAt AS lastFailedLoginAt,
-          u.LockedUntil AS lockedUntil,
+          u.is_active AS isActive,
+          u.failed_login_count AS failedLoginCount,
+          u.locked_until AS lockedUntil,
           u.ADObjectID AS adObjectId,
-          u.CreatedAt AS createdAt,
-          u.UpdatedAt AS updatedAt,
-          p.UserProfileID AS userProfileId,
-          p.FirstName AS firstName,
-          p.LastName AS lastName,
-          RTRIM(LTRIM(p.FirstName + ' ' + ISNULL(p.LastName, ''))) AS displayName,
-          p.MobileNo AS phoneNumber,
-          p.JobTitle AS jobTitle,
-          CAST(NULL AS UNIQUEIDENTIFIER) AS organizationId,
-          p.BusinessUnitID AS businessUnitId,
-          p.DepartmentID AS departmentId,
-          p.SectionID AS sectionId,
-          CAST(NULL AS UNIQUEIDENTIFIER) AS vendorId,
-          ISNULL(lc.MustChangePassword, 0) AS mustChangePassword,
-          lc.PasswordChangedAt AS passwordChangedAt,
+          u.created_at AS createdAt,
+          u.updated_at AS updatedAt,
+          u.first_name AS firstName,
+          u.last_name AS lastName,
+          RTRIM(LTRIM(u.first_name + ' ' + ISNULL(u.last_name, ''))) AS displayName,
+          u.mobile_no AS phoneNumber,
+          u.job_title AS jobTitle,
+          u.org_unit_id AS orgUnitId, u.vendor_id AS vendorId,
+          ISNULL(lc.must_change_password, 0) AS mustChangePassword,
+          lc.password_changed_at AS passwordChangedAt,
           (
-            SELECT STRING_AGG(r.RoleCode, ',')
-            FROM [auth].[UserRoles] ur
-            INNER JOIN [auth].[Roles] r ON r.RoleID = ur.RoleID
-            WHERE ur.UserID = u.UserID
+            SELECT STRING_AGG(r.role_code, ',')
+            FROM [auth].[tbl_User_Roles] ur
+            INNER JOIN [auth].[tbl_Roles] r ON r.role_id = ur.role_id
+            WHERE ur.user_id = u.user_id
               AND ur.IsActive = 1
-              AND (ur.EffectiveFrom IS NULL OR ur.EffectiveFrom <= SYSUTCDATETIME())
-              AND (ur.EffectiveTo IS NULL OR ur.EffectiveTo > SYSUTCDATETIME())
+              AND (ur.effective_from IS NULL OR ur.effective_from <= SYSUTCDATETIME())
+              AND (ur.effective_to IS NULL OR ur.effective_to > SYSUTCDATETIME())
           ) AS roles
-      FROM [auth].[Users] u
-      LEFT JOIN [auth].[UserProfiles] p ON p.UserID = u.UserID
-      LEFT JOIN [auth].[LocalCredentials] lc ON lc.UserID = u.UserID
-      WHERE u.UserID = @0 AND u.IsDeleted = 0;
+      FROM [auth].[tbl_Users] u
+      LEFT JOIN [auth].[tbl_Local_Credentials] lc ON lc.user_id = u.user_id
+      WHERE u.user_id = @0 ;
       `,
       [userId],
     );
@@ -93,47 +83,37 @@ export class UsersRepository {
     const rows = await this.getExecutor(qr).query(
       `
       SELECT 
-          u.UserID AS userId,
-          u.EmployeeID AS employeeId,
+          u.user_id AS userId,
+          u.employee_id AS employeeId,
           u.Username AS username,
           u.Email AS email,
           u.UserType AS userType,
-          u.IsActive AS isActive,
-          u.IsDeleted AS isDeleted,
-          u.DeletedAt AS deletedAt,
-          u.DeletedBy AS deletedBy,
-          u.FailedLoginCount AS failedLoginCount,
-          u.LastFailedLoginAt AS lastFailedLoginAt,
-          u.LockedUntil AS lockedUntil,
+          u.is_active AS isActive,
+          u.failed_login_count AS failedLoginCount,
+          u.locked_until AS lockedUntil,
           u.ADObjectID AS adObjectId,
-          u.CreatedAt AS createdAt,
-          u.UpdatedAt AS updatedAt,
-          p.UserProfileID AS userProfileId,
-          p.FirstName AS firstName,
-          p.LastName AS lastName,
-          RTRIM(LTRIM(p.FirstName + ' ' + ISNULL(p.LastName, ''))) AS displayName,
-          p.MobileNo AS phoneNumber,
-          p.JobTitle AS jobTitle,
-          CAST(NULL AS UNIQUEIDENTIFIER) AS organizationId,
-          p.BusinessUnitID AS businessUnitId,
-          p.DepartmentID AS departmentId,
-          p.SectionID AS sectionId,
-          CAST(NULL AS UNIQUEIDENTIFIER) AS vendorId,
-          ISNULL(lc.MustChangePassword, 0) AS mustChangePassword,
-          lc.PasswordChangedAt AS passwordChangedAt,
+          u.created_at AS createdAt,
+          u.updated_at AS updatedAt,
+          u.first_name AS firstName,
+          u.last_name AS lastName,
+          RTRIM(LTRIM(u.first_name + ' ' + ISNULL(u.last_name, ''))) AS displayName,
+          u.mobile_no AS phoneNumber,
+          u.job_title AS jobTitle,
+          u.org_unit_id AS orgUnitId, u.vendor_id AS vendorId,
+          ISNULL(lc.must_change_password, 0) AS mustChangePassword,
+          lc.password_changed_at AS passwordChangedAt,
           (
-            SELECT STRING_AGG(r.RoleCode, ',')
-            FROM [auth].[UserRoles] ur
-            INNER JOIN [auth].[Roles] r ON r.RoleID = ur.RoleID
-            WHERE ur.UserID = u.UserID
+            SELECT STRING_AGG(r.role_code, ',')
+            FROM [auth].[tbl_User_Roles] ur
+            INNER JOIN [auth].[tbl_Roles] r ON r.role_id = ur.role_id
+            WHERE ur.user_id = u.user_id
               AND ur.IsActive = 1
-              AND (ur.EffectiveFrom IS NULL OR ur.EffectiveFrom <= SYSUTCDATETIME())
-              AND (ur.EffectiveTo IS NULL OR ur.EffectiveTo > SYSUTCDATETIME())
+              AND (ur.effective_from IS NULL OR ur.effective_from <= SYSUTCDATETIME())
+              AND (ur.effective_to IS NULL OR ur.effective_to > SYSUTCDATETIME())
           ) AS roles
-      FROM [auth].[Users] u
-      LEFT JOIN [auth].[UserProfiles] p ON p.UserID = u.UserID
-      LEFT JOIN [auth].[LocalCredentials] lc ON lc.UserID = u.UserID
-      WHERE u.UserID = @0;
+      FROM [auth].[tbl_Users] u
+      LEFT JOIN [auth].[tbl_Local_Credentials] lc ON lc.user_id = u.user_id
+      WHERE u.user_id = @0;
       `,
       [userId],
     );
@@ -152,22 +132,18 @@ export class UsersRepository {
     const rows = await this.getExecutor(qr).query(
       `
       SELECT 
-          u.UserID AS userId,
-          u.EmployeeID AS employeeId,
+          u.user_id AS userId,
+          u.employee_id AS employeeId,
           u.Username AS username,
           u.Email AS email,
           u.UserType AS userType,
-          u.IsActive AS isActive,
-          u.IsDeleted AS isDeleted,
-          u.DeletedAt AS deletedAt,
-          u.DeletedBy AS deletedBy,
-          u.FailedLoginCount AS failedLoginCount,
-          u.LastFailedLoginAt AS lastFailedLoginAt,
-          u.LockedUntil AS lockedUntil,
+          u.is_active AS isActive,
+          u.failed_login_count AS failedLoginCount,
+          u.locked_until AS lockedUntil,
           u.ADObjectID AS adObjectId,
-          u.CreatedAt AS createdAt,
-          u.UpdatedAt AS updatedAt
-      FROM [auth].[Users] u
+          u.created_at AS createdAt,
+          u.updated_at AS updatedAt
+      FROM [auth].[tbl_Users] u
       WHERE LOWER(u.Email) = LOWER(@0);
       `,
       [email],
@@ -190,22 +166,18 @@ export class UsersRepository {
     const rows = await this.getExecutor(qr).query(
       `
       SELECT 
-          u.UserID AS userId,
-          u.EmployeeID AS employeeId,
+          u.user_id AS userId,
+          u.employee_id AS employeeId,
           u.Username AS username,
           u.Email AS email,
           u.UserType AS userType,
-          u.IsActive AS isActive,
-          u.IsDeleted AS isDeleted,
-          u.DeletedAt AS deletedAt,
-          u.DeletedBy AS deletedBy,
-          u.FailedLoginCount AS failedLoginCount,
-          u.LastFailedLoginAt AS lastFailedLoginAt,
-          u.LockedUntil AS lockedUntil,
+          u.is_active AS isActive,
+          u.failed_login_count AS failedLoginCount,
+          u.locked_until AS lockedUntil,
           u.ADObjectID AS adObjectId,
-          u.CreatedAt AS createdAt,
-          u.UpdatedAt AS updatedAt
-      FROM [auth].[Users] u
+          u.created_at AS createdAt,
+          u.updated_at AS updatedAt
+      FROM [auth].[tbl_Users] u
       WHERE LOWER(u.Username) = LOWER(@0);
       `,
       [username],
@@ -247,7 +219,7 @@ export class UsersRepository {
     const params: any[] = [];
     let paramIndex = 0;
 
-    let whereClause = `WHERE u.IsDeleted = 0`;
+    let whereClause = `WHERE 1=1`;
 
     // Scope filtering (§9.2) via requester user ID and org.fn_VisibleOrgUnits
     if (requesterUserId) {
@@ -256,17 +228,17 @@ export class UsersRepository {
             EXISTS (
                 SELECT 1 FROM [auth].[UserOrganizationScopes] s
                 INNER JOIN [auth].[ScopeDefinitions] sd ON sd.ScopeDefinitionID = s.ScopeDefinitionID
-                WHERE s.UserID = @${paramIndex}
+                WHERE s.user_id = @${paramIndex}
                   AND sd.ScopeCode = 'GLOBAL'
-                  AND (s.IsActive = 1 OR s.IsActive IS NULL)
+                  AND (s.is_active = 1 OR s.is_active IS NULL)
             )
             OR EXISTS (
                 SELECT 1 FROM [org].[fn_VisibleOrgUnits](@${paramIndex}) v
-                WHERE (p.DepartmentID IS NOT NULL AND v.OrgUnitId = p.DepartmentID)
-                   OR (p.BusinessUnitID IS NOT NULL AND v.OrgUnitId = p.BusinessUnitID)
-                   OR (p.SectionID IS NOT NULL AND v.OrgUnitId = p.SectionID)
+                WHERE (u.org_unit_id IS NOT NULL AND v.OrgUnitId = u.org_unit_id)
+                   OR (u.org_unit_id IS NOT NULL AND v.OrgUnitId = u.org_unit_id)
+                   OR (u.org_unit_id IS NOT NULL AND v.OrgUnitId = u.org_unit_id)
             )
-            OR u.UserID = @${paramIndex}
+            OR u.user_id = @${paramIndex}
         )
       `;
       params.push(requesterUserId);
@@ -277,8 +249,8 @@ export class UsersRepository {
       whereClause += ` AND (
         LOWER(u.Username) LIKE LOWER(@${paramIndex}) OR 
         LOWER(u.Email) LIKE LOWER(@${paramIndex}) OR 
-        LOWER(p.FirstName) LIKE LOWER(@${paramIndex}) OR 
-        LOWER(p.LastName) LIKE LOWER(@${paramIndex})
+        LOWER(u.first_name) LIKE LOWER(@${paramIndex}) OR 
+        LOWER(u.last_name) LIKE LOWER(@${paramIndex})
       )`;
       params.push(`%${search}%`);
       paramIndex++;
@@ -291,19 +263,19 @@ export class UsersRepository {
     }
 
     if (departmentId) {
-      whereClause += ` AND p.DepartmentID = @${paramIndex}`;
+      whereClause += ` AND u.org_unit_id = @${paramIndex}`;
       params.push(departmentId);
       paramIndex++;
     }
 
     if (businessUnitId) {
-      whereClause += ` AND p.BusinessUnitID = @${paramIndex}`;
+      whereClause += ` AND u.org_unit_id = @${paramIndex}`;
       params.push(businessUnitId);
       paramIndex++;
     }
 
     if (organizationId) {
-      whereClause += ` AND (p.DepartmentID = @${paramIndex} OR p.BusinessUnitID = @${paramIndex})`;
+      whereClause += ` AND (u.org_unit_id = @${paramIndex} OR u.org_unit_id = @${paramIndex})`;
       params.push(organizationId);
       paramIndex++;
     }
@@ -314,23 +286,23 @@ export class UsersRepository {
 
     if (options.hasNoRole) {
       whereClause += ` AND NOT EXISTS (
-        SELECT 1 FROM [auth].[UserRoles] ur
-        WHERE ur.UserID = u.UserID
+        SELECT 1 FROM [auth].[tbl_User_Roles] ur
+        WHERE ur.user_id = u.user_id
           AND ur.IsActive = 1
-          AND (ur.EffectiveFrom IS NULL OR ur.EffectiveFrom <= SYSUTCDATETIME())
-          AND (ur.EffectiveTo IS NULL OR ur.EffectiveTo > SYSUTCDATETIME())
+          AND (ur.effective_from IS NULL OR ur.effective_from <= SYSUTCDATETIME())
+          AND (ur.effective_to IS NULL OR ur.effective_to > SYSUTCDATETIME())
       )`;
     }
 
     if (options.role) {
       whereClause += ` AND EXISTS (
-        SELECT 1 FROM [auth].[UserRoles] ur
-        INNER JOIN [auth].[Roles] r ON r.RoleID = ur.RoleID
-        WHERE ur.UserID = u.UserID
+        SELECT 1 FROM [auth].[tbl_User_Roles] ur
+        INNER JOIN [auth].[tbl_Roles] r ON r.role_id = ur.role_id
+        WHERE ur.user_id = u.user_id
           AND ur.IsActive = 1
-          AND (ur.EffectiveFrom IS NULL OR ur.EffectiveFrom <= SYSUTCDATETIME())
-          AND (ur.EffectiveTo IS NULL OR ur.EffectiveTo > SYSUTCDATETIME())
-          AND (LOWER(r.RoleCode) = LOWER(@${paramIndex}) OR CAST(r.RoleID AS NVARCHAR(50)) = @${paramIndex})
+          AND (ur.effective_from IS NULL OR ur.effective_from <= SYSUTCDATETIME())
+          AND (ur.effective_to IS NULL OR ur.effective_to > SYSUTCDATETIME())
+          AND (LOWER(r.role_code) = LOWER(@${paramIndex}) OR CAST(r.role_id AS NVARCHAR(50)) = @${paramIndex})
       )`;
       params.push(options.role);
       paramIndex++;
@@ -338,39 +310,38 @@ export class UsersRepository {
 
     if (isLocked !== undefined) {
       if (isLocked) {
-        whereClause += ` AND u.LockedUntil IS NOT NULL AND u.LockedUntil > SYSUTCDATETIME()`;
+        whereClause += ` AND u.locked_until IS NOT NULL AND u.locked_until > SYSUTCDATETIME()`;
       } else {
-        whereClause += ` AND (u.LockedUntil IS NULL OR u.LockedUntil <= SYSUTCDATETIME())`;
+        whereClause += ` AND (u.locked_until IS NULL OR u.locked_until <= SYSUTCDATETIME())`;
       }
     }
 
     if (status) {
       if (status === 'LOCKED') {
-        whereClause += ` AND u.LockedUntil IS NOT NULL AND u.LockedUntil > SYSUTCDATETIME()`;
+        whereClause += ` AND u.locked_until IS NOT NULL AND u.locked_until > SYSUTCDATETIME()`;
       } else if (status === 'ACTIVE') {
-        whereClause += ` AND u.IsActive = 1 AND (u.LockedUntil IS NULL OR u.LockedUntil <= SYSUTCDATETIME())`;
+        whereClause += ` AND u.is_active = 1 AND (u.locked_until IS NULL OR u.locked_until <= SYSUTCDATETIME())`;
       } else if (status === 'INACTIVE') {
-        whereClause += ` AND u.IsActive = 0 AND EXISTS (SELECT 1 FROM [auth].[LocalCredentials] lc WHERE lc.UserID = u.UserID)`;
+        whereClause += ` AND u.is_active = 0 AND EXISTS (SELECT 1 FROM [auth].[tbl_Local_Credentials] lc WHERE lc.user_id = u.user_id)`;
       } else if (status === 'INVITED') {
-        whereClause += ` AND u.IsActive = 0 AND NOT EXISTS (SELECT 1 FROM [auth].[LocalCredentials] lc WHERE lc.UserID = u.UserID)`;
+        whereClause += ` AND u.is_active = 0 AND NOT EXISTS (SELECT 1 FROM [auth].[tbl_Local_Credentials] lc WHERE lc.user_id = u.user_id)`;
       }
     }
 
     // Safe sort column mapping
     const sortColumnMap: Record<string, string> = {
-      createdAt: 'u.CreatedAt',
+      createdAt: 'u.created_at',
       username: 'u.Username',
       email: 'u.Email',
-      firstName: 'p.FirstName',
-      lastName: 'p.LastName',
+      firstName: 'u.first_name',
+      lastName: 'u.last_name',
     };
-    const orderCol = sortColumnMap[sortBy] || 'u.CreatedAt';
+    const orderCol = sortColumnMap[sortBy] || 'u.created_at';
     const orderDirection = sortOrder.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
 
     const countSql = `
       SELECT COUNT(1) AS total
-      FROM [auth].[Users] u
-      LEFT JOIN [auth].[UserProfiles] p ON p.UserID = u.UserID
+      FROM [auth].[tbl_Users] u
       ${whereClause};
     `;
 
@@ -380,47 +351,37 @@ export class UsersRepository {
     const dataSql = `
       WITH NumberedRows AS (
           SELECT 
-              u.UserID AS userId,
-              u.EmployeeID AS employeeId,
+              u.user_id AS userId,
+              u.employee_id AS employeeId,
               u.Username AS username,
               u.Email AS email,
               u.UserType AS userType,
-              u.IsActive AS isActive,
-              u.IsDeleted AS isDeleted,
-              u.DeletedAt AS deletedAt,
-              u.DeletedBy AS deletedBy,
-              u.FailedLoginCount AS failedLoginCount,
-              u.LastFailedLoginAt AS lastFailedLoginAt,
-              u.LockedUntil AS lockedUntil,
+              u.is_active AS isActive,
+              u.failed_login_count AS failedLoginCount,
+              u.locked_until AS lockedUntil,
               u.ADObjectID AS adObjectId,
-              u.CreatedAt AS createdAt,
-              u.UpdatedAt AS updatedAt,
-              p.UserProfileID AS userProfileId,
-              p.FirstName AS firstName,
-              p.LastName AS lastName,
-              RTRIM(LTRIM(p.FirstName + ' ' + ISNULL(p.LastName, ''))) AS displayName,
-              p.MobileNo AS phoneNumber,
-              p.JobTitle AS jobTitle,
-              CAST(NULL AS UNIQUEIDENTIFIER) AS organizationId,
-              p.BusinessUnitID AS businessUnitId,
-              p.DepartmentID AS departmentId,
-              p.SectionID AS sectionId,
-              CAST(NULL AS UNIQUEIDENTIFIER) AS vendorId,
-              ISNULL(lc.MustChangePassword, 0) AS mustChangePassword,
-              lc.PasswordChangedAt AS passwordChangedAt,
+              u.created_at AS createdAt,
+              u.updated_at AS updatedAt,
+              u.first_name AS firstName,
+              u.last_name AS lastName,
+              RTRIM(LTRIM(u.first_name + ' ' + ISNULL(u.last_name, ''))) AS displayName,
+              u.mobile_no AS phoneNumber,
+              u.job_title AS jobTitle,
+              u.org_unit_id AS orgUnitId, u.vendor_id AS vendorId,
+              ISNULL(lc.must_change_password, 0) AS mustChangePassword,
+              lc.password_changed_at AS passwordChangedAt,
               (
-                SELECT STRING_AGG(r.RoleCode, ',')
-                FROM [auth].[UserRoles] ur
-                INNER JOIN [auth].[Roles] r ON r.RoleID = ur.RoleID
-                WHERE ur.UserID = u.UserID
+                SELECT STRING_AGG(r.role_code, ',')
+                FROM [auth].[tbl_User_Roles] ur
+                INNER JOIN [auth].[tbl_Roles] r ON r.role_id = ur.role_id
+                WHERE ur.user_id = u.user_id
                   AND ur.IsActive = 1
-                  AND (ur.EffectiveFrom IS NULL OR ur.EffectiveFrom <= SYSUTCDATETIME())
-                  AND (ur.EffectiveTo IS NULL OR ur.EffectiveTo > SYSUTCDATETIME())
+                  AND (ur.effective_from IS NULL OR ur.effective_from <= SYSUTCDATETIME())
+                  AND (ur.effective_to IS NULL OR ur.effective_to > SYSUTCDATETIME())
               ) AS roles,
               ROW_NUMBER() OVER (ORDER BY ${orderCol} ${orderDirection}) AS RowNum
-          FROM [auth].[Users] u
-          LEFT JOIN [auth].[UserProfiles] p ON p.UserID = u.UserID
-          LEFT JOIN [auth].[LocalCredentials] lc ON lc.UserID = u.UserID
+          FROM [auth].[tbl_Users] u
+          LEFT JOIN [auth].[tbl_Local_Credentials] lc ON lc.user_id = u.user_id
           ${whereClause}
       )
       SELECT 
@@ -445,10 +406,7 @@ export class UsersRepository {
           displayName,
           phoneNumber,
           jobTitle,
-          organizationId,
-          businessUnitId,
-          departmentId,
-          sectionId,
+          orgUnitId,
           vendorId,
           mustChangePassword,
           passwordChangedAt,
@@ -485,7 +443,7 @@ export class UsersRepository {
   }
 
   /**
-   * Revokes all active sessions for a user in auth.LoginSessions.
+   * Revokes all active sessions for a user in auth.tbl_Login_Sessions.
    */
   async revokeAllUserSessions(
     userId: string,
@@ -494,9 +452,9 @@ export class UsersRepository {
   ): Promise<void> {
     await this.getExecutor(qr).query(
       `
-      UPDATE [auth].[LoginSessions]
-      SET IsActive = 0, RevokedAt = SYSUTCDATETIME(), RevokeReason = @1
-      WHERE UserID = @0 AND IsActive = 1 AND RevokedAt IS NULL;
+      UPDATE [auth].[tbl_Login_Sessions]
+      SET is_active = 0, RevokedAt = SYSUTCDATETIME(), RevokeReason = @1
+      WHERE user_id = @0 AND is_active = 1 AND revoked_at IS NULL;
       `,
       [userId, reason],
     );
@@ -513,16 +471,16 @@ export class UsersRepository {
     const rows = await this.getExecutor(qr).query(
       `
       SELECT TOP (@1)
-          se.SecurityEventID AS eventId,
-          se.UserID AS userId,
-          se.EventType AS eventType,
-          se.EventDescription AS description,
+          se.security_event_id AS eventId,
+          se.user_id AS userId,
+          se.event_type AS eventType,
+          se.event_description AS description,
           se.IPAddress AS ipAddress,
-          se.UserAgent AS userAgent,
-          se.CreatedAt AS createdAt
-      FROM [auth].[SecurityEvents] se
-      WHERE se.UserID = @0
-      ORDER BY se.CreatedAt DESC;
+          se.user_agent AS userAgent,
+          se.created_at AS createdAt
+      FROM [auth].[tbl_Security_Events] se
+      WHERE se.user_id = @0
+      ORDER BY se.created_at DESC;
       `,
       [userId, limit],
     );
@@ -546,11 +504,11 @@ export class UsersRepository {
       `
       SELECT TOP 1 1 AS isHead
       FROM [org].[OrgManagers] om
-      WHERE om.UserID = @0
-        AND om.IsPrimary = 1
-        AND om.IsActive = 1
-        AND om.EffectiveFrom <= SYSUTCDATETIME()
-        AND (om.EffectiveTo IS NULL OR om.EffectiveTo > SYSUTCDATETIME());
+      WHERE om.user_id = @0
+        AND om.is_primary = 1
+        AND om.is_active = 1
+        AND om.effective_from <= SYSUTCDATETIME()
+        AND (om.effective_to IS NULL OR om.effective_to > SYSUTCDATETIME());
       `,
       [userId],
     );
@@ -584,65 +542,39 @@ export class UsersRepository {
       email: r.email,
       userType: r.userType,
       isActive: r.isActive === 1 || r.isActive === true,
-      isDeleted: r.isDeleted === 1 || r.isDeleted === true,
-      deletedAt: r.deletedAt ? new Date(r.deletedAt) : null,
-      deletedBy: r.deletedBy,
       failedLoginCount: Number(r.failedLoginCount || 0),
-      lastFailedLoginAt: r.lastFailedLoginAt
-        ? new Date(r.lastFailedLoginAt)
-        : null,
       lockedUntil: r.lockedUntil ? new Date(r.lockedUntil) : null,
       adObjectId: r.adObjectId,
       createdAt: new Date(r.createdAt),
       updatedAt: new Date(r.updatedAt),
       status,
       roles,
-      profile: r.userProfileId
-        ? {
-            userProfileId: r.userProfileId,
-            userId: r.userId,
-            firstName: r.firstName,
-            lastName: r.lastName,
-            displayName: r.displayName,
-            phoneNumber: r.phoneNumber,
-            jobTitle: r.jobTitle,
-            organizationId: r.organizationId,
-            businessUnitId: r.businessUnitId,
-            departmentId: r.departmentId,
-            sectionId: r.sectionId,
-            vendorId: r.vendorId,
-            mustChangePassword:
-              r.mustChangePassword === 1 || r.mustChangePassword === true,
-            passwordChangedAt: r.passwordChangedAt
-              ? new Date(r.passwordChangedAt)
-              : null,
-            createdAt: new Date(r.createdAt),
-            updatedAt: new Date(r.updatedAt),
-          }
-        : null,
+      firstName: r.firstName,
+      lastName: r.lastName,
+      displayName: r.displayName,
+      mobileNo: r.phoneNumber,
+      jobTitle: r.jobTitle,
+      orgUnitId: r.orgUnitId,
+      vendorId: r.vendorId,
     };
   }
 
   /**
-   * Creates a new user row in auth.Users.
+   * Creates a new user row in auth.tbl_Users.
    */
   async create(data: ICreateUserData, qr?: QueryRunner): Promise<string> {
     const rows = await this.getExecutor(qr).query(
       `
-      INSERT INTO [auth].[Users] (
+      INSERT INTO [auth].[tbl_Users] (
           UserID,
           EmployeeID,
           Username,
           Email,
           UserType,
           IsActive,
-          IsDeleted,
-          FailedLoginCount,
-          ADObjectID,
-          CreatedAt,
-          UpdatedAt
+          FailedLoginCount, ADObjectID, FirstName, LastName, MobileNo, JobTitle, OrgUnitID, VendorID, CreatedAt, UpdatedAt
       )
-      OUTPUT INSERTED.UserID AS userId
+      OUTPUT INSERTED.user_id AS userId
       VALUES (
           COALESCE(@0, NEWID()),
           @1,
@@ -650,11 +582,7 @@ export class UsersRepository {
           @3,
           @4,
           @5,
-          0,
-          0,
-          @6,
-          SYSUTCDATETIME(),
-          SYSUTCDATETIME()
+          0, @6, @7, @8, @9, @10, @11, @12, SYSUTCDATETIME(), SYSUTCDATETIME()
       );
       `,
       [
@@ -665,6 +593,12 @@ export class UsersRepository {
         data.userType,
         data.isActive !== undefined ? (data.isActive ? 1 : 0) : 0,
         data.adObjectId || null,
+        data.firstName || null,
+        data.lastName || null,
+        data.mobileNo || null,
+        data.jobTitle || null,
+        data.orgUnitId || null,
+        data.vendorId || null,
       ],
     );
 
@@ -672,7 +606,7 @@ export class UsersRepository {
   }
 
   /**
-   * Updates an existing user row in auth.Users.
+   * Updates an existing user row in auth.tbl_Users.
    */
   async update(
     userId: string,
@@ -681,14 +615,20 @@ export class UsersRepository {
   ): Promise<void> {
     await this.getExecutor(qr).query(
       `
-      UPDATE [auth].[Users]
+      UPDATE [auth].[tbl_Users]
       SET 
           EmployeeID = COALESCE(@1, EmployeeID),
           Username = COALESCE(@2, Username),
           Email = COALESCE(@3, Email),
           UserType = COALESCE(@4, UserType),
+          FirstName = COALESCE(@5, FirstName),
+          LastName = COALESCE(@6, LastName),
+          MobileNo = COALESCE(@7, MobileNo),
+          JobTitle = COALESCE(@8, JobTitle),
+          OrgUnitID = COALESCE(@9, OrgUnitID),
+          VendorID = COALESCE(@10, VendorID),
           UpdatedAt = SYSUTCDATETIME()
-      WHERE UserID = @0 AND IsDeleted = 0;
+      WHERE user_id = @0 ;
       `,
       [
         userId,
@@ -696,6 +636,12 @@ export class UsersRepository {
         data.username || null,
         data.email || null,
         data.userType || null,
+        data.firstName || null,
+        data.lastName || null,
+        data.mobileNo || null,
+        data.jobTitle || null,
+        data.orgUnitId || null,
+        data.vendorId || null,
       ],
     );
   }
@@ -706,9 +652,9 @@ export class UsersRepository {
   async activate(userId: string, qr?: QueryRunner): Promise<void> {
     await this.getExecutor(qr).query(
       `
-      UPDATE [auth].[Users]
-      SET IsActive = 1, UpdatedAt = SYSUTCDATETIME()
-      WHERE UserID = @0 AND IsDeleted = 0;
+      UPDATE [auth].[tbl_Users]
+      SET is_active = 1, UpdatedAt = SYSUTCDATETIME()
+      WHERE user_id = @0 ;
       `,
       [userId],
     );
@@ -720,9 +666,9 @@ export class UsersRepository {
   async deactivate(userId: string, qr?: QueryRunner): Promise<void> {
     await this.getExecutor(qr).query(
       `
-      UPDATE [auth].[Users]
-      SET IsActive = 0, UpdatedAt = SYSUTCDATETIME()
-      WHERE UserID = @0 AND IsDeleted = 0;
+      UPDATE [auth].[tbl_Users]
+      SET is_active = 0, UpdatedAt = SYSUTCDATETIME()
+      WHERE user_id = @0 ;
       `,
       [userId],
     );
@@ -738,16 +684,11 @@ export class UsersRepository {
   ): Promise<void> {
     await this.getExecutor(qr).query(
       `
-      UPDATE [auth].[Users]
-      SET 
-          IsDeleted = 1,
-          IsActive = 0,
-          DeletedAt = SYSUTCDATETIME(),
-          DeletedBy = @1,
-          UpdatedAt = SYSUTCDATETIME()
-      WHERE UserID = @0 AND IsDeleted = 0;
+      UPDATE [auth].[tbl_Users]
+      SET is_active = 0, UpdatedAt = SYSUTCDATETIME()
+      WHERE user_id = @0 ;
       `,
-      [userId, deletedBy || null],
+      [userId],
     );
   }
 
@@ -757,13 +698,12 @@ export class UsersRepository {
   async unlock(userId: string, qr?: QueryRunner): Promise<void> {
     await this.getExecutor(qr).query(
       `
-      UPDATE [auth].[Users]
+      UPDATE [auth].[tbl_Users]
       SET 
           FailedLoginCount = 0,
-          LastFailedLoginAt = NULL,
           LockedUntil = NULL,
           UpdatedAt = SYSUTCDATETIME()
-      WHERE UserID = @0;
+      WHERE user_id = @0;
       `,
       [userId],
     );
@@ -780,19 +720,18 @@ export class UsersRepository {
   ): Promise<{ failedCount: number; isLocked: boolean }> {
     const rows = await this.getExecutor(qr).query(
       `
-      UPDATE [auth].[Users]
+      UPDATE [auth].[tbl_Users]
       SET 
           FailedLoginCount = FailedLoginCount + 1,
-          LastFailedLoginAt = SYSUTCDATETIME(),
           LockedUntil = CASE 
               WHEN FailedLoginCount + 1 >= @1 THEN DATEADD(MINUTE, @2, SYSUTCDATETIME())
               ELSE LockedUntil 
           END,
           UpdatedAt = SYSUTCDATETIME()
       OUTPUT 
-          INSERTED.FailedLoginCount AS failedCount,
-          CASE WHEN INSERTED.LockedUntil > SYSUTCDATETIME() THEN 1 ELSE 0 END AS isLocked
-      WHERE UserID = @0;
+          INSERTED.failed_login_count AS failedCount,
+          CASE WHEN INSERTED.locked_until > SYSUTCDATETIME() THEN 1 ELSE 0 END AS isLocked
+      WHERE user_id = @0;
       `,
       [userId, maxAttempts, lockoutMinutes],
     );
@@ -809,16 +748,16 @@ export class UsersRepository {
   async resetFailedLoginCount(userId: string, qr?: QueryRunner): Promise<void> {
     await this.getExecutor(qr).query(
       `
-      UPDATE [auth].[Users]
-      SET FailedLoginCount = 0, LastFailedLoginAt = NULL, LockedUntil = NULL, UpdatedAt = SYSUTCDATETIME()
-      WHERE UserID = @0;
+      UPDATE [auth].[tbl_Users]
+      SET failed_login_count = 0, LockedUntil = NULL, UpdatedAt = SYSUTCDATETIME()
+      WHERE user_id = @0;
       `,
       [userId],
     );
   }
 
   /**
-   * Upserts local password credentials for a user in auth.LocalCredentials.
+   * Upserts local password credentials for a user in auth.tbl_Local_Credentials.
    */
   async upsertLocalCredentials(
     userId: string,
@@ -828,18 +767,18 @@ export class UsersRepository {
   ): Promise<void> {
     await this.getExecutor(qr).query(
       `
-      IF EXISTS (SELECT 1 FROM [auth].[LocalCredentials] WHERE UserID = @0)
+      IF EXISTS (SELECT 1 FROM [auth].[tbl_Local_Credentials] WHERE user_id = @0)
       BEGIN
-          UPDATE [auth].[LocalCredentials]
-          SET PasswordHash = @1,
+          UPDATE [auth].[tbl_Local_Credentials]
+          SET password_hash = @1,
               PasswordChangedAt = SYSUTCDATETIME(),
               MustChangePassword = @2,
               IsActive = 1
-          WHERE UserID = @0;
+          WHERE user_id = @0;
       END
       ELSE
       BEGIN
-          INSERT INTO [auth].[LocalCredentials] (
+          INSERT INTO [auth].[tbl_Local_Credentials] (
               CredentialID,
               UserID,
               PasswordHash,
@@ -873,9 +812,9 @@ export class UsersRepository {
   ): Promise<void> {
     await this.getExecutor(qr).query(
       `
-      UPDATE [auth].[LocalCredentials]
-      SET MustChangePassword = @1
-      WHERE UserID = @0;
+      UPDATE [auth].[tbl_Local_Credentials]
+      SET must_change_password = @1
+      WHERE user_id = @0;
       `,
       [userId, mustChange ? 1 : 0],
     );
@@ -891,7 +830,7 @@ export class UsersRepository {
   ): Promise<void> {
     await this.getExecutor(qr).query(
       `
-      INSERT INTO [auth].[LogoutHistory] (
+      INSERT INTO [auth].[tbl_Logout_History] (
           LoginSessionID,
           UserID,
           Username,
@@ -901,16 +840,16 @@ export class UsersRepository {
           LogoutReason
       )
       SELECT 
-          ls.LoginSessionID,
-          ls.UserID,
+          ls.login_session_id,
+          ls.user_id,
           COALESCE(u.Username, 'UNKNOWN'),
           ls.IPAddress,
-          ls.UserAgent,
+          ls.user_agent,
           SYSUTCDATETIME(),
           @1
-      FROM [auth].[LoginSessions] ls
-      INNER JOIN [auth].[Users] u ON u.UserID = ls.UserID
-      WHERE ls.UserID = @0 AND ls.IsActive = 1;
+      FROM [auth].[tbl_Login_Sessions] ls
+      INNER JOIN [auth].[tbl_Users] u ON u.user_id = ls.user_id
+      WHERE ls.user_id = @0 AND ls.is_active = 1;
       `,
       [userId, reason],
     );
@@ -922,16 +861,16 @@ export class UsersRepository {
   async countActiveSystemAdmins(qr?: QueryRunner): Promise<number> {
     const rows = await this.getExecutor(qr).query(
       `
-      SELECT COUNT(DISTINCT u.UserID) AS adminCount
-      FROM [auth].[Users] u
-      INNER JOIN [auth].[UserRoles] ur ON ur.UserID = u.UserID
-      INNER JOIN [auth].[Roles] r ON r.RoleID = ur.RoleID
-      WHERE r.RoleCode = 'SYSTEM_ADMIN'
-        AND u.IsActive = 1
-        AND u.IsDeleted = 0
+      SELECT COUNT(DISTINCT u.user_id) AS adminCount
+      FROM [auth].[tbl_Users] u
+      INNER JOIN [auth].[tbl_User_Roles] ur ON ur.user_id = u.user_id
+      INNER JOIN [auth].[tbl_Roles] r ON r.role_id = ur.role_id
+      WHERE r.role_code = 'SYSTEM_ADMIN'
+        AND u.is_active = 1
+        
         AND ur.IsActive = 1
-        AND ur.EffectiveFrom <= SYSUTCDATETIME()
-        AND (ur.EffectiveTo IS NULL OR ur.EffectiveTo > SYSUTCDATETIME());
+        AND ur.effective_from <= SYSUTCDATETIME()
+        AND (ur.effective_to IS NULL OR ur.effective_to > SYSUTCDATETIME());
       `,
     );
 
@@ -949,11 +888,11 @@ export class UsersRepository {
       `
       SELECT TOP 1 1 AS isHead
       FROM [org].[OrgManagers] om
-      WHERE om.UserID = @0
-        AND om.IsPrimary = 1
-        AND om.IsActive = 1
-        AND om.EffectiveFrom <= SYSUTCDATETIME()
-        AND (om.EffectiveTo IS NULL OR om.EffectiveTo > SYSUTCDATETIME());
+      WHERE om.user_id = @0
+        AND om.is_primary = 1
+        AND om.is_active = 1
+        AND om.effective_from <= SYSUTCDATETIME()
+        AND (om.effective_to IS NULL OR om.effective_to > SYSUTCDATETIME());
       `,
       [userId],
     );

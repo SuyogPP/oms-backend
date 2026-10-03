@@ -29,15 +29,15 @@ export class SecurityEventsRepository {
 
       await this.dataSource.query(
         `
-                INSERT INTO [auth].[SecurityEvents]
+                INSERT INTO [auth].[tbl_Security_Events]
                 (
-                    UserID,
-                    LoginSessionID,
-                    EventType,
-                    EventDescription,
-                    IPAddress,
-                    UserAgent,
-                    CreatedAt
+                    user_id,
+                    login_session_id,
+                    event_type,
+                    event_description,
+                    ip_address,
+                    user_agent,
+                    created_at
                 )
                 VALUES
                 (

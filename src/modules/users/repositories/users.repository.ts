@@ -10,23 +10,23 @@ export class UsersRepository {
     const users = await this.dataSource.query(
       `
         SELECT
-            u.UserID AS userId,
-            u.EmployeeID AS employeeId,
-            CONCAT(p.FirstName, ' ', p.LastName) AS employeeName,
+            u.user_id AS userId,
+            u.employee_id AS employeeId,
+            CONCAT(p.first_name, ' ', p.last_name) AS employeeName,
             u.Email AS email,
             p.DepartmentID AS department,
-            p.JobTitle AS role,
+            p.job_title AS role,
             u.UserType AS userType,
             CASE
-                WHEN u.IsActive = 1 THEN 'Active'
+                WHEN u.is_active = 1 THEN 'Active'
                 ELSE 'Inactive'
             END AS status,
-            u.LastLoginAt AS lastLogin
-        FROM auth.Users u
+            u.last_login_at AS lastLogin
+        FROM auth.tbl_Users u
         LEFT JOIN auth.UserProfiles p
-            ON u.UserID = p.UserID
+            ON u.user_id = p.user_id
         WHERE u.IsDeleted = 0
-        ORDER BY u.CreatedAt DESC
+        ORDER BY u.created_at DESC
         `,
     );
 
@@ -46,10 +46,10 @@ export class UsersRepository {
       const existingUsers = await queryRunner.query(
         `
                 SELECT
-                    UserID,
+                    user_id,
                     Username,
                     Email
-                FROM auth.Users
+                FROM auth.tbl_Users
                 WHERE Username = @0
                    OR Email = @1
                 `,
@@ -67,19 +67,19 @@ export class UsersRepository {
 
       const userResult = await queryRunner.query(
         `
-                INSERT INTO auth.Users
+                INSERT INTO auth.tbl_Users
                 (
-                    UserID,
-                    EmployeeID,
+                    user_id,
+                    employee_id,
                     Username,
                     Email,
                     UserType,
-                    IsActive,
-                    CreatedAt,
+                    is_active,
+                    created_at,
                     IsDeleted,
-                    FailedLoginCount
+                    failed_login_count
                 )
-                OUTPUT INSERTED.UserID AS userId
+                OUTPUT INSERTED.user_id AS userId
                 VALUES
                 (
                     NEWID(),
@@ -103,11 +103,11 @@ export class UsersRepository {
                 INSERT INTO auth.UserProfiles
                 (
                     UserProfileID,
-                    UserID,
-                    FirstName,
-                    LastName,
-                    MobileNo,
-                    JobTitle,
+                    user_id,
+                    first_name,
+                    last_name,
+                    mobile_no,
+                    job_title,
                     DepartmentID,
                     BusinessUnitID,
                     SectionID
@@ -159,10 +159,10 @@ export class UsersRepository {
     const existingUser = await this.dataSource.query(
       `
             SELECT
-                UserID,
+                user_id,
                 IsDeleted
-            FROM auth.Users
-            WHERE UserID = @0
+            FROM auth.tbl_Users
+            WHERE user_id = @0
             `,
       [id],
     );
@@ -183,12 +183,12 @@ export class UsersRepository {
 
     await this.dataSource.query(
       `
-            UPDATE auth.Users
+            UPDATE auth.tbl_Users
             SET
                 IsDeleted = 1,
                 DeletedAt = SYSUTCDATETIME(),
-                IsActive = 0
-            WHERE UserID = @0
+                is_active = 0
+            WHERE user_id = @0
             `,
       [id],
     );

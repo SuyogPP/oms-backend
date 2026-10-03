@@ -25,11 +25,11 @@ export class CandidateTokensRepository {
       INSERT INTO [onboarding].[CandidateAccessTokens] (
           TokenId,
           OnboardingId,
-          TokenHash,
-          ExpiresAt,
+          token_hash,
+          expires_at,
           ConsumedCount,
-          RevokedAt,
-          CreatedAt
+          revoked_at,
+          created_at
       )
       OUTPUT INSERTED.TokenId AS tokenId
       VALUES (
@@ -60,13 +60,13 @@ export class CandidateTokensRepository {
       SELECT 
           t.TokenId AS tokenId,
           t.OnboardingId AS onboardingId,
-          CONVERT(NVARCHAR(64), t.TokenHash, 2) AS tokenHash,
-          t.ExpiresAt AS expiresAt,
+          CONVERT(NVARCHAR(64), t.token_hash, 2) AS tokenHash,
+          t.expires_at AS expiresAt,
           t.ConsumedCount AS consumedCount,
-          t.RevokedAt AS revokedAt,
-          t.CreatedAt AS createdAt
+          t.revoked_at AS revokedAt,
+          t.created_at AS createdAt
       FROM [onboarding].[CandidateAccessTokens] t
-      WHERE t.TokenHash = CONVERT(VARBINARY(32), @0, 2);
+      WHERE t.token_hash = CONVERT(VARBINARY(32), @0, 2);
       `,
       [tokenHashHex],
     );
@@ -108,8 +108,8 @@ export class CandidateTokensRepository {
     const result = await this.getExecutor(qr).query(
       `
       UPDATE [onboarding].[CandidateAccessTokens]
-      SET RevokedAt = SYSUTCDATETIME()
-      WHERE OnboardingId = @0 AND RevokedAt IS NULL;
+      SET revoked_at = SYSUTCDATETIME()
+      WHERE OnboardingId = @0 AND revoked_at IS NULL;
       `,
       [onboardingId],
     );

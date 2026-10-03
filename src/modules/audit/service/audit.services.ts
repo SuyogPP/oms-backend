@@ -195,7 +195,7 @@ export class AuditService {
       entityId: data.userId,
       affectedUserId: data.userId,
       operationType: 'STATUS_CHANGE',
-      fieldName: 'IsActive',
+      fieldName: 'is_active',
       oldValue: data.isActive ? '0' : '1',
       newValue: data.isActive ? '1' : '0',
       rowSnapshotBefore: null,

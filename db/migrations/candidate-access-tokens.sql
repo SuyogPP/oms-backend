@@ -34,12 +34,12 @@ BEGIN
     CREATE TABLE onboarding.CandidateAccessTokens (
         TokenId       UNIQUEIDENTIFIER NOT NULL DEFAULT (NEWSEQUENTIALID()),
         OnboardingId  UNIQUEIDENTIFIER NOT NULL,
-        TokenHash     VARBINARY(32)    NOT NULL,   -- SHA-256, same discipline as
-                                                    -- auth.UserInvitations
-        ExpiresAt     DATETIME2(3)     NOT NULL,
+        token_hash     VARBINARY(32)    NOT NULL,   -- SHA-256, same discipline as
+                                                    -- auth.tbl_User_Invitations
+        expires_at     DATETIME2(3)     NOT NULL,
         ConsumedCount INT              NOT NULL DEFAULT (0),
-        RevokedAt     DATETIME2(3)     NULL,
-        CreatedAt     DATETIME2(3)     NOT NULL DEFAULT (SYSUTCDATETIME()),
+        revoked_at     DATETIME2(3)     NULL,
+        created_at     DATETIME2(3)     NOT NULL DEFAULT (SYSUTCDATETIME()),
         CONSTRAINT PK_CandidateAccessTokens PRIMARY KEY (TokenId)
     );
 
@@ -51,7 +51,7 @@ BEGIN
 END
 GO
 
--- 3. Unique index on TokenHash
+-- 3. Unique index on token_hash
 IF NOT EXISTS (
     SELECT 1 FROM sys.indexes 
     WHERE name = 'UX_CandidateAccessTokens_Hash' 
@@ -59,7 +59,7 @@ IF NOT EXISTS (
 )
 BEGIN
     CREATE UNIQUE INDEX UX_CandidateAccessTokens_Hash
-        ON onboarding.CandidateAccessTokens (TokenHash);
+        ON onboarding.CandidateAccessTokens (token_hash);
 
     PRINT '    [+] Created index [UX_CandidateAccessTokens_Hash].';
 END

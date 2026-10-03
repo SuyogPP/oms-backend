@@ -134,13 +134,13 @@ describe('Step 0 Cross-Cutting Foundation', () => {
     });
 
     it('should sanitize sort column safely', () => {
-      const allowed = ['CreatedAt', 'Username', 'Email'];
-      expect(sanitizeSortColumn('email', allowed, 'CreatedAt')).toBe('Email');
+      const allowed = ['created_at', 'Username', 'Email'];
+      expect(sanitizeSortColumn('email', allowed, 'created_at')).toBe('Email');
       expect(
-        sanitizeSortColumn('DROP TABLE Users;--', allowed, 'CreatedAt'),
-      ).toBe('CreatedAt');
-      expect(sanitizeSortColumn(undefined, allowed, 'CreatedAt')).toBe(
-        'CreatedAt',
+        sanitizeSortColumn('DROP TABLE tbl_Users;--', allowed, 'created_at'),
+      ).toBe('created_at');
+      expect(sanitizeSortColumn(undefined, allowed, 'created_at')).toBe(
+        'created_at',
       );
     });
   });
@@ -148,21 +148,21 @@ describe('Step 0 Cross-Cutting Foundation', () => {
   describe('Filtering Framework', () => {
     it('should parse shorthand filter strings correctly', () => {
       const shorthand =
-        'EventType:EQ:LOGIN_FAILURE,CreatedAt:GTE:2026-08-01,Status:IN:ACTIVE|PENDING';
+        'event_type:EQ:LOGIN_FAILURE,created_at:GTE:2026-08-01,status:IN:ACTIVE|PENDING';
       const parsed = parseFilterQuery(shorthand);
       expect(parsed).toHaveLength(3);
       expect(parsed[0]).toEqual({
-        field: 'EventType',
+        field: 'event_type',
         operator: FilterOperator.EQ,
         value: 'LOGIN_FAILURE',
       });
       expect(parsed[1]).toEqual({
-        field: 'CreatedAt',
+        field: 'created_at',
         operator: FilterOperator.GTE,
         value: '2026-08-01',
       });
       expect(parsed[2]).toEqual({
-        field: 'Status',
+        field: 'status',
         operator: FilterOperator.IN,
         value: ['ACTIVE', 'PENDING'],
       });
@@ -213,9 +213,9 @@ describe('Step 0 Cross-Cutting Foundation', () => {
       ];
 
       const allowedColumns = {
-        eventType: 'e.EventType',
-        userId: 'e.UserID',
-        createdAt: 'e.CreatedAt',
+        eventType: 'e.event_type',
+        userId: 'e.user_id',
+        createdAt: 'e.created_at',
         status: 'u.Status',
       };
 
@@ -227,7 +227,7 @@ describe('Step 0 Cross-Cutting Foundation', () => {
       });
 
       expect(result.whereClause).toBe(
-        'WHERE e.IsDeleted = 0 AND e.EventType = @0 AND e.UserID = @1 AND e.CreatedAt >= @2 AND u.Status IN (@3, @4)',
+        'WHERE e.IsDeleted = 0 AND e.event_type = @0 AND e.user_id = @1 AND e.created_at >= @2 AND u.Status IN (@3, @4)',
       );
       expect(result.params).toEqual([
         'LOGIN_SUCCESS',

@@ -1,4 +1,6 @@
+import { UserOrgUnitAssignmentRepository } from '../../../organization/org-units/repositories/user-org-unit-assignment.repository';
 import { Test, TestingModule } from '@nestjs/testing';
+import { OrgScopeRepository } from '../../../organization/org-scope/repositories/org-scope.repository';
 import {
   NotFoundException,
   ConflictException,
@@ -12,6 +14,8 @@ import { UserValidationService } from '../../users/services/user-validation.serv
 import { SecurityEventsService } from '../../../security-events/services/security-events.service';
 import { AuditService } from '../../../audit/service/audit.services';
 import { USER_ERROR_CODES } from '../../users/users.constants';
+
+const mockUserOrgUnitAssignmentRepository = { reassignUser: jest.fn() };
 
 describe('UserRolesService (Domain 3, Section 8 Assignments & Section 4.2)', () => {
   let service: UserRolesService;
@@ -27,7 +31,7 @@ describe('UserRolesService (Domain 3, Section 8 Assignments & Section 4.2)', () 
 
   const mockUserRolesRepository = {
     findByUserId: jest.fn(),
-    findActiveByUserId: jest.fn(),
+    findActiveByUserId: jest.fn().mockResolvedValue([]),
     findById: jest.fn(),
     assignRole: jest.fn(),
     revokeRole: jest.fn(),
@@ -67,6 +71,7 @@ describe('UserRolesService (Domain 3, Section 8 Assignments & Section 4.2)', () 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
+        { provide: UserOrgUnitAssignmentRepository, useValue: mockUserOrgUnitAssignmentRepository },
         UserRolesService,
         { provide: UserRolesRepository, useValue: mockUserRolesRepository },
         { provide: UsersRepository, useValue: mockUsersRepository },
@@ -74,6 +79,7 @@ describe('UserRolesService (Domain 3, Section 8 Assignments & Section 4.2)', () 
         { provide: SecurityEventsService, useValue: mockSecurityEventsService },
         { provide: AuditService, useValue: mockAuditService },
         { provide: DataSource, useValue: mockDataSource },
+        { provide: OrgScopeRepository, useValue: { getVisibleOrgUnitIds: jest.fn().mockResolvedValue([]) } },
       ],
     }).compile();
 

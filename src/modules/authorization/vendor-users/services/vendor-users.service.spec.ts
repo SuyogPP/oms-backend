@@ -1,3 +1,4 @@
+import { AuditLogRepository } from '../../../audit/repositories/audit-log.repository';
 import { Test, TestingModule } from '@nestjs/testing';
 import { BadRequestException } from '@nestjs/common';
 import { DataSource } from 'typeorm';
@@ -45,13 +46,14 @@ describe('VendorUsersService (Domain 3, Section 7 Rules V1–V10)', () => {
     log: jest.fn().mockResolvedValue(undefined),
   };
 
+  const mockAuditLogRepository = { insert: jest.fn().mockResolvedValue(null) };
   const mockAuditService = {
     logUserCreated: jest.fn().mockResolvedValue(undefined),
     logUserUpdated: jest.fn().mockResolvedValue(undefined),
   };
 
   const sampleUserId = '1053433E-F36B-1410-85ED-009A959FB122';
-  const vendorId = '2053433E-F36B-1410-85ED-009A959FB233';
+  const vendorId = 102;
   const operatorUserId = '3053433E-F36B-1410-85ED-009A959FB344';
 
   beforeEach(async () => {
@@ -63,6 +65,7 @@ describe('VendorUsersService (Domain 3, Section 7 Rules V1–V10)', () => {
         { provide: UserValidationService, useValue: mockValidationService },
         { provide: SecurityEventsService, useValue: mockSecurityEventsService },
         { provide: AuditService, useValue: mockAuditService },
+        { provide: AuditLogRepository, useValue: mockAuditLogRepository },
         { provide: DataSource, useValue: mockDataSource },
       ],
     }).compile();
@@ -128,7 +131,7 @@ describe('VendorUsersService (Domain 3, Section 7 Rules V1–V10)', () => {
         mockValidationService.validateV1_VendorUserType,
       ).toHaveBeenCalledWith(USER_TYPES.VENDOR);
       expect(mockValidationService.validateV2_VendorLink).toHaveBeenCalledWith(
-        vendorId,
+        vendorId.toString(),
       );
       expect(mockValidationService.validateU1_EmailUnique).toHaveBeenCalledWith(
         validDto.email,
@@ -138,7 +141,7 @@ describe('VendorUsersService (Domain 3, Section 7 Rules V1–V10)', () => {
       ).toHaveBeenCalledWith(validDto.username);
       expect(
         mockValidationService.validateV5_VendorOrgUnitProfile,
-      ).toHaveBeenCalledWith(USER_TYPES.VENDOR, {});
+      ).toHaveBeenCalledWith(USER_TYPES.VENDOR, null);
 
       expect(mockVendorUsersRepository.create).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -167,7 +170,7 @@ describe('VendorUsersService (Domain 3, Section 7 Rules V1–V10)', () => {
     it('V2: rejects invalid vendorId shape with 400 Bad Request', async () => {
       const invalidDto = {
         ...validDto,
-        vendorId: 'not-a-valid-uuid',
+        vendorId: -1,
       };
 
       await expect(service.create(invalidDto, operatorUserId)).rejects.toThrow(
@@ -233,7 +236,7 @@ describe('VendorUsersService (Domain 3, Section 7 Rules V1–V10)', () => {
       );
     });
 
-    it('rejects invalid vendorId UUID format with 400 Bad Request', async () => {
+    it('rejects invalid vendorId shape with 400 Bad Request', async () => {
       await expect(
         service.deactivateAllByVendorId('invalid-uuid', operatorUserId),
       ).rejects.toThrow(BadRequestException);

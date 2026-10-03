@@ -1,101 +1,57 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
-  IsInt,
-  IsNotEmpty,
-  IsOptional,
   IsString,
-  IsUUID,
+  IsOptional,
+  IsNumber,
   Matches,
+  MinLength,
   MaxLength,
-  Min,
+  IsBoolean,
 } from 'class-validator';
 import { ORG_CODE_REGEX } from '../org-units.constants';
 
 export class CreateOrgUnitDto {
-  @ApiProperty({
-    example: 3,
-    description: 'Org unit type ID (1=ORG, 2=BU, 3=DEPT, 4=SECTION)',
-  })
-  @IsInt()
-  @Min(1)
-  orgUnitTypeId: number;
+  @ApiProperty({ example: 3, description: 'Org unit type identifier' })
+  @IsNumber()
+  unitTypeId: number;
 
   @ApiPropertyOptional({
-    example: '11111111-2222-3333-4444-555555555555',
-    description: 'Parent OrgUnitId. Required unless root ORGANIZATION type.',
+    example: 123,
+    description: 'Parent org unit ID (null for root)',
   })
   @IsOptional()
-  @IsUUID()
-  parentOrgUnitId?: string | null;
+  @IsNumber()
+  parentId?: number;
 
-  @ApiProperty({
-    example: 'IT',
-    description: 'Unique code among live siblings',
-  })
+  @ApiProperty({ example: 'IT', description: 'Unique org code' })
   @IsString()
-  @IsNotEmpty()
-  @MaxLength(50)
   @Matches(ORG_CODE_REGEX, {
-    message:
-      'Code must start with alphanumeric and contain only uppercase letters, numbers, underscores, and hyphens (2-50 chars).',
+    message: 'Code must be uppercase alphanumeric without spaces',
   })
-  code: string;
+  @MinLength(2)
+  @MaxLength(50)
+  orgCode: string;
 
-  @ApiProperty({ example: 'Information Technology' })
+  @ApiProperty({ example: 'Information Technology', description: 'English name' })
   @IsString()
-  @IsNotEmpty()
+  @MinLength(2)
   @MaxLength(200)
-  name: string;
+  orgName: string;
 
-  @ApiPropertyOptional({ example: 'تقنية المعلومات' })
-  @IsOptional()
-  @IsString()
-  @MaxLength(200)
-  nameAr?: string | null;
-
-  @ApiPropertyOptional({ example: 'IT' })
+  @ApiPropertyOptional({ example: 'CC-1000' })
   @IsOptional()
   @IsString()
   @MaxLength(50)
-  shortName?: string | null;
+  costCenterCode?: string;
 
-  @ApiPropertyOptional({ example: 'Enterprise IT infrastructure and services' })
-  @IsOptional()
-  @IsString()
-  @MaxLength(1000)
-  description?: string | null;
-
-  @ApiPropertyOptional({ example: 'CC-1042' })
+  @ApiPropertyOptional({ example: 'guid' })
   @IsOptional()
   @IsString()
   @MaxLength(50)
-  costCenterCode?: string | null;
+  adObjectGuid?: string;
 
-  @ApiPropertyOptional({ example: 'ORG_IT_001' })
+  @ApiPropertyOptional({ example: true })
   @IsOptional()
-  @IsString()
-  @MaxLength(50)
-  oracleOrgCode?: string | null;
-
-  @ApiPropertyOptional({ example: 'it@diez.ae' })
-  @IsOptional()
-  @IsString()
-  @MaxLength(256)
-  emailAddress?: string | null;
-
-  @ApiPropertyOptional({ example: '+97141234567' })
-  @IsOptional()
-  @IsString()
-  @MaxLength(30)
-  phoneNumber?: string | null;
-
-  @ApiPropertyOptional({ example: 30, default: 0 })
-  @IsOptional()
-  @IsInt()
-  sortOrder?: number;
-
-  @ApiPropertyOptional({ example: '2026-09-01' })
-  @IsOptional()
-  @IsString()
-  effectiveFrom?: string;
+  @IsBoolean()
+  isActive?: boolean;
 }

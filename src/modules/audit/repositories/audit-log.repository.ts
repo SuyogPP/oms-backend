@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
-import { AUDIT_DB_CONNECTION } from 'src/database/database.constants';
+import { AUDIT_DB_CONNECTION } from '../../../database/database.constants';
 import { AuditLog } from '../entities/audit-log.entity';
 
 /**

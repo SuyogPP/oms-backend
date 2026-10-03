@@ -1,0 +1,2234 @@
+[
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Delegation_Permissions",
+    "COLUMN_NAME": "delegation_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Delegation_Permissions",
+    "COLUMN_NAME": "permission_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Delegations",
+    "COLUMN_NAME": "delegation_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Delegations",
+    "COLUMN_NAME": "from_user_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Delegations",
+    "COLUMN_NAME": "to_user_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Delegations",
+    "COLUMN_NAME": "start_date",
+    "DATA_TYPE": "datetime2"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Delegations",
+    "COLUMN_NAME": "end_date",
+    "DATA_TYPE": "datetime2"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Delegations",
+    "COLUMN_NAME": "IsActive",
+    "DATA_TYPE": "bit"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Delegations",
+    "COLUMN_NAME": "Reason",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Failed_Login_Attempts",
+    "COLUMN_NAME": "failed_login_attempt_id",
+    "DATA_TYPE": "bigint"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Failed_Login_Attempts",
+    "COLUMN_NAME": "Username",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Failed_Login_Attempts",
+    "COLUMN_NAME": "ip_address",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Failed_Login_Attempts",
+    "COLUMN_NAME": "attempted_at",
+    "DATA_TYPE": "datetime2"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Failed_Login_Attempts",
+    "COLUMN_NAME": "failure_reason",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Failed_Login_Attempts",
+    "COLUMN_NAME": "user_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Failed_Login_Attempts",
+    "COLUMN_NAME": "user_agent",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Failed_Login_Attempts",
+    "COLUMN_NAME": "device_type",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Failed_Login_Attempts",
+    "COLUMN_NAME": "browser_name",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Failed_Login_Attempts",
+    "COLUMN_NAME": "is_sso_login",
+    "DATA_TYPE": "bit"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Local_Credentials",
+    "COLUMN_NAME": "credential_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Local_Credentials",
+    "COLUMN_NAME": "user_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Local_Credentials",
+    "COLUMN_NAME": "password_hash",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Local_Credentials",
+    "COLUMN_NAME": "password_changed_at",
+    "DATA_TYPE": "datetime2"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Local_Credentials",
+    "COLUMN_NAME": "must_change_password",
+    "DATA_TYPE": "bit"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Local_Credentials",
+    "COLUMN_NAME": "is_active",
+    "DATA_TYPE": "bit"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Local_Credentials",
+    "COLUMN_NAME": "created_at",
+    "DATA_TYPE": "datetime2"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Login_History",
+    "COLUMN_NAME": "login_history_id",
+    "DATA_TYPE": "bigint"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Login_History",
+    "COLUMN_NAME": "user_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Login_History",
+    "COLUMN_NAME": "Username",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Login_History",
+    "COLUMN_NAME": "ip_address",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Login_History",
+    "COLUMN_NAME": "user_agent",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Login_History",
+    "COLUMN_NAME": "login_result",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Login_History",
+    "COLUMN_NAME": "login_at",
+    "DATA_TYPE": "datetime2"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Login_History",
+    "COLUMN_NAME": "failure_reason",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Login_History",
+    "COLUMN_NAME": "login_session_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Login_History",
+    "COLUMN_NAME": "device_type",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Login_History",
+    "COLUMN_NAME": "browser_name",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Login_History",
+    "COLUMN_NAME": "is_sso_login",
+    "DATA_TYPE": "bit"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Login_Sessions",
+    "COLUMN_NAME": "login_session_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Login_Sessions",
+    "COLUMN_NAME": "user_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Login_Sessions",
+    "COLUMN_NAME": "refresh_token_hash",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Login_Sessions",
+    "COLUMN_NAME": "ip_address",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Login_Sessions",
+    "COLUMN_NAME": "user_agent",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Login_Sessions",
+    "COLUMN_NAME": "device_info",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Login_Sessions",
+    "COLUMN_NAME": "login_at",
+    "DATA_TYPE": "datetime2"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Login_Sessions",
+    "COLUMN_NAME": "expires_at",
+    "DATA_TYPE": "datetime2"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Login_Sessions",
+    "COLUMN_NAME": "revoked_at",
+    "DATA_TYPE": "datetime2"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Login_Sessions",
+    "COLUMN_NAME": "is_active",
+    "DATA_TYPE": "bit"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Login_Sessions",
+    "COLUMN_NAME": "refresh_token_expires_at",
+    "DATA_TYPE": "datetime2"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Login_Sessions",
+    "COLUMN_NAME": "refresh_token_revoked_at",
+    "DATA_TYPE": "datetime2"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Login_Sessions",
+    "COLUMN_NAME": "browser_name",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Login_Sessions",
+    "COLUMN_NAME": "device_type",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Login_Sessions",
+    "COLUMN_NAME": "last_activity_at",
+    "DATA_TYPE": "datetime2"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Login_Sessions",
+    "COLUMN_NAME": "Fingerprint",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Login_Sessions",
+    "COLUMN_NAME": "device_fingerprint",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Logout_History",
+    "COLUMN_NAME": "logout_history_id",
+    "DATA_TYPE": "bigint"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Logout_History",
+    "COLUMN_NAME": "login_session_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Logout_History",
+    "COLUMN_NAME": "user_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Logout_History",
+    "COLUMN_NAME": "Username",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Logout_History",
+    "COLUMN_NAME": "ip_address",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Logout_History",
+    "COLUMN_NAME": "user_agent",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Logout_History",
+    "COLUMN_NAME": "logout_at",
+    "DATA_TYPE": "datetime2"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Logout_History",
+    "COLUMN_NAME": "logout_reason",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Org_Unit_Change_Log",
+    "COLUMN_NAME": "org_unit_change_log_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Org_Unit_Change_Log",
+    "COLUMN_NAME": "org_unit_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Org_Unit_Change_Log",
+    "COLUMN_NAME": "change_type",
+    "DATA_TYPE": "varchar"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Org_Unit_Change_Log",
+    "COLUMN_NAME": "old_parent_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Org_Unit_Change_Log",
+    "COLUMN_NAME": "new_parent_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Org_Unit_Change_Log",
+    "COLUMN_NAME": "old_values",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Org_Unit_Change_Log",
+    "COLUMN_NAME": "new_values",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Org_Unit_Change_Log",
+    "COLUMN_NAME": "reason",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Org_Unit_Change_Log",
+    "COLUMN_NAME": "performed_by",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Org_Unit_Change_Log",
+    "COLUMN_NAME": "performed_at",
+    "DATA_TYPE": "datetime2"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Password_History",
+    "COLUMN_NAME": "password_history_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Password_History",
+    "COLUMN_NAME": "user_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Password_History",
+    "COLUMN_NAME": "password_hash",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Password_History",
+    "COLUMN_NAME": "created_at",
+    "DATA_TYPE": "datetime2"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Rate_Limit_Events",
+    "COLUMN_NAME": "rate_limit_event_id",
+    "DATA_TYPE": "bigint"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Rate_Limit_Events",
+    "COLUMN_NAME": "Username",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Rate_Limit_Events",
+    "COLUMN_NAME": "ip_address",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Rate_Limit_Events",
+    "COLUMN_NAME": "Endpoint",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Rate_Limit_Events",
+    "COLUMN_NAME": "created_at",
+    "DATA_TYPE": "datetime2"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Security_Events",
+    "COLUMN_NAME": "security_event_id",
+    "DATA_TYPE": "bigint"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Security_Events",
+    "COLUMN_NAME": "user_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Security_Events",
+    "COLUMN_NAME": "login_session_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Security_Events",
+    "COLUMN_NAME": "event_type",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Security_Events",
+    "COLUMN_NAME": "event_description",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Security_Events",
+    "COLUMN_NAME": "ip_address",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Security_Events",
+    "COLUMN_NAME": "user_agent",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Security_Events",
+    "COLUMN_NAME": "created_at",
+    "DATA_TYPE": "datetime2"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Security_Settings",
+    "COLUMN_NAME": "security_setting_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Security_Settings",
+    "COLUMN_NAME": "setting_code",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Security_Settings",
+    "COLUMN_NAME": "setting_value",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Security_Settings",
+    "COLUMN_NAME": "setting_type",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Security_Settings",
+    "COLUMN_NAME": "Description",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Security_Settings",
+    "COLUMN_NAME": "is_editable",
+    "DATA_TYPE": "bit"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Security_Settings",
+    "COLUMN_NAME": "updated_at",
+    "DATA_TYPE": "datetime2"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Security_Settings",
+    "COLUMN_NAME": "updated_by",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_User_Invitations",
+    "COLUMN_NAME": "user_invitation_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_User_Invitations",
+    "COLUMN_NAME": "user_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_User_Invitations",
+    "COLUMN_NAME": "token_hash",
+    "DATA_TYPE": "varbinary"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_User_Invitations",
+    "COLUMN_NAME": "Purpose",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_User_Invitations",
+    "COLUMN_NAME": "expires_at",
+    "DATA_TYPE": "datetime2"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_User_Invitations",
+    "COLUMN_NAME": "consumed_at",
+    "DATA_TYPE": "datetime2"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_User_Invitations",
+    "COLUMN_NAME": "revoked_at",
+    "DATA_TYPE": "datetime2"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_User_Invitations",
+    "COLUMN_NAME": "issued_by_user_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_User_Invitations",
+    "COLUMN_NAME": "issued_to_email",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_User_Invitations",
+    "COLUMN_NAME": "ip_address",
+    "DATA_TYPE": "varchar"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_User_Invitations",
+    "COLUMN_NAME": "created_at",
+    "DATA_TYPE": "datetime2"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_User_Org_Unit_Assignment",
+    "COLUMN_NAME": "user_org_unit_assignment_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_User_Org_Unit_Assignment",
+    "COLUMN_NAME": "user_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_User_Org_Unit_Assignment",
+    "COLUMN_NAME": "org_unit_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_User_Org_Unit_Assignment",
+    "COLUMN_NAME": "is_primary",
+    "DATA_TYPE": "bit"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_User_Org_Unit_Assignment",
+    "COLUMN_NAME": "effective_from",
+    "DATA_TYPE": "date"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_User_Org_Unit_Assignment",
+    "COLUMN_NAME": "effective_to",
+    "DATA_TYPE": "date"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_User_Org_Unit_Assignment",
+    "COLUMN_NAME": "is_active",
+    "DATA_TYPE": "bit"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_User_Permission_Overrides",
+    "COLUMN_NAME": "user_permission_override_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_User_Permission_Overrides",
+    "COLUMN_NAME": "user_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_User_Permission_Overrides",
+    "COLUMN_NAME": "permission_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_User_Permission_Overrides",
+    "COLUMN_NAME": "is_granted",
+    "DATA_TYPE": "bit"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_User_Permission_Overrides",
+    "COLUMN_NAME": "effective_from",
+    "DATA_TYPE": "datetime2"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_User_Permission_Overrides",
+    "COLUMN_NAME": "effective_to",
+    "DATA_TYPE": "datetime2"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_User_Permission_Overrides",
+    "COLUMN_NAME": "Reason",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_User_Permission_Overrides",
+    "COLUMN_NAME": "approved_by",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_User_Permission_Overrides",
+    "COLUMN_NAME": "created_at",
+    "DATA_TYPE": "datetime2"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_User_Roles",
+    "COLUMN_NAME": "user_role_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_User_Roles",
+    "COLUMN_NAME": "user_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_User_Roles",
+    "COLUMN_NAME": "role_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_User_Roles",
+    "COLUMN_NAME": "effective_from",
+    "DATA_TYPE": "datetime2"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_User_Roles",
+    "COLUMN_NAME": "effective_to",
+    "DATA_TYPE": "datetime2"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_User_Roles",
+    "COLUMN_NAME": "IsActive",
+    "DATA_TYPE": "bit"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_User_Roles",
+    "COLUMN_NAME": "assigned_by",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_User_Roles",
+    "COLUMN_NAME": "assigned_at",
+    "DATA_TYPE": "datetime2"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_User_Roles",
+    "COLUMN_NAME": "org_unit_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Users",
+    "COLUMN_NAME": "user_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Users",
+    "COLUMN_NAME": "employee_id",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Users",
+    "COLUMN_NAME": "ad_object_id",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Users",
+    "COLUMN_NAME": "Username",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Users",
+    "COLUMN_NAME": "Email",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Users",
+    "COLUMN_NAME": "UserType",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Users",
+    "COLUMN_NAME": "is_active",
+    "DATA_TYPE": "bit"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Users",
+    "COLUMN_NAME": "last_login_at",
+    "DATA_TYPE": "datetime2"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Users",
+    "COLUMN_NAME": "created_at",
+    "DATA_TYPE": "datetime2"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Users",
+    "COLUMN_NAME": "created_by",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Users",
+    "COLUMN_NAME": "updated_at",
+    "DATA_TYPE": "datetime2"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Users",
+    "COLUMN_NAME": "updated_by",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Users",
+    "COLUMN_NAME": "failed_login_count",
+    "DATA_TYPE": "int"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Users",
+    "COLUMN_NAME": "locked_until",
+    "DATA_TYPE": "datetime2"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Users",
+    "COLUMN_NAME": "first_name",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Users",
+    "COLUMN_NAME": "last_name",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Users",
+    "COLUMN_NAME": "mobile_no",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Users",
+    "COLUMN_NAME": "job_title",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Users",
+    "COLUMN_NAME": "password_hash",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Users",
+    "COLUMN_NAME": "org_unit_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "auth",
+    "TABLE_NAME": "tbl_Users",
+    "COLUMN_NAME": "vendor_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Budget_Categories",
+    "COLUMN_NAME": "budget_category_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Budget_Categories",
+    "COLUMN_NAME": "code",
+    "DATA_TYPE": "varchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Budget_Categories",
+    "COLUMN_NAME": "name",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Budget_Categories",
+    "COLUMN_NAME": "expense_type",
+    "DATA_TYPE": "varchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Budget_Categories",
+    "COLUMN_NAME": "oracle_account_code",
+    "DATA_TYPE": "varchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Budget_Categories",
+    "COLUMN_NAME": "is_active",
+    "DATA_TYPE": "bit"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Budget_Categories",
+    "COLUMN_NAME": "is_delete",
+    "DATA_TYPE": "bit"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Budget_Categories",
+    "COLUMN_NAME": "created_date",
+    "DATA_TYPE": "date"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Budget_Categories",
+    "COLUMN_NAME": "created_by",
+    "DATA_TYPE": "varchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Budget_Categories",
+    "COLUMN_NAME": "modified_date",
+    "DATA_TYPE": "date"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Budget_Categories",
+    "COLUMN_NAME": "modified_by",
+    "DATA_TYPE": "varchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Budget_Categories",
+    "COLUMN_NAME": "attr1",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Budget_Categories",
+    "COLUMN_NAME": "attr2",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Budget_Categories",
+    "COLUMN_NAME": "attr3",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Budget_Categories",
+    "COLUMN_NAME": "attr4",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Budget_Categories",
+    "COLUMN_NAME": "attr5",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Budget_Period",
+    "COLUMN_NAME": "period_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Budget_Period",
+    "COLUMN_NAME": "period_code",
+    "DATA_TYPE": "int"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Budget_Period",
+    "COLUMN_NAME": "fiscal_year_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Budget_Period",
+    "COLUMN_NAME": "period_name",
+    "DATA_TYPE": "varchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Budget_Period",
+    "COLUMN_NAME": "period_num",
+    "DATA_TYPE": "smallint"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Budget_Period",
+    "COLUMN_NAME": "start_date",
+    "DATA_TYPE": "date"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Budget_Period",
+    "COLUMN_NAME": "end_date",
+    "DATA_TYPE": "date"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Budget_Period",
+    "COLUMN_NAME": "status",
+    "DATA_TYPE": "varchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Budget_Period",
+    "COLUMN_NAME": "oracle_period_name",
+    "DATA_TYPE": "varchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Budget_Period",
+    "COLUMN_NAME": "is_delete",
+    "DATA_TYPE": "bit"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Budget_Period",
+    "COLUMN_NAME": "created_date",
+    "DATA_TYPE": "date"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Budget_Period",
+    "COLUMN_NAME": "created_by",
+    "DATA_TYPE": "varchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Budget_Period",
+    "COLUMN_NAME": "modified_date",
+    "DATA_TYPE": "date"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Budget_Period",
+    "COLUMN_NAME": "modified_by",
+    "DATA_TYPE": "varchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Budget_Period",
+    "COLUMN_NAME": "attr1",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Budget_Period",
+    "COLUMN_NAME": "attr2",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Budget_Period",
+    "COLUMN_NAME": "attr3",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Budget_Period",
+    "COLUMN_NAME": "attr4",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Budget_Period",
+    "COLUMN_NAME": "attr5",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_category",
+    "COLUMN_NAME": "category_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_category",
+    "COLUMN_NAME": "cat_code",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_category",
+    "COLUMN_NAME": "cat_details",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_category",
+    "COLUMN_NAME": "attr1",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_category",
+    "COLUMN_NAME": "attr2",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_category",
+    "COLUMN_NAME": "attr3",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_category",
+    "COLUMN_NAME": "attr4",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_category",
+    "COLUMN_NAME": "attr5",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_category",
+    "COLUMN_NAME": "is_active",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_category",
+    "COLUMN_NAME": "is_deleted",
+    "DATA_TYPE": "bit"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_category",
+    "COLUMN_NAME": "created_by",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_category",
+    "COLUMN_NAME": "created_date",
+    "DATA_TYPE": "date"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_category",
+    "COLUMN_NAME": "modified_by",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_category",
+    "COLUMN_NAME": "modified_date",
+    "DATA_TYPE": "date"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Data_Access_Policies",
+    "COLUMN_NAME": "data_access_policy_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Data_Access_Policies",
+    "COLUMN_NAME": "policy_code",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Data_Access_Policies",
+    "COLUMN_NAME": "policy_name",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Data_Access_Policies",
+    "COLUMN_NAME": "Description",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Data_Access_Policies",
+    "COLUMN_NAME": "is_active",
+    "DATA_TYPE": "bit"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Data_Access_Policies",
+    "COLUMN_NAME": "created_at",
+    "DATA_TYPE": "datetime2"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Data_Access_Rules",
+    "COLUMN_NAME": "data_access_rule_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Data_Access_Rules",
+    "COLUMN_NAME": "data_access_policy_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Data_Access_Rules",
+    "COLUMN_NAME": "role_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Data_Access_Rules",
+    "COLUMN_NAME": "entity_name",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Data_Access_Rules",
+    "COLUMN_NAME": "filter_expression",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Data_Access_Rules",
+    "COLUMN_NAME": "is_active",
+    "DATA_TYPE": "bit"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Data_Access_Rules",
+    "COLUMN_NAME": "created_at",
+    "DATA_TYPE": "datetime2"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Deployment_Model",
+    "COLUMN_NAME": "deployment_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Deployment_Model",
+    "COLUMN_NAME": "deployment_code",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Deployment_Model",
+    "COLUMN_NAME": "deployment_name",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Deployment_Model",
+    "COLUMN_NAME": "work_settings",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Deployment_Model",
+    "COLUMN_NAME": "attr1",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Deployment_Model",
+    "COLUMN_NAME": "attr2",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Deployment_Model",
+    "COLUMN_NAME": "attr3",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Deployment_Model",
+    "COLUMN_NAME": "attr4",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Deployment_Model",
+    "COLUMN_NAME": "attr5",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Deployment_Model",
+    "COLUMN_NAME": "is_active",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Deployment_Model",
+    "COLUMN_NAME": "is_deleted",
+    "DATA_TYPE": "bit"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Deployment_Model",
+    "COLUMN_NAME": "created_by",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Deployment_Model",
+    "COLUMN_NAME": "created_date",
+    "DATA_TYPE": "date"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Deployment_Model",
+    "COLUMN_NAME": "modified_by",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Deployment_Model",
+    "COLUMN_NAME": "modified_date",
+    "DATA_TYPE": "date"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Designation",
+    "COLUMN_NAME": "designation_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Designation",
+    "COLUMN_NAME": "designation_code",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Designation",
+    "COLUMN_NAME": "designation_name",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Designation",
+    "COLUMN_NAME": "designation_summary",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Designation",
+    "COLUMN_NAME": "attr1",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Designation",
+    "COLUMN_NAME": "attr2",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Designation",
+    "COLUMN_NAME": "attr3",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Designation",
+    "COLUMN_NAME": "attr4",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Designation",
+    "COLUMN_NAME": "attr5",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Designation",
+    "COLUMN_NAME": "attr6",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Designation",
+    "COLUMN_NAME": "attr7",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Designation",
+    "COLUMN_NAME": "attr8",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Designation",
+    "COLUMN_NAME": "attr9",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Designation",
+    "COLUMN_NAME": "attr10",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Designation",
+    "COLUMN_NAME": "attr11",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Designation",
+    "COLUMN_NAME": "attr12",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Designation",
+    "COLUMN_NAME": "is_active",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Designation",
+    "COLUMN_NAME": "is_deleted",
+    "DATA_TYPE": "bit"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Designation",
+    "COLUMN_NAME": "created_by",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Designation",
+    "COLUMN_NAME": "created_date",
+    "DATA_TYPE": "date"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Designation",
+    "COLUMN_NAME": "modified_by",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Designation",
+    "COLUMN_NAME": "modified_date",
+    "DATA_TYPE": "date"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Field_Visibility_Rules",
+    "COLUMN_NAME": "field_visibility_rule_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Field_Visibility_Rules",
+    "COLUMN_NAME": "visibility_policy_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Field_Visibility_Rules",
+    "COLUMN_NAME": "entity_name",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Field_Visibility_Rules",
+    "COLUMN_NAME": "field_name",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Field_Visibility_Rules",
+    "COLUMN_NAME": "role_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Field_Visibility_Rules",
+    "COLUMN_NAME": "visibility_type",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Field_Visibility_Rules",
+    "COLUMN_NAME": "workflow_state_code",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Fiscal_Year",
+    "COLUMN_NAME": "fiscal_year_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Fiscal_Year",
+    "COLUMN_NAME": "code",
+    "DATA_TYPE": "varchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Fiscal_Year",
+    "COLUMN_NAME": "start_date",
+    "DATA_TYPE": "date"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Fiscal_Year",
+    "COLUMN_NAME": "end_date",
+    "DATA_TYPE": "date"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Fiscal_Year",
+    "COLUMN_NAME": "status",
+    "DATA_TYPE": "varchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Fiscal_Year",
+    "COLUMN_NAME": "oracle_budget_name",
+    "DATA_TYPE": "varchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Fiscal_Year",
+    "COLUMN_NAME": "is_delete",
+    "DATA_TYPE": "bit"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Fiscal_Year",
+    "COLUMN_NAME": "created_date",
+    "DATA_TYPE": "date"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Fiscal_Year",
+    "COLUMN_NAME": "created_by",
+    "DATA_TYPE": "varchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Fiscal_Year",
+    "COLUMN_NAME": "modified_date",
+    "DATA_TYPE": "date"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Fiscal_Year",
+    "COLUMN_NAME": "modified_by",
+    "DATA_TYPE": "varchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Fiscal_Year",
+    "COLUMN_NAME": "attr1",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Fiscal_Year",
+    "COLUMN_NAME": "attr2",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Fiscal_Year",
+    "COLUMN_NAME": "attr3",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Fiscal_Year",
+    "COLUMN_NAME": "attr4",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Fiscal_Year",
+    "COLUMN_NAME": "attr5",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Grades",
+    "COLUMN_NAME": "grade_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Grades",
+    "COLUMN_NAME": "grade_code",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Grades",
+    "COLUMN_NAME": "grade_details",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Grades",
+    "COLUMN_NAME": "attr1",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Grades",
+    "COLUMN_NAME": "attr2",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Grades",
+    "COLUMN_NAME": "attr3",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Grades",
+    "COLUMN_NAME": "attr4",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Grades",
+    "COLUMN_NAME": "attr5",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Grades",
+    "COLUMN_NAME": "is_active",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Grades",
+    "COLUMN_NAME": "is_delete",
+    "DATA_TYPE": "bit"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Grades",
+    "COLUMN_NAME": "created_by",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Grades",
+    "COLUMN_NAME": "created_date",
+    "DATA_TYPE": "date"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Grades",
+    "COLUMN_NAME": "modified_by",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Grades",
+    "COLUMN_NAME": "modified_date",
+    "DATA_TYPE": "date"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Org_Unit",
+    "COLUMN_NAME": "org_unit_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Org_Unit",
+    "COLUMN_NAME": "parent_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Org_Unit",
+    "COLUMN_NAME": "unit_type_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Org_Unit",
+    "COLUMN_NAME": "org_code",
+    "DATA_TYPE": "varchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Org_Unit",
+    "COLUMN_NAME": "org_name",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Org_Unit",
+    "COLUMN_NAME": "cost_center_code",
+    "DATA_TYPE": "varchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Org_Unit",
+    "COLUMN_NAME": "ad_object_guid",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Org_Unit",
+    "COLUMN_NAME": "is_active",
+    "DATA_TYPE": "bit"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Org_Unit_Manager",
+    "COLUMN_NAME": "org_unit_manager_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Org_Unit_Manager",
+    "COLUMN_NAME": "org_unit_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Org_Unit_Manager",
+    "COLUMN_NAME": "user_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Org_Unit_Manager",
+    "COLUMN_NAME": "manager_role_code",
+    "DATA_TYPE": "varchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Org_Unit_Manager",
+    "COLUMN_NAME": "is_primary",
+    "DATA_TYPE": "bit"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Org_Unit_Manager",
+    "COLUMN_NAME": "effective_from",
+    "DATA_TYPE": "date"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Org_Unit_Manager",
+    "COLUMN_NAME": "effective_to",
+    "DATA_TYPE": "date"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Org_Unit_Manager",
+    "COLUMN_NAME": "is_active",
+    "DATA_TYPE": "bit"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Org_Unit_Types",
+    "COLUMN_NAME": "unit_type_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Org_Unit_Types",
+    "COLUMN_NAME": "parent_unit_type_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Org_Unit_Types",
+    "COLUMN_NAME": "org_unit_code",
+    "DATA_TYPE": "varchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Org_Unit_Types",
+    "COLUMN_NAME": "org_unit_name",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Org_Unit_Types",
+    "COLUMN_NAME": "level",
+    "DATA_TYPE": "tinyint"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Org_Unit_Types",
+    "COLUMN_NAME": "allows_budget",
+    "DATA_TYPE": "bit"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Org_Unit_Types",
+    "COLUMN_NAME": "allows_requisition",
+    "DATA_TYPE": "bit"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Org_Unit_Types",
+    "COLUMN_NAME": "is_active",
+    "DATA_TYPE": "bit"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Permission_Conditions",
+    "COLUMN_NAME": "permission_condition_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Permission_Conditions",
+    "COLUMN_NAME": "condition_code",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Permission_Conditions",
+    "COLUMN_NAME": "condition_name",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Permission_Conditions",
+    "COLUMN_NAME": "Description",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Permission_Conditions",
+    "COLUMN_NAME": "Expression",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Permission_Conditions",
+    "COLUMN_NAME": "is_active",
+    "DATA_TYPE": "bit"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Permission_Conditions",
+    "COLUMN_NAME": "created_at",
+    "DATA_TYPE": "datetime2"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Permissions",
+    "COLUMN_NAME": "permission_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Permissions",
+    "COLUMN_NAME": "permission_code",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Permissions",
+    "COLUMN_NAME": "module_name",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Permissions",
+    "COLUMN_NAME": "Description",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Role_Hierarchy",
+    "COLUMN_NAME": "role_hierarchy_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Role_Hierarchy",
+    "COLUMN_NAME": "ParentRoleID",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Role_Hierarchy",
+    "COLUMN_NAME": "ChildRoleID",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Role_Hierarchy",
+    "COLUMN_NAME": "is_active",
+    "DATA_TYPE": "bit"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Role_Hierarchy",
+    "COLUMN_NAME": "created_at",
+    "DATA_TYPE": "datetime2"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Role_Permission_Conditions",
+    "COLUMN_NAME": "role_permission_condition_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Role_Permission_Conditions",
+    "COLUMN_NAME": "role_permission_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Role_Permission_Conditions",
+    "COLUMN_NAME": "permission_condition_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Role_Permission_Conditions",
+    "COLUMN_NAME": "is_active",
+    "DATA_TYPE": "bit"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Role_Permission_Conditions",
+    "COLUMN_NAME": "created_at",
+    "DATA_TYPE": "datetime2"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Role_Permissions",
+    "COLUMN_NAME": "role_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Role_Permissions",
+    "COLUMN_NAME": "permission_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Roles",
+    "COLUMN_NAME": "role_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Roles",
+    "COLUMN_NAME": "role_code",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Roles",
+    "COLUMN_NAME": "role_name",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Roles",
+    "COLUMN_NAME": "Description",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Roles",
+    "COLUMN_NAME": "is_system_role",
+    "DATA_TYPE": "bit"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Roles",
+    "COLUMN_NAME": "is_active",
+    "DATA_TYPE": "bit"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Roles",
+    "COLUMN_NAME": "created_at",
+    "DATA_TYPE": "datetime2"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_User_Types",
+    "COLUMN_NAME": "user_type_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_User_Types",
+    "COLUMN_NAME": "user_type_code",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_User_Types",
+    "COLUMN_NAME": "user_type_name",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_User_Types",
+    "COLUMN_NAME": "is_active",
+    "DATA_TYPE": "bit"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_User_Types",
+    "COLUMN_NAME": "created_at",
+    "DATA_TYPE": "datetime2"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Visibility_Policies",
+    "COLUMN_NAME": "visibility_policy_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Visibility_Policies",
+    "COLUMN_NAME": "policy_name",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Visibility_Policies",
+    "COLUMN_NAME": "Description",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Visibility_Types",
+    "COLUMN_NAME": "visibility_type_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Visibility_Types",
+    "COLUMN_NAME": "visibility_code",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Visibility_Types",
+    "COLUMN_NAME": "visibility_name",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Visibility_Types",
+    "COLUMN_NAME": "is_active",
+    "DATA_TYPE": "bit"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Visibility_Types",
+    "COLUMN_NAME": "created_at",
+    "DATA_TYPE": "datetime2"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Workflow_Permission_Matrix",
+    "COLUMN_NAME": "workflow_permission_matrix_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Workflow_Permission_Matrix",
+    "COLUMN_NAME": "workflow_state_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Workflow_Permission_Matrix",
+    "COLUMN_NAME": "role_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Workflow_Permission_Matrix",
+    "COLUMN_NAME": "permission_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Workflow_Permission_Matrix",
+    "COLUMN_NAME": "is_allowed",
+    "DATA_TYPE": "bit"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Workflow_Permission_Matrix",
+    "COLUMN_NAME": "created_at",
+    "DATA_TYPE": "datetime2"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Workflow_States",
+    "COLUMN_NAME": "workflow_state_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Workflow_States",
+    "COLUMN_NAME": "state_code",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Workflow_States",
+    "COLUMN_NAME": "state_name",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Workflow_States",
+    "COLUMN_NAME": "state_category",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Workflow_States",
+    "COLUMN_NAME": "display_order",
+    "DATA_TYPE": "int"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Workflow_States",
+    "COLUMN_NAME": "is_final_state",
+    "DATA_TYPE": "bit"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Workflow_States",
+    "COLUMN_NAME": "is_active",
+    "DATA_TYPE": "bit"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Workflow_States",
+    "COLUMN_NAME": "created_at",
+    "DATA_TYPE": "datetime2"
+  }
+]

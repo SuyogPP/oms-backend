@@ -29,7 +29,7 @@ BEGIN TRY
 
         INSERT INTO org.OrgUnits (
             OrgUnitId, OrgUnitTypeId, ParentOrgUnitId, Code, Name, NameAr, ShortName,
-            MaterializedPath, Depth, IsActive, IsDeleted, CreatedBy, CreatedAt, EffectiveFrom
+            MaterializedPath, Depth, is_active, IsDeleted, created_by, created_at, effective_from
         ) VALUES (
             @RootOrgUnitId, 1, NULL, 'DIEZ', 'Dubai Integrated Economic Zones', N'سلطة دبي للمناطق الاقتصادية المتكاملة', 'DIEZ',
             @RootPath, 0, 1, 0, @SystemUserId, SYSUTCDATETIME(), '2026-01-01'
@@ -75,7 +75,7 @@ BEGIN TRY
 
     INSERT INTO org.OrgUnits (
         OrgUnitId, OrgUnitTypeId, ParentOrgUnitId, Code, Name, NameAr, ShortName,
-        MaterializedPath, Depth, CostCenterCode, IsActive, IsDeleted, CreatedBy, CreatedAt, EffectiveFrom
+        MaterializedPath, Depth, CostCenterCode, is_active, IsDeleted, created_by, created_at, effective_from
     )
     SELECT 
         BUId, 2, @RootOrgUnitId, Code, Name, Name, Code,
@@ -132,7 +132,7 @@ BEGIN TRY
 
     INSERT INTO org.OrgUnits (
         OrgUnitId, OrgUnitTypeId, ParentOrgUnitId, Code, Name, NameAr, ShortName,
-        MaterializedPath, Depth, CostCenterCode, IsActive, IsDeleted, CreatedBy, CreatedAt, EffectiveFrom
+        MaterializedPath, Depth, CostCenterCode, is_active, IsDeleted, created_by, created_at, effective_from
     )
     SELECT 
         DeptId, 3, BUId, Code, Name, Name, Code,
@@ -197,7 +197,7 @@ BEGIN TRY
 
     INSERT INTO org.OrgUnits (
         OrgUnitId, OrgUnitTypeId, ParentOrgUnitId, Code, Name, NameAr, ShortName,
-        MaterializedPath, Depth, CostCenterCode, IsActive, IsDeleted, CreatedBy, CreatedAt, EffectiveFrom
+        MaterializedPath, Depth, CostCenterCode, is_active, IsDeleted, created_by, created_at, effective_from
     )
     SELECT 
         SecId, 4, DeptId, Code, Name, Name, Code,
@@ -222,7 +222,7 @@ BEGIN TRY
 
     -- BU Head
     INSERT INTO org.OrgUnitManagers (
-        OrgUnitId, UserID, ManagerRoleCode, IsPrimary, EffectiveFrom, IsActive, IsDeleted, CreatedBy, CreatedAt
+        OrgUnitId, user_id, ManagerRoleCode, IsPrimary, effective_from, is_active, IsDeleted, created_by, created_at
     ) VALUES (
         @FirstBUId, '2053433E-F36B-1410-85ED-009A959FB122', 'HEAD', 1, '2026-01-01', 1, 0, @SystemUserId, SYSUTCDATETIME()
     );
@@ -231,7 +231,7 @@ BEGIN TRY
 
     -- Department Head
     INSERT INTO org.OrgUnitManagers (
-        OrgUnitId, UserID, ManagerRoleCode, IsPrimary, EffectiveFrom, IsActive, IsDeleted, CreatedBy, CreatedAt
+        OrgUnitId, user_id, ManagerRoleCode, IsPrimary, effective_from, is_active, IsDeleted, created_by, created_at
     ) VALUES (
         @FirstDeptId, '1853433E-F36B-1410-85ED-009A959FB122', 'HEAD', 1, '2026-01-01', 1, 0, @SystemUserId, SYSUTCDATETIME()
     );
@@ -239,9 +239,9 @@ BEGIN TRY
     UPDATE org.OrgUnits SET HeadUserId = '1853433E-F36B-1410-85ED-009A959FB122' WHERE OrgUnitId = @FirstDeptId;
 
     -- Assign Scope for finance.manager (1853433E-F36B-1410-85ED-009A959FB122) to FirstDeptId
-    DELETE FROM auth.UserOrganizationScopes WHERE UserID = '1853433E-F36B-1410-85ED-009A959FB122';
+    DELETE FROM auth.UserOrganizationScopes WHERE user_id = '1853433E-F36B-1410-85ED-009A959FB122';
     INSERT INTO auth.UserOrganizationScopes (
-        UserID, ScopeDefinitionID, OrgUnitId
+        user_id, ScopeDefinitionID, OrgUnitId
     ) VALUES (
         '1853433E-F36B-1410-85ED-009A959FB122',
         '71135412-8E6B-403B-8669-E037C5BC98A1', -- DEPARTMENT
@@ -249,9 +249,9 @@ BEGIN TRY
     );
 
     -- Assign Scope for hod.operations (2053433E-F36B-1410-85ED-009A959FB122) to FirstBUId
-    DELETE FROM auth.UserOrganizationScopes WHERE UserID = '2053433E-F36B-1410-85ED-009A959FB122';
+    DELETE FROM auth.UserOrganizationScopes WHERE user_id = '2053433E-F36B-1410-85ED-009A959FB122';
     INSERT INTO auth.UserOrganizationScopes (
-        UserID, ScopeDefinitionID, OrgUnitId
+        user_id, ScopeDefinitionID, OrgUnitId
     ) VALUES (
         '2053433E-F36B-1410-85ED-009A959FB122',
         'FD4D587F-8771-4014-8184-7F886C421465', -- BUSINESS_UNIT
@@ -259,9 +259,9 @@ BEGIN TRY
     );
 
     -- Assign GLOBAL scope for admin (1053433E-F36B-1410-85ED-009A959FB122)
-    DELETE FROM auth.UserOrganizationScopes WHERE UserID = '1053433E-F36B-1410-85ED-009A959FB122';
+    DELETE FROM auth.UserOrganizationScopes WHERE user_id = '1053433E-F36B-1410-85ED-009A959FB122';
     INSERT INTO auth.UserOrganizationScopes (
-        UserID, ScopeDefinitionID, OrgUnitId
+        user_id, ScopeDefinitionID, OrgUnitId
     ) VALUES (
         '1053433E-F36B-1410-85ED-009A959FB122',
         'F004F0CF-0BA4-4E14-B34F-87E8D0F8A597', -- GLOBAL

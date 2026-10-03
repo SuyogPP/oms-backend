@@ -3,13 +3,13 @@ import { DataSource } from 'typeorm';
 import { UserSessionDto } from '../dto/security-settings.dto';
 
 export interface RawSecuritySettingRow {
-  SettingCode: string;
-  SettingValue: string;
-  SettingType: string;
-  Description?: string;
-  IsEditable: boolean;
-  UpdatedAt?: Date;
-  UpdatedBy?: string;
+  setting_code: string;
+  setting_value: string;
+  setting_type: string;
+  description?: string;
+  is_editable: boolean;
+  updated_at?: Date;
+  updated_by?: string;
 }
 
 @Injectable()
@@ -19,14 +19,14 @@ export class SecuritySettingsRepository {
   async getAllSettings(): Promise<RawSecuritySettingRow[]> {
     const query = `
             SELECT
-                SettingCode,
-                SettingValue,
-                SettingType,
-                Description,
-                IsEditable,
-                UpdatedAt,
-                UpdatedBy
-            FROM [auth].[SecuritySettings]
+                setting_code,
+                setting_value,
+                setting_type,
+                description,
+                is_editable,
+                updated_at,
+                updated_by
+            FROM [auth].[tbl_Security_Settings]
         `;
     return this.dataSource.query(query);
   }
@@ -42,12 +42,12 @@ export class SecuritySettingsRepository {
       updatedBy && UUID_REGEX.test(updatedBy) ? updatedBy : null;
 
     const query = `
-            UPDATE [auth].[SecuritySettings]
+            UPDATE [auth].[tbl_Security_Settings]
             SET
-                SettingValue = @1,
-                UpdatedAt = SYSUTCDATETIME(),
-                UpdatedBy = @2
-            WHERE SettingCode = @0
+                setting_value = @1,
+                updated_at = SYSUTCDATETIME(),
+                updated_by = @2
+            WHERE setting_code = @0
         `;
     await this.dataSource.query(query, [
       settingCode,
@@ -71,53 +71,53 @@ export class SecuritySettingsRepository {
                 LastActivityAt,
                 IsActive,
                 RevokedAt
-            FROM [auth].[LoginSessions]
-            WHERE UserID = @0
-            ORDER BY LoginAt DESC
+            FROM [auth].[tbl_Login_Sessions]
+            WHERE user_id = @0
+            ORDER BY login_at DESC
         `;
 
     const rows = await this.dataSource.query(query, [userId]);
     return rows.map((row: any) => ({
-      loginSessionId: row.LoginSessionID,
-      LoginSessionID: row.LoginSessionID,
-      userId: row.UserID,
-      UserID: row.UserID,
+      loginSessionId: row.login_session_id,
+      LoginSessionID: row.login_session_id,
+      userId: row.user_id,
+      UserID: row.user_id,
       ipAddress: row.IPAddress,
       IPAddress: row.IPAddress,
-      userAgent: row.UserAgent || null,
-      UserAgent: row.UserAgent || null,
-      deviceInfo: row.DeviceInfo || null,
-      DeviceInfo: row.DeviceInfo || null,
-      browserName: row.BrowserName || null,
-      BrowserName: row.BrowserName || null,
-      deviceType: row.DeviceType || null,
-      DeviceType: row.DeviceType || null,
-      loginAt: new Date(row.LoginAt).toISOString(),
-      LoginAt: new Date(row.LoginAt).toISOString(),
-      expiresAt: new Date(row.ExpiresAt).toISOString(),
-      ExpiresAt: new Date(row.ExpiresAt).toISOString(),
-      lastActivityAt: row.LastActivityAt
-        ? new Date(row.LastActivityAt).toISOString()
+      userAgent: row.user_agent || null,
+      UserAgent: row.user_agent || null,
+      deviceInfo: row.device_info || null,
+      DeviceInfo: row.device_info || null,
+      browserName: row.browser_name || null,
+      BrowserName: row.browser_name || null,
+      deviceType: row.device_type || null,
+      DeviceType: row.device_type || null,
+      loginAt: new Date(row.login_at).toISOString(),
+      LoginAt: new Date(row.login_at).toISOString(),
+      expiresAt: new Date(row.expires_at).toISOString(),
+      ExpiresAt: new Date(row.expires_at).toISOString(),
+      lastActivityAt: row.last_activity_at
+        ? new Date(row.last_activity_at).toISOString()
         : null,
-      LastActivityAt: row.LastActivityAt
-        ? new Date(row.LastActivityAt).toISOString()
+      LastActivityAt: row.last_activity_at
+        ? new Date(row.last_activity_at).toISOString()
         : null,
-      isActive: Boolean(row.IsActive),
-      IsActive: Boolean(row.IsActive),
-      revokedAt: row.RevokedAt ? new Date(row.RevokedAt).toISOString() : null,
-      RevokedAt: row.RevokedAt ? new Date(row.RevokedAt).toISOString() : null,
+      isActive: Boolean(row.is_active),
+      IsActive: Boolean(row.is_active),
+      revokedAt: row.revoked_at ? new Date(row.revoked_at).toISOString() : null,
+      RevokedAt: row.revoked_at ? new Date(row.revoked_at).toISOString() : null,
     }));
   }
 
   async revokeSession(sessionId: string): Promise<number> {
     const query = `
-            UPDATE [auth].[LoginSessions]
+            UPDATE [auth].[tbl_Login_Sessions]
             SET
                 IsActive = 0,
                 RevokedAt = SYSUTCDATETIME(),
                 RefreshTokenRevokedAt = SYSUTCDATETIME()
-            WHERE LoginSessionID = @0
-            AND (IsActive = 1 OR RevokedAt IS NULL)
+            WHERE login_session_id = @0
+            AND (IsActive = 1 OR revoked_at IS NULL)
         `;
     const result = await this.dataSource.query(query, [sessionId]);
     return typeof result?.[1] === 'number' ? result[1] : 1;
@@ -125,13 +125,13 @@ export class SecuritySettingsRepository {
 
   async revokeAllSessionsForUser(userId: string): Promise<number> {
     const query = `
-            UPDATE [auth].[LoginSessions]
+            UPDATE [auth].[tbl_Login_Sessions]
             SET
                 IsActive = 0,
                 RevokedAt = SYSUTCDATETIME(),
                 RefreshTokenRevokedAt = SYSUTCDATETIME()
-            WHERE UserID = @0
-            AND (IsActive = 1 OR RevokedAt IS NULL)
+            WHERE user_id = @0
+            AND (IsActive = 1 OR revoked_at IS NULL)
         `;
     const result = await this.dataSource.query(query, [userId]);
     return typeof result?.[1] === 'number' ? result[1] : 1;
@@ -139,12 +139,12 @@ export class SecuritySettingsRepository {
 
   async revokeAllSessionsSystemWide(): Promise<number> {
     const query = `
-            UPDATE [auth].[LoginSessions]
+            UPDATE [auth].[tbl_Login_Sessions]
             SET
                 IsActive = 0,
                 RevokedAt = SYSUTCDATETIME(),
                 RefreshTokenRevokedAt = SYSUTCDATETIME()
-            WHERE IsActive = 1
+            WHERE is_active = 1
         `;
     const result = await this.dataSource.query(query);
     return typeof result?.[1] === 'number' ? result[1] : 1;

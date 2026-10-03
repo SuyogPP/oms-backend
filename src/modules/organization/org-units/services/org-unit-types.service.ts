@@ -21,7 +21,7 @@ export class OrgUnitTypesService {
       this.typesRepository.findAllTypes(),
       this.typesRepository.findAllHierarchyRules(),
     ]);
-    return this.mapper.toOrgUnitTypeEntities(types, rules);
+    return this.mapper.toOrgUnitTypeEntities(types);
   }
 
   /**

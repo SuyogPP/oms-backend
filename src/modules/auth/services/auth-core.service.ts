@@ -80,9 +80,9 @@ export class AuthCoreService {
     }
 
     // 2. Account Lockout Check
-    if (user.LockedUntil && new Date(user.LockedUntil) > new Date()) {
+    if (user.locked_until && new Date(user.locked_until) > new Date()) {
       await this.repository.createFailedLoginAttempt({
-        userId: user.UserID,
+        userId: user.user_id,
         username: user.Username,
         ipAddress,
         userAgent,
@@ -93,7 +93,7 @@ export class AuthCoreService {
       });
 
       await this.repository.createLoginHistory({
-        userId: user.UserID,
+        userId: user.user_id,
         username: user.Username,
         ipAddress,
         userAgent,
@@ -105,7 +105,7 @@ export class AuthCoreService {
       });
 
       await this.securityEventsService.log(SECURITY_EVENTS.ACCOUNT_LOCKED, {
-        userId: user.UserID,
+        userId: user.user_id,
         ipAddress,
         userAgent,
         description: 'Login attempt on locked account',
@@ -115,9 +115,9 @@ export class AuthCoreService {
     }
 
     // 3. Inactive Check
-    if (!user.IsActive) {
+    if (!user.is_active) {
       await this.repository.createLoginHistory({
-        userId: user.UserID,
+        userId: user.user_id,
         username: user.Username,
         ipAddress,
         userAgent,
@@ -132,27 +132,27 @@ export class AuthCoreService {
     }
 
     // 4. Password Verification
-    const passwordHash = await this.repository.getUserCredential(user.UserID);
+    const passwordHash = await this.repository.getUserCredential(user.user_id);
     const isPasswordValid = passwordHash
       ? await bcrypt.compare(dto.password, passwordHash)
       : false;
 
     if (!isPasswordValid) {
-      await this.repository.recordFailedLogin(user.UserID);
+      await this.repository.recordFailedLogin(user.user_id);
 
       const settings = await this.securitySettingsService.getSettings();
-      if (user.FailedLoginCount + 1 >= settings.maxFailedLoginAttempts) {
-        await this.repository.lockUser(user.UserID, settings.lockoutDuration);
+      if (user.failed_login_count + 1 >= settings.maxFailedLoginAttempts) {
+        await this.repository.lockUser(user.user_id, settings.lockoutDuration);
         await this.securityEventsService.log(SECURITY_EVENTS.ACCOUNT_LOCKED, {
-          userId: user.UserID,
+          userId: user.user_id,
           ipAddress,
           userAgent,
-          description: `Account locked after ${user.FailedLoginCount + 1} failed attempts for ${settings.lockoutDuration} minutes`,
+          description: `Account locked after ${user.failed_login_count + 1} failed attempts for ${settings.lockoutDuration} minutes`,
         });
       }
 
       await this.repository.createFailedLoginAttempt({
-        userId: user.UserID,
+        userId: user.user_id,
         username: user.Username,
         ipAddress,
         userAgent,
@@ -163,7 +163,7 @@ export class AuthCoreService {
       });
 
       await this.repository.createLoginHistory({
-        userId: user.UserID,
+        userId: user.user_id,
         username: user.Username,
         ipAddress,
         userAgent,
@@ -175,7 +175,7 @@ export class AuthCoreService {
       });
 
       await this.securityEventsService.log(SECURITY_EVENTS.LOGIN_FAILURE, {
-        userId: user.UserID,
+        userId: user.user_id,
         ipAddress,
         userAgent,
         description: 'INVALID_PASSWORD',
@@ -185,26 +185,26 @@ export class AuthCoreService {
     }
 
     // 5. Reset failed attempts on success
-    await this.repository.resetFailedLogin(user.UserID);
+    await this.repository.resetFailedLogin(user.user_id);
 
     // 6. Concurrent Session Limits
     const settings = await this.securitySettingsService.getSettings();
     const activeSessionCount = await this.repository.getActiveSessionCount(
-      user.UserID,
+      user.user_id,
     );
 
     if (!settings.allowMultipleSessions && activeSessionCount > 0) {
       if (settings.autoRevokeOldestSession) {
         if (dto.confirmRevokeOldest) {
           const oldestSid = await this.repository.getOldestActiveSession(
-            user.UserID,
+            user.user_id,
           );
           if (oldestSid) {
             await this.repository.revokeSession(oldestSid);
             await this.securityEventsService.log(
               SECURITY_EVENTS.SESSION_AUTO_REVOKED,
               {
-                userId: user.UserID,
+                userId: user.user_id,
                 loginSessionId: oldestSid,
                 description:
                   'Auto-revoked oldest session due to single session policy',
@@ -221,7 +221,7 @@ export class AuthCoreService {
         await this.securityEventsService.log(
           SECURITY_EVENTS.CONCURRENT_SESSION_LIMIT_EXCEEDED,
           {
-            userId: user.UserID,
+            userId: user.user_id,
             ipAddress,
             userAgent,
             description:
@@ -241,14 +241,14 @@ export class AuthCoreService {
       if (settings.autoRevokeOldestSession) {
         if (dto.confirmRevokeOldest) {
           const oldestSid = await this.repository.getOldestActiveSession(
-            user.UserID,
+            user.user_id,
           );
           if (oldestSid) {
             await this.repository.revokeSession(oldestSid);
             await this.securityEventsService.log(
               SECURITY_EVENTS.SESSION_AUTO_REVOKED,
               {
-                userId: user.UserID,
+                userId: user.user_id,
                 loginSessionId: oldestSid,
                 description: `Auto-revoked oldest session due to concurrent session limit (${settings.maxConcurrentSessions} max)`,
               },
@@ -264,7 +264,7 @@ export class AuthCoreService {
         await this.securityEventsService.log(
           SECURITY_EVENTS.CONCURRENT_SESSION_LIMIT_EXCEEDED,
           {
-            userId: user.UserID,
+            userId: user.user_id,
             ipAddress,
             userAgent,
             description: `Concurrent session limit exceeded (${settings.maxConcurrentSessions} max)`,
@@ -282,7 +282,7 @@ export class AuthCoreService {
     const loginSessionId = crypto.randomUUID();
     await this.repository.createLoginSession({
       loginSessionId,
-      userId: user.UserID,
+      userId: user.user_id,
       ipAddress,
       userAgent,
       browserName,
@@ -292,7 +292,7 @@ export class AuthCoreService {
     });
 
     await this.securityEventsService.log(SECURITY_EVENTS.SESSION_CREATED, {
-      userId: user.UserID,
+      userId: user.user_id,
       loginSessionId,
       ipAddress,
       userAgent,
@@ -300,7 +300,7 @@ export class AuthCoreService {
     });
 
     // 8. Generate Tokens
-    const userDetails = await this.repository.getUserSessionData(user.UserID);
+    const userDetails = await this.repository.getUserSessionData(user.user_id);
     const refreshToken = crypto.randomBytes(64).toString('hex');
     const refreshTokenHash = crypto
       .createHash('sha256')
@@ -315,7 +315,7 @@ export class AuthCoreService {
 
     const accessToken = this.jwtService.sign(
       {
-        userId: user.UserID,
+        userId: user.user_id,
         username:
           userDetails?.username || user.Username || user.Email?.split('@')[0],
         loginSessionId,
@@ -334,7 +334,7 @@ export class AuthCoreService {
 
     // 9. Record Login History
     await this.repository.createLoginHistory({
-      userId: user.UserID,
+      userId: user.user_id,
       username: user.Username,
       ipAddress,
       userAgent,
@@ -346,7 +346,7 @@ export class AuthCoreService {
     });
 
     await this.securityEventsService.log(SECURITY_EVENTS.LOGIN_SUCCESS, {
-      userId: user.UserID,
+      userId: user.user_id,
       loginSessionId,
       ipAddress,
       userAgent,
@@ -358,11 +358,11 @@ export class AuthCoreService {
       accessToken,
       refreshToken,
       user: {
-        userId: user.UserID,
+        userId: user.user_id,
         username: user.Username,
         email: user.Email,
         userType: userDetails?.userType || user.UserType,
-        employeeId: user.EmployeeID || null,
+        employeeId: user.employee_id || null,
         roles: userDetails?.roles || [],
         permissions: userDetails?.permissions || [],
         scopes: userDetails?.scopes || [],
@@ -393,9 +393,9 @@ export class AuthCoreService {
     // 1. REPLAY DETECTION
     if (
       settings.enableReplayDetection &&
-      session.RefreshTokenRevokedAt !== null
+      session.refresh_token_revoked_at !== null
     ) {
-      const revokedAt = new Date(session.RefreshTokenRevokedAt);
+      const revokedAt = new Date(session.refresh_token_revoked_at);
       const diffInSeconds = (Date.now() - revokedAt.getTime()) / 1000;
 
       if (diffInSeconds < 30) {
@@ -410,19 +410,19 @@ export class AuthCoreService {
       }
 
       this.logger.error(
-        `[SECURITY] REFRESH TOKEN REPLAY DETECTED — Session: ${session.LoginSessionID}, User: ${session.UserID}.`,
+        `[SECURITY] REFRESH TOKEN REPLAY DETECTED — Session: ${session.login_session_id}, User: ${session.user_id}.`,
       );
 
       if (settings.replayActionRevoke) {
-        await this.repository.revokeSession(session.LoginSessionID);
+        await this.repository.revokeSession(session.login_session_id);
       }
 
       if (settings.replayActionLog) {
         await this.securityEventsService.log(
           SECURITY_EVENTS.REFRESH_TOKEN_REPLAY,
           {
-            userId: session.UserID,
-            loginSessionId: session.LoginSessionID,
+            userId: session.user_id,
+            loginSessionId: session.login_session_id,
             description: 'Refresh token replay attack detected',
             ipAddress,
             userAgent,
@@ -431,7 +431,7 @@ export class AuthCoreService {
       }
 
       if (settings.replayActionLogout) {
-        await this.repository.revokeAllSessionsForUser(session.UserID);
+        await this.repository.revokeAllSessionsForUser(session.user_id);
       }
 
       throw new ForbiddenException({
@@ -441,27 +441,27 @@ export class AuthCoreService {
     }
 
     // 2. Validate Session Status
-    if (!session.IsActive) {
+    if (!session.is_active) {
       this.logger.warn(
-        `[SECURITY] Refresh attempt on inactive session: ${session.LoginSessionID}`,
+        `[SECURITY] Refresh attempt on inactive session: ${session.login_session_id}`,
       );
       throw new UnauthorizedException('Session is no longer active');
     }
 
-    if (session.RevokedAt !== null) {
+    if (session.revoked_at !== null) {
       this.logger.warn(
-        `[SECURITY] Refresh attempt on revoked session: ${session.LoginSessionID}`,
+        `[SECURITY] Refresh attempt on revoked session: ${session.login_session_id}`,
       );
       throw new UnauthorizedException('Session has been revoked');
     }
 
-    if (new Date(session.ExpiresAt) <= new Date()) {
+    if (new Date(session.expires_at) <= new Date()) {
       this.logger.warn(
-        `[SECURITY] Refresh attempt on expired session: ${session.LoginSessionID}`,
+        `[SECURITY] Refresh attempt on expired session: ${session.login_session_id}`,
       );
       await this.securityEventsService.log(SECURITY_EVENTS.SESSION_EXPIRED, {
-        userId: session.UserID,
-        loginSessionId: session.LoginSessionID,
+        userId: session.user_id,
+        loginSessionId: session.login_session_id,
         description: 'Attempted to refresh an expired session',
         ipAddress,
         userAgent,
@@ -470,15 +470,15 @@ export class AuthCoreService {
     }
 
     if (
-      session.RefreshTokenExpiresAt &&
-      new Date(session.RefreshTokenExpiresAt) <= new Date()
+      session.refresh_token_expires_at &&
+      new Date(session.refresh_token_expires_at) <= new Date()
     ) {
       this.logger.warn(
-        `[SECURITY] Refresh attempt with expired refresh token: ${session.LoginSessionID}`,
+        `[SECURITY] Refresh attempt with expired refresh token: ${session.login_session_id}`,
       );
       await this.securityEventsService.log(SECURITY_EVENTS.TOKEN_EXPIRED, {
-        userId: session.UserID,
-        loginSessionId: session.LoginSessionID,
+        userId: session.user_id,
+        loginSessionId: session.login_session_id,
         description: 'Attempted to use an expired refresh token',
         ipAddress,
         userAgent,
@@ -493,9 +493,9 @@ export class AuthCoreService {
       .update(newRefreshToken)
       .digest('hex');
 
-    await this.repository.revokeRefreshToken(session.LoginSessionID);
+    await this.repository.revokeRefreshToken(session.login_session_id);
     await this.repository.rotateRefreshToken(
-      session.LoginSessionID,
+      session.login_session_id,
       newRefreshHash,
       settings.refreshTokenLifetime,
     );
@@ -503,8 +503,8 @@ export class AuthCoreService {
     await this.securityEventsService.log(
       SECURITY_EVENTS.REFRESH_TOKEN_ROTATED,
       {
-        userId: session.UserID,
-        loginSessionId: session.LoginSessionID,
+        userId: session.user_id,
+        loginSessionId: session.login_session_id,
         description: 'Refresh Token Rotated',
         ipAddress,
         userAgent,
@@ -513,14 +513,14 @@ export class AuthCoreService {
 
     // 4. Issue New JWT
     const userDetails = await this.repository.getUserSessionData(
-      session.UserID,
+      session.user_id,
     );
     const accessToken = this.jwtService.sign(
       {
-        userId: session.UserID,
+        userId: session.user_id,
         username:
           userDetails?.username || userDetails?.email?.split('@')[0] || 'User',
-        loginSessionId: session.LoginSessionID,
+        loginSessionId: session.login_session_id,
         userType: userDetails?.userType || 'User',
         email: userDetails?.email || '',
         roles: userDetails?.roles || [],

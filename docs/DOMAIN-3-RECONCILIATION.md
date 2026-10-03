@@ -1,3 +1,4 @@
+**NOTE: The schema described in this document was retired on 2 Oct 2026 in favor of masters.org_unit. Do not use for new implementations.**
 # OMS Domain 3 — User Administration: Pre-Implementation Reconciliation
 
 **Document**: `DOMAIN-3-RECONCILIATION.md`  

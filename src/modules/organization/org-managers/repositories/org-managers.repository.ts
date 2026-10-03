@@ -15,82 +15,67 @@ export class OrgManagersRepository {
    * Retrieves all manager assignment records for an organization unit.
    */
   async findByUnitId(
-    orgUnitId: string,
+    orgUnitId: number,
     qr?: QueryRunner,
   ): Promise<IOrgUnitManager[]> {
     const sql = `
       SELECT
-        m.OrgUnitManagerId AS orgUnitManagerId,
-        m.OrgUnitId AS orgUnitId,
-        m.UserId AS userId,
-        m.ManagerRoleCode AS managerRoleCode,
-        m.IsPrimary AS isPrimary,
-        m.EffectiveFrom AS effectiveFrom,
-        m.EffectiveTo AS effectiveTo,
-        m.AssignmentReason AS assignmentReason,
-        m.IsActive AS isActive,
-        m.IsDeleted AS isDeleted,
-        m.CreatedBy AS createdBy,
-        m.CreatedAt AS createdAt,
-        m.UpdatedBy AS updatedBy,
-        m.UpdatedAt AS updatedAt,
-        u.Username AS username,
-        u.Email AS userEmail,
-        CONCAT(p.FirstName, ' ', p.LastName) AS userDisplayName,
-        ou.Name AS orgUnitName,
-        ou.Code AS orgUnitCode
-      FROM org.OrgUnitManagers m
-      INNER JOIN auth.Users u ON u.UserID = m.UserId
-      LEFT JOIN auth.UserProfiles p ON p.UserID = u.UserID
-      INNER JOIN org.OrgUnits ou ON ou.OrgUnitId = m.OrgUnitId
-      WHERE m.OrgUnitId = @0 AND m.IsDeleted = 0
-      ORDER BY m.EffectiveFrom DESC, m.IsPrimary DESC, m.CreatedAt DESC;
+        m.org_unit_manager_id AS orgUnitManagerId,
+        m.org_unit_id AS orgUnitId,
+        m.user_id AS userId,
+        m.manager_role_code AS managerRoleCode,
+        m.is_primary AS isPrimary,
+        m.effective_from AS effectiveFrom,
+        m.effective_to AS effectiveTo,
+        m.is_active AS isActive,
+        u.username AS username,
+        u.email AS userEmail,
+        CONCAT(u.first_name, ' ', u.last_name) AS userDisplayName,
+        ou.org_name AS orgUnitName,
+        ou.org_code AS orgUnitCode
+      FROM [masters].[tbl_Org_Unit_Manager] m
+      INNER JOIN auth.tbl_Users u ON u.user_id = m.user_id
+      INNER JOIN [masters].[tbl_Org_Unit] ou ON ou.org_unit_id = m.org_unit_id
+      WHERE m.org_unit_id = @0 AND m.is_active = 1
+      ORDER BY m.effective_from DESC, m.is_primary DESC;
     `;
     const rows = await this.getExecutor(qr).query(sql, [orgUnitId]);
     if (rows.length > 0) {
       return rows;
     }
 
-    // Fallback: Check if an active user has role 'HOD' / 'SECTION_HEAD' scoped to this orgUnitId or is ou.HeadUserId
+    // Fallback: Check if an active user has role 'HOD' / 'SECTION_HEAD' scoped to this orgUnitId or is ou.head_user_id
     const fallbackSql = `
       SELECT TOP 1
-        CAST(NULL AS UNIQUEIDENTIFIER) AS orgUnitManagerId,
-        ou.OrgUnitId AS orgUnitId,
-        u.UserID AS userId,
+        CAST(NULL AS BIGINT) AS orgUnitManagerId,
+        ou.org_unit_id AS orgUnitId,
+        u.user_id AS userId,
         'HEAD' AS managerRoleCode,
         CAST(1 AS BIT) AS isPrimary,
-        ou.EffectiveFrom AS effectiveFrom,
-        ou.EffectiveTo AS effectiveTo,
-        'Auto-resolved from assigned Head of Department' AS assignmentReason,
+        ou.effective_from AS effectiveFrom,
+        ou.effective_to AS effectiveTo,
         CAST(1 AS BIT) AS isActive,
-        CAST(0 AS BIT) AS isDeleted,
-        ou.CreatedBy AS createdBy,
-        ou.CreatedAt AS createdAt,
-        ou.UpdatedBy AS updatedBy,
-        ou.UpdatedAt AS updatedAt,
-        u.Username AS username,
-        u.Email AS userEmail,
+        u.username AS username,
+        u.email AS userEmail,
         CASE
-          WHEN p.FirstName IS NOT NULL OR p.LastName IS NOT NULL THEN
-            LTRIM(RTRIM(CONCAT(COALESCE(p.FirstName, ''), ' ', COALESCE(p.LastName, ''))))
-          ELSE u.Username
+          WHEN u.first_name IS NOT NULL OR u.last_name IS NOT NULL THEN
+            LTRIM(RTRIM(CONCAT(COALESCE(u.first_name, ''), ' ', COALESCE(u.last_name, ''))))
+          ELSE u.username
         END AS userDisplayName,
-        ou.Name AS orgUnitName,
-        ou.Code AS orgUnitCode
-      FROM org.OrgUnits ou
-      INNER JOIN auth.Users u ON (
-        u.UserID = ou.HeadUserId
-        OR u.UserID IN (
-          SELECT s.UserID
-          FROM auth.UserOrganizationScopes s
-          INNER JOIN auth.UserRoles ur ON ur.UserID = s.UserID
-          INNER JOIN auth.Roles r ON r.RoleID = ur.RoleID
-          WHERE (s.DepartmentID = ou.OrgUnitId OR s.BusinessUnitID = ou.OrgUnitId OR s.SectionID = ou.OrgUnitId OR s.OrganizationID = ou.OrgUnitId)
-            AND r.RoleCode IN ('HOD', 'SECTION_HEAD')
+        ou.org_name AS orgUnitName,
+        ou.org_code AS orgUnitCode
+      FROM [masters].[tbl_Org_Unit] ou
+      INNER JOIN auth.tbl_Users u ON (
+        u.user_id = ou.head_user_id
+        OR u.user_id IN (
+          SELECT ur.user_id
+          FROM auth.tbl_User_Roles ur
+          INNER JOIN auth.tbl_Roles r ON r.role_id = ur.role_id
+          WHERE ur.org_unit_id = ou.org_unit_id
+            AND r.role_code IN ('HOD', 'SECTION_HEAD')
         )
       )
-      LEFT JOIN auth.UserProfiles p ON p.UserID = u.UserID
-      WHERE ou.OrgUnitId = @0 AND u.IsDeleted = 0 AND u.IsActive = 1;
+      WHERE ou.org_unit_id = @0 AND u.is_active = 1;
     `;
     return this.getExecutor(qr).query(fallbackSql, [orgUnitId]);
   }
@@ -100,7 +85,7 @@ export class OrgManagersRepository {
    * Per Rule G7, queries OrgUnitManagers directly with effective-date filtering.
    */
   async findCurrentHead(
-    orgUnitId: string,
+    orgUnitId: number,
     asOfDate?: string,
     qr?: QueryRunner,
   ): Promise<IOrgUnitManager | null> {
@@ -108,83 +93,67 @@ export class OrgManagersRepository {
 
     const sql = `
       SELECT TOP 1
-        m.OrgUnitManagerId AS orgUnitManagerId,
-        m.OrgUnitId AS orgUnitId,
-        m.UserId AS userId,
-        m.ManagerRoleCode AS managerRoleCode,
-        m.IsPrimary AS isPrimary,
-        m.EffectiveFrom AS effectiveFrom,
-        m.EffectiveTo AS effectiveTo,
-        m.AssignmentReason AS assignmentReason,
-        m.IsActive AS isActive,
-        m.IsDeleted AS isDeleted,
-        m.CreatedBy AS createdBy,
-        m.CreatedAt AS createdAt,
-        m.UpdatedBy AS updatedBy,
-        m.UpdatedAt AS updatedAt,
-        u.Username AS username,
-        u.Email AS userEmail,
-        CONCAT(p.FirstName, ' ', p.LastName) AS userDisplayName,
-        ou.Name AS orgUnitName,
-        ou.Code AS orgUnitCode
-      FROM org.OrgUnitManagers m
-      INNER JOIN auth.Users u ON u.UserID = m.UserId
-      LEFT JOIN auth.UserProfiles p ON p.UserID = u.UserID
-      INNER JOIN org.OrgUnits ou ON ou.OrgUnitId = m.OrgUnitId
-      WHERE m.OrgUnitId = @0
-        AND m.ManagerRoleCode = '${ORG_MANAGER_ROLES.HEAD}'
-        AND m.IsPrimary = 1
-        AND m.IsActive = 1
-        AND m.IsDeleted = 0
-        AND m.EffectiveFrom <= CAST(@1 AS DATE)
-        AND (m.EffectiveTo IS NULL OR m.EffectiveTo >= CAST(@1 AS DATE))
-      ORDER BY m.EffectiveFrom DESC;
+        m.org_unit_manager_id AS orgUnitManagerId,
+        m.org_unit_id AS orgUnitId,
+        m.user_id AS userId,
+        m.manager_role_code AS managerRoleCode,
+        m.is_primary AS isPrimary,
+        m.effective_from AS effectiveFrom,
+        m.effective_to AS effectiveTo,
+        m.is_active AS isActive,
+        u.username AS username,
+        u.email AS userEmail,
+        CONCAT(u.first_name, ' ', u.last_name) AS userDisplayName,
+        ou.org_name AS orgUnitName,
+        ou.org_code AS orgUnitCode
+      FROM [masters].[tbl_Org_Unit_Manager] m
+      INNER JOIN auth.tbl_Users u ON u.user_id = m.user_id
+      INNER JOIN [masters].[tbl_Org_Unit] ou ON ou.org_unit_id = m.org_unit_id
+      WHERE m.org_unit_id = @0
+        AND m.manager_role_code = '${ORG_MANAGER_ROLES.HEAD}'
+        AND m.is_primary = 1
+        AND m.is_active = 1
+        AND m.effective_from <= CAST(@1 AS DATE)
+        AND (m.effective_to IS NULL OR m.effective_to >= CAST(@1 AS DATE))
+      ORDER BY m.effective_from DESC;
     `;
     const rows = await this.getExecutor(qr).query(sql, [orgUnitId, dateParam]);
     if (rows.length > 0) {
       return rows[0];
     }
 
-    // Fallback: Check if an active user has role 'HOD' / 'SECTION_HEAD' scoped to this orgUnitId or is ou.HeadUserId
+    // Fallback
     const fallbackSql = `
       SELECT TOP 1
-        CAST(NULL AS UNIQUEIDENTIFIER) AS orgUnitManagerId,
-        ou.OrgUnitId AS orgUnitId,
-        u.UserID AS userId,
+        CAST(NULL AS BIGINT) AS orgUnitManagerId,
+        ou.org_unit_id AS orgUnitId,
+        u.user_id AS userId,
         'HEAD' AS managerRoleCode,
         CAST(1 AS BIT) AS isPrimary,
-        ou.EffectiveFrom AS effectiveFrom,
-        ou.EffectiveTo AS effectiveTo,
-        'Auto-resolved from assigned Head of Department' AS assignmentReason,
+        ou.effective_from AS effectiveFrom,
+        ou.effective_to AS effectiveTo,
         CAST(1 AS BIT) AS isActive,
-        CAST(0 AS BIT) AS isDeleted,
-        ou.CreatedBy AS createdBy,
-        ou.CreatedAt AS createdAt,
-        ou.UpdatedBy AS updatedBy,
-        ou.UpdatedAt AS updatedAt,
-        u.Username AS username,
-        u.Email AS userEmail,
+        u.username AS username,
+        u.email AS userEmail,
         CASE
-          WHEN p.FirstName IS NOT NULL OR p.LastName IS NOT NULL THEN
-            LTRIM(RTRIM(CONCAT(COALESCE(p.FirstName, ''), ' ', COALESCE(p.LastName, ''))))
-          ELSE u.Username
+          WHEN u.first_name IS NOT NULL OR u.last_name IS NOT NULL THEN
+            LTRIM(RTRIM(CONCAT(COALESCE(u.first_name, ''), ' ', COALESCE(u.last_name, ''))))
+          ELSE u.username
         END AS userDisplayName,
-        ou.Name AS orgUnitName,
-        ou.Code AS orgUnitCode
-      FROM org.OrgUnits ou
-      INNER JOIN auth.Users u ON (
-        u.UserID = ou.HeadUserId
-        OR u.UserID IN (
-          SELECT s.UserID
-          FROM auth.UserOrganizationScopes s
-          INNER JOIN auth.UserRoles ur ON ur.UserID = s.UserID
-          INNER JOIN auth.Roles r ON r.RoleID = ur.RoleID
-          WHERE (s.DepartmentID = ou.OrgUnitId OR s.BusinessUnitID = ou.OrgUnitId OR s.SectionID = ou.OrgUnitId OR s.OrganizationID = ou.OrgUnitId)
-            AND r.RoleCode IN ('HOD', 'SECTION_HEAD')
+        ou.org_name AS orgUnitName,
+        ou.org_code AS orgUnitCode
+      FROM [masters].[tbl_Org_Unit] ou
+      INNER JOIN auth.tbl_Users u ON (
+        u.user_id = ou.head_user_id
+        OR u.user_id IN (
+          SELECT ur.user_id
+          FROM auth.tbl_User_Roles ur
+          INNER JOIN auth.tbl_Roles r ON r.role_id = ur.role_id
+          WHERE ur.org_unit_id = ou.org_unit_id
+            AND r.role_code IN ('HOD', 'SECTION_HEAD')
         )
       )
-      LEFT JOIN auth.UserProfiles p ON p.UserID = u.UserID
-      WHERE ou.OrgUnitId = @0 AND u.IsDeleted = 0 AND u.IsActive = 1;
+      WHERE ou.org_unit_id = @0 AND u.is_active = 1;
     `;
     const fallbackRows = await this.getExecutor(qr).query(fallbackSql, [orgUnitId]);
     return fallbackRows.length > 0 ? fallbackRows[0] : null;
@@ -194,35 +163,28 @@ export class OrgManagersRepository {
    * Retrieves a manager assignment by its ID.
    */
   async findById(
-    orgUnitManagerId: string,
+    orgUnitManagerId: number,
     qr?: QueryRunner,
   ): Promise<IOrgUnitManager | null> {
     const sql = `
       SELECT
-        m.OrgUnitManagerId AS orgUnitManagerId,
-        m.OrgUnitId AS orgUnitId,
-        m.UserId AS userId,
-        m.ManagerRoleCode AS managerRoleCode,
-        m.IsPrimary AS isPrimary,
-        m.EffectiveFrom AS effectiveFrom,
-        m.EffectiveTo AS effectiveTo,
-        m.AssignmentReason AS assignmentReason,
-        m.IsActive AS isActive,
-        m.IsDeleted AS isDeleted,
-        m.CreatedBy AS createdBy,
-        m.CreatedAt AS createdAt,
-        m.UpdatedBy AS updatedBy,
-        m.UpdatedAt AS updatedAt,
-        u.Username AS username,
-        u.Email AS userEmail,
-        CONCAT(p.FirstName, ' ', p.LastName) AS userDisplayName,
-        ou.Name AS orgUnitName,
-        ou.Code AS orgUnitCode
-      FROM org.OrgUnitManagers m
-      INNER JOIN auth.Users u ON u.UserID = m.UserId
-      LEFT JOIN auth.UserProfiles p ON p.UserID = u.UserID
-      INNER JOIN org.OrgUnits ou ON ou.OrgUnitId = m.OrgUnitId
-      WHERE m.OrgUnitManagerId = @0 AND m.IsDeleted = 0;
+        m.org_unit_manager_id AS orgUnitManagerId,
+        m.org_unit_id AS orgUnitId,
+        m.user_id AS userId,
+        m.manager_role_code AS managerRoleCode,
+        m.is_primary AS isPrimary,
+        m.effective_from AS effectiveFrom,
+        m.effective_to AS effectiveTo,
+        m.is_active AS isActive,
+        u.username AS username,
+        u.email AS userEmail,
+        CONCAT(u.first_name, ' ', u.last_name) AS userDisplayName,
+        ou.org_name AS orgUnitName,
+        ou.org_code AS orgUnitCode
+      FROM [masters].[tbl_Org_Unit_Manager] m
+      INNER JOIN auth.tbl_Users u ON u.user_id = m.user_id
+      INNER JOIN [masters].[tbl_Org_Unit] ou ON ou.org_unit_id = m.org_unit_id
+      WHERE m.org_unit_manager_id = @0 AND m.is_active = 1;
     `;
     const rows = await this.getExecutor(qr).query(sql, [orgUnitManagerId]);
     return rows.length > 0 ? rows[0] : null;
@@ -237,31 +199,24 @@ export class OrgManagersRepository {
   ): Promise<IOrgUnitManager[]> {
     const sql = `
       SELECT
-        m.OrgUnitManagerId AS orgUnitManagerId,
-        m.OrgUnitId AS orgUnitId,
-        m.UserId AS userId,
-        m.ManagerRoleCode AS managerRoleCode,
-        m.IsPrimary AS isPrimary,
-        m.EffectiveFrom AS effectiveFrom,
-        m.EffectiveTo AS effectiveTo,
-        m.AssignmentReason AS assignmentReason,
-        m.IsActive AS isActive,
-        m.IsDeleted AS isDeleted,
-        m.CreatedBy AS createdBy,
-        m.CreatedAt AS createdAt,
-        m.UpdatedBy AS updatedBy,
-        m.UpdatedAt AS updatedAt,
-        u.Username AS username,
-        u.Email AS userEmail,
-        CONCAT(p.FirstName, ' ', p.LastName) AS userDisplayName,
-        ou.Name AS orgUnitName,
-        ou.Code AS orgUnitCode
-      FROM org.OrgUnitManagers m
-      INNER JOIN auth.Users u ON u.UserID = m.UserId
-      LEFT JOIN auth.UserProfiles p ON p.UserID = u.UserID
-      INNER JOIN org.OrgUnits ou ON ou.OrgUnitId = m.OrgUnitId
-      WHERE m.UserId = @0 AND m.IsDeleted = 0 AND ou.IsDeleted = 0
-      ORDER BY m.EffectiveFrom DESC, m.IsActive DESC;
+        m.org_unit_manager_id AS orgUnitManagerId,
+        m.org_unit_id AS orgUnitId,
+        m.user_id AS userId,
+        m.manager_role_code AS managerRoleCode,
+        m.is_primary AS isPrimary,
+        m.effective_from AS effectiveFrom,
+        m.effective_to AS effectiveTo,
+        m.is_active AS isActive,
+        u.username AS username,
+        u.email AS userEmail,
+        CONCAT(u.first_name, ' ', u.last_name) AS userDisplayName,
+        ou.org_name AS orgUnitName,
+        ou.org_code AS orgUnitCode
+      FROM [masters].[tbl_Org_Unit_Manager] m
+      INNER JOIN auth.tbl_Users u ON u.user_id = m.user_id
+      INNER JOIN [masters].[tbl_Org_Unit] ou ON ou.org_unit_id = m.org_unit_id
+      WHERE m.user_id = @0 AND m.is_active = 1 AND ou.is_active = 1
+      ORDER BY m.effective_from DESC, m.is_active DESC;
     `;
     return this.getExecutor(qr).query(sql, [userId]);
   }
@@ -271,48 +226,37 @@ export class OrgManagersRepository {
    */
   async create(
     data: {
-      orgUnitId: string;
+      orgUnitId: number;
       userId: string;
       managerRoleCode: string;
       isPrimary: boolean;
       effectiveFrom: string;
       effectiveTo?: string | null;
-      assignmentReason?: string | null;
     },
     actorUserId: string,
     qr?: QueryRunner,
   ): Promise<IOrgUnitManager> {
     const sql = `
-      INSERT INTO org.OrgUnitManagers (
-        OrgUnitId,
-        UserId,
-        ManagerRoleCode,
-        IsPrimary,
-        EffectiveFrom,
-        EffectiveTo,
-        AssignmentReason,
-        IsActive,
-        IsDeleted,
-        CreatedBy,
-        CreatedAt
+      INSERT INTO [masters].[tbl_Org_Unit_Manager] (
+        org_unit_id,
+        user_id,
+        manager_role_code,
+        is_primary,
+        effective_from,
+        effective_to,
+        is_active
       )
       OUTPUT
-        INSERTED.OrgUnitManagerId AS orgUnitManagerId,
-        INSERTED.OrgUnitId AS orgUnitId,
-        INSERTED.UserId AS userId,
-        INSERTED.ManagerRoleCode AS managerRoleCode,
-        INSERTED.IsPrimary AS isPrimary,
-        INSERTED.EffectiveFrom AS effectiveFrom,
-        INSERTED.EffectiveTo AS effectiveTo,
-        INSERTED.AssignmentReason AS assignmentReason,
-        INSERTED.IsActive AS isActive,
-        INSERTED.IsDeleted AS isDeleted,
-        INSERTED.CreatedBy AS createdBy,
-        INSERTED.CreatedAt AS createdAt,
-        INSERTED.UpdatedBy AS updatedBy,
-        INSERTED.UpdatedAt AS updatedAt
+        INSERTED.org_unit_manager_id AS orgUnitManagerId,
+        INSERTED.org_unit_id AS orgUnitId,
+        INSERTED.user_id AS userId,
+        INSERTED.manager_role_code AS managerRoleCode,
+        INSERTED.is_primary AS isPrimary,
+        INSERTED.effective_from AS effectiveFrom,
+        INSERTED.effective_to AS effectiveTo,
+        INSERTED.is_active AS isActive
       VALUES (
-        @0, @1, @2, @3, @4, @5, @6, 1, 0, @7, SYSUTCDATETIME()
+        @0, @1, @2, @3, @4, @5, 1
       );
     `;
 
@@ -323,8 +267,6 @@ export class OrgManagersRepository {
       data.isPrimary ? 1 : 0,
       data.effectiveFrom,
       data.effectiveTo ?? null,
-      data.assignmentReason ?? null,
-      actorUserId,
     ];
 
     const rows = await this.getExecutor(qr).query(sql, params);
@@ -335,47 +277,35 @@ export class OrgManagersRepository {
    * Updates an existing manager assignment record.
    */
   async update(
-    orgUnitManagerId: string,
+    orgUnitManagerId: number,
     data: {
       isPrimary?: boolean;
       effectiveTo?: string | null;
-      assignmentReason?: string | null;
     },
     actorUserId: string,
     qr?: QueryRunner,
   ): Promise<IOrgUnitManager> {
     const sql = `
-      UPDATE org.OrgUnitManagers
+      UPDATE [masters].[tbl_Org_Unit_Manager]
       SET
-        IsPrimary = CASE WHEN @1 IS NOT NULL THEN @1 ELSE IsPrimary END,
-        EffectiveTo = CASE WHEN @2 IS NOT NULL THEN @2 ELSE EffectiveTo END,
-        AssignmentReason = CASE WHEN @3 IS NOT NULL THEN @3 ELSE AssignmentReason END,
-        UpdatedBy = @4,
-        UpdatedAt = SYSUTCDATETIME()
+        is_primary = CASE WHEN @1 IS NOT NULL THEN @1 ELSE is_primary END,
+        effective_to = CASE WHEN @2 IS NOT NULL THEN @2 ELSE effective_to END
       OUTPUT
-        INSERTED.OrgUnitManagerId AS orgUnitManagerId,
-        INSERTED.OrgUnitId AS orgUnitId,
-        INSERTED.UserId AS userId,
-        INSERTED.ManagerRoleCode AS managerRoleCode,
-        INSERTED.IsPrimary AS isPrimary,
-        INSERTED.EffectiveFrom AS effectiveFrom,
-        INSERTED.EffectiveTo AS effectiveTo,
-        INSERTED.AssignmentReason AS assignmentReason,
-        INSERTED.IsActive AS isActive,
-        INSERTED.IsDeleted AS isDeleted,
-        INSERTED.CreatedBy AS createdBy,
-        INSERTED.CreatedAt AS createdAt,
-        INSERTED.UpdatedBy AS updatedBy,
-        INSERTED.UpdatedAt AS updatedAt
-      WHERE OrgUnitManagerId = @0 AND IsDeleted = 0;
+        INSERTED.org_unit_manager_id AS orgUnitManagerId,
+        INSERTED.org_unit_id AS orgUnitId,
+        INSERTED.user_id AS userId,
+        INSERTED.manager_role_code AS managerRoleCode,
+        INSERTED.is_primary AS isPrimary,
+        INSERTED.effective_from AS effectiveFrom,
+        INSERTED.effective_to AS effectiveTo,
+        INSERTED.is_active AS isActive
+      WHERE org_unit_manager_id = @0 AND is_active = 1;
     `;
 
     const params = [
       orgUnitManagerId,
       data.isPrimary !== undefined ? (data.isPrimary ? 1 : 0) : null,
       data.effectiveTo !== undefined ? data.effectiveTo : null,
-      data.assignmentReason !== undefined ? data.assignmentReason : null,
-      actorUserId,
     ];
 
     const rows = await this.getExecutor(qr).query(sql, params);
@@ -387,28 +317,24 @@ export class OrgManagersRepository {
    * to (newEffectiveFrom - 1 day). Executed in the same transaction.
    */
   async endPreviousPrimaryHead(
-    orgUnitId: string,
+    orgUnitId: number,
     newEffectiveFrom: string,
     actorUserId: string,
     qr?: QueryRunner,
   ): Promise<void> {
     const sql = `
-      UPDATE org.OrgUnitManagers
+      UPDATE [masters].[tbl_Org_Unit_Manager]
       SET
-        EffectiveTo = DATEADD(DAY, -1, CAST(@1 AS DATE)),
-        UpdatedBy = @2,
-        UpdatedAt = SYSUTCDATETIME()
-      WHERE OrgUnitId = @0
-        AND ManagerRoleCode = '${ORG_MANAGER_ROLES.HEAD}'
-        AND IsPrimary = 1
-        AND IsDeleted = 0
-        AND IsActive = 1
-        AND (EffectiveTo IS NULL OR EffectiveTo >= CAST(@1 AS DATE));
+        effective_to = DATEADD(DAY, -1, CAST(@1 AS DATE))
+      WHERE org_unit_id = @0
+        AND manager_role_code = '${ORG_MANAGER_ROLES.HEAD}'
+        AND is_primary = 1
+        AND is_active = 1
+        AND (effective_to IS NULL OR effective_to >= CAST(@1 AS DATE));
     `;
     await this.getExecutor(qr).query(sql, [
       orgUnitId,
       newEffectiveFrom,
-      actorUserId,
     ]);
   }
 
@@ -416,64 +342,73 @@ export class OrgManagersRepository {
    * Soft deletes a manager assignment.
    */
   async softDelete(
-    orgUnitManagerId: string,
+    orgUnitManagerId: number,
     actorUserId: string,
     qr?: QueryRunner,
   ): Promise<void> {
     const sql = `
-      UPDATE org.OrgUnitManagers
+      UPDATE [masters].[tbl_Org_Unit_Manager]
       SET
-        IsDeleted = 1,
-        IsActive = 0,
-        DeletedBy = @1,
-        DeletedAt = SYSUTCDATETIME()
-      WHERE OrgUnitManagerId = @0;
+        is_active = 0
+      WHERE org_unit_manager_id = @0;
     `;
-    await this.getExecutor(qr).query(sql, [orgUnitManagerId, actorUserId]);
+    await this.getExecutor(qr).query(sql, [orgUnitManagerId]);
   }
 
   /**
    * §8.4 / Rule G7: Hierarchical approval chain resolution.
-   * Walks ancestors from node to root using closure table, joining current active primary HEAD
-   * manager at each level with effective-date filtering.
-   *
-   * NOTE: Domain 5 (Requisition & Approval Workflow) strictly depends on this method
-   * and query contract. Do not change without cross-domain coordination.
+   * Uses recursive CTE instead of closure table!
    */
   async getApprovalChain(
-    orgUnitId: string,
+    orgUnitId: number,
     asOfDate?: string,
     qr?: QueryRunner,
   ): Promise<any[]> {
     const dateParam = asOfDate || new Date().toISOString().split('T')[0];
 
     const sql = `
+      WITH CTE_Org AS (
+        SELECT 
+          org_unit_id,
+          parent_id,
+          org_code,
+          org_name,
+          1 AS distance
+        FROM [masters].[tbl_Org_Unit]
+        WHERE org_unit_id = @0 AND is_active = 1
+        
+        UNION ALL
+        
+        SELECT 
+          u.org_unit_id,
+          u.parent_id,
+          u.org_code,
+          u.org_name,
+          c.distance + 1
+        FROM [masters].[tbl_Org_Unit] u
+        INNER JOIN CTE_Org c ON u.org_unit_id = c.parent_id
+        WHERE u.is_active = 1
+      )
       SELECT
-        c.Depth AS distance,
-        u.OrgUnitId AS orgUnitId,
-        u.Code AS orgUnitCode,
-        u.Name AS orgUnitName,
-        u.Depth AS orgUnitDepth,
-        m.UserId AS headUserId,
-        usr.Username AS headUsername,
-        CONCAT(p.FirstName, ' ', p.LastName) AS headDisplayName,
-        usr.Email AS headEmail,
-        m.ManagerRoleCode AS managerRoleCode
-      FROM org.OrgUnitClosure c
-      INNER JOIN org.OrgUnits u ON u.OrgUnitId = c.AncestorOrgUnitId
-      LEFT JOIN org.OrgUnitManagers m
-             ON m.OrgUnitId = u.OrgUnitId
-            AND m.ManagerRoleCode = '${ORG_MANAGER_ROLES.HEAD}'
-            AND m.IsPrimary = 1
-            AND m.IsActive = 1
-            AND m.IsDeleted = 0
-            AND m.EffectiveFrom <= @1
-            AND (m.EffectiveTo IS NULL OR m.EffectiveTo >= @1)
-      LEFT JOIN auth.Users usr ON usr.UserID = m.UserId
-      LEFT JOIN auth.UserProfiles p ON p.UserID = usr.UserID
-      WHERE c.DescendantOrgUnitId = @0
-        AND u.IsDeleted = 0
-      ORDER BY c.Depth ASC; -- Step 1 is self, step 2 is parent, up to root
+        c.distance AS distance,
+        c.org_unit_id AS orgUnitId,
+        c.org_code AS orgUnitCode,
+        c.org_name AS orgUnitName,
+        m.user_id AS headUserId,
+        usr.username AS headUsername,
+        CONCAT(usr.first_name, ' ', usr.last_name) AS headDisplayName,
+        usr.email AS headEmail,
+        m.manager_role_code AS managerRoleCode
+      FROM CTE_Org c
+      LEFT JOIN [masters].[tbl_Org_Unit_Manager] m
+             ON m.org_unit_id = c.org_unit_id
+            AND m.manager_role_code = '${ORG_MANAGER_ROLES.HEAD}'
+            AND m.is_primary = 1
+            AND m.is_active = 1
+            AND m.effective_from <= @1
+            AND (m.effective_to IS NULL OR m.effective_to >= @1)
+      LEFT JOIN auth.tbl_Users usr ON usr.user_id = m.user_id
+      ORDER BY c.distance ASC;
     `;
 
     const rows = await this.getExecutor(qr).query(sql, [orgUnitId, dateParam]);
@@ -484,7 +419,6 @@ export class OrgManagersRepository {
       orgUnitId: r.orgUnitId,
       orgUnitCode: r.orgUnitCode,
       orgUnitName: r.orgUnitName,
-      orgUnitDepth: r.orgUnitDepth,
       head: r.headUserId
         ? {
             userId: r.headUserId,

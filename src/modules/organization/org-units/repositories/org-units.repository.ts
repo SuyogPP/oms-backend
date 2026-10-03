@@ -10,559 +10,321 @@ export class OrgUnitsRepository {
     return qr ? qr : this.dataSource;
   }
 
-  /**
-   * Finds a non-deleted organization unit by its ID.
-   */
   async findById(
-    orgUnitId: string,
+    orgUnitId: number,
     qr?: QueryRunner,
   ): Promise<IOrgUnit | null> {
     const sql = `
       SELECT
-        u.OrgUnitId AS orgUnitId,
-        u.OrgUnitTypeId AS orgUnitTypeId,
-        u.ParentOrgUnitId AS parentOrgUnitId,
-        u.Code AS code,
-        u.Name AS name,
-        u.NameAr AS nameAr,
-        u.ShortName AS shortName,
-        u.Description AS description,
-        u.MaterializedPath AS materializedPath,
-        u.Depth AS depth,
-        u.CostCenterCode AS costCenterCode,
-        u.ADObjectGuid AS adObjectGuid,
-        u.ADDistinguishedName AS adDistinguishedName,
-        u.OracleOrgCode AS oracleOrgCode,
-        u.HeadUserId AS headUserId,
-        u.EmailAddress AS emailAddress,
-        u.PhoneNumber AS phoneNumber,
-        u.SortOrder AS sortOrder,
-        u.EffectiveFrom AS effectiveFrom,
-        u.EffectiveTo AS effectiveTo,
-        u.IsActive AS isActive,
-        u.IsDeleted AS isDeleted,
-        u.CreatedBy AS createdBy,
-        u.CreatedAt AS createdAt,
-        u.UpdatedBy AS updatedBy,
-        u.UpdatedAt AS updatedAt,
-        u.DeletedBy AS deletedBy,
-        u.DeletedAt AS deletedAt,
-        CONVERT(VARCHAR(34), CAST(u.RowVersion AS VARBINARY(8)), 1) AS rowVersion
-      FROM org.OrgUnits u
-      WHERE u.OrgUnitId = @0 AND u.IsDeleted = 0;
+        u.org_unit_id AS orgUnitId,
+        u.parent_id AS parentId,
+        u.unit_type_id AS unitTypeId,
+        u.org_code AS orgCode,
+        u.org_name AS orgName,
+        u.cost_center_code AS costCenterCode,
+        u.ad_object_guid AS adObjectGuid,
+        u.is_active AS isActive
+      FROM [masters].[tbl_Org_Unit] u
+      WHERE u.org_unit_id = @0;
     `;
     const rows = await this.getExecutor(qr).query(sql, [orgUnitId]);
     return rows.length > 0 ? rows[0] : null;
   }
 
-  /**
-   * §9.3 Non-Negotiable #1 & #2:
-   * Finds an organization unit by ID strictly within the caller's visible scope via org.fn_VisibleOrgUnits.
-   * Returns null if the unit is outside the caller's scope (enables 404 response).
-   */
   async findByIdVisible(
-    orgUnitId: string,
+    orgUnitId: number,
     userId: string,
     qr?: QueryRunner,
   ): Promise<IOrgUnit | null> {
     const sql = `
       SELECT
-        u.OrgUnitId AS orgUnitId,
-        u.OrgUnitTypeId AS orgUnitTypeId,
-        u.ParentOrgUnitId AS parentOrgUnitId,
-        u.Code AS code,
-        u.Name AS name,
-        u.NameAr AS nameAr,
-        u.ShortName AS shortName,
-        u.Description AS description,
-        u.MaterializedPath AS materializedPath,
-        u.Depth AS depth,
-        u.CostCenterCode AS costCenterCode,
-        u.ADObjectGuid AS adObjectGuid,
-        u.ADDistinguishedName AS adDistinguishedName,
-        u.OracleOrgCode AS oracleOrgCode,
-        u.HeadUserId AS headUserId,
-        u.EmailAddress AS emailAddress,
-        u.PhoneNumber AS phoneNumber,
-        u.SortOrder AS sortOrder,
-        u.EffectiveFrom AS effectiveFrom,
-        u.EffectiveTo AS effectiveTo,
-        u.IsActive AS isActive,
-        u.IsDeleted AS isDeleted,
-        u.CreatedBy AS createdBy,
-        u.CreatedAt AS createdAt,
-        u.UpdatedBy AS updatedBy,
-        u.UpdatedAt AS updatedAt,
-        CONVERT(VARCHAR(34), CAST(u.RowVersion AS VARBINARY(8)), 1) AS rowVersion
-      FROM org.OrgUnits u
-      INNER JOIN org.fn_VisibleOrgUnits(@1) v ON v.OrgUnitId = u.OrgUnitId
-      WHERE u.OrgUnitId = @0 AND u.IsDeleted = 0;
+        u.org_unit_id AS orgUnitId,
+        u.parent_id AS parentId,
+        u.unit_type_id AS unitTypeId,
+        u.org_code AS orgCode,
+        u.org_name AS orgName,
+        u.cost_center_code AS costCenterCode,
+        u.ad_object_guid AS adObjectGuid,
+        u.is_active AS isActive
+      FROM [masters].[tbl_Org_Unit] u
+      INNER JOIN org.fn_VisibleOrgUnits(@1) v ON v.OrgUnitId = u.org_unit_id
+      WHERE u.org_unit_id = @0;
     `;
     const rows = await this.getExecutor(qr).query(sql, [orgUnitId, userId]);
     return rows.length > 0 ? rows[0] : null;
   }
 
-  /**
-   * Finds an organization unit by ID including soft-deleted ones.
-   */
   async findByIdIncludingDeleted(
-    orgUnitId: string,
+    orgUnitId: number,
     qr?: QueryRunner,
   ): Promise<IOrgUnit | null> {
-    const sql = `
-      SELECT
-        u.OrgUnitId AS orgUnitId,
-        u.OrgUnitTypeId AS orgUnitTypeId,
-        u.ParentOrgUnitId AS parentOrgUnitId,
-        u.Code AS code,
-        u.Name AS name,
-        u.NameAr AS nameAr,
-        u.ShortName AS shortName,
-        u.Description AS description,
-        u.MaterializedPath AS materializedPath,
-        u.Depth AS depth,
-        u.CostCenterCode AS costCenterCode,
-        u.ADObjectGuid AS adObjectGuid,
-        u.ADDistinguishedName AS adDistinguishedName,
-        u.OracleOrgCode AS oracleOrgCode,
-        u.HeadUserId AS headUserId,
-        u.EmailAddress AS emailAddress,
-        u.PhoneNumber AS phoneNumber,
-        u.SortOrder AS sortOrder,
-        u.EffectiveFrom AS effectiveFrom,
-        u.EffectiveTo AS effectiveTo,
-        u.IsActive AS isActive,
-        u.IsDeleted AS isDeleted,
-        u.CreatedBy AS createdBy,
-        u.CreatedAt AS createdAt,
-        u.UpdatedBy AS updatedBy,
-        u.UpdatedAt AS updatedAt,
-        u.DeletedBy AS deletedBy,
-        u.DeletedAt AS deletedAt,
-        CONVERT(VARCHAR(34), CAST(u.RowVersion AS VARBINARY(8)), 1) AS rowVersion
-      FROM org.OrgUnits u
-      WHERE u.OrgUnitId = @0;
-    `;
-    const rows = await this.getExecutor(qr).query(sql, [orgUnitId]);
-    return rows.length > 0 ? rows[0] : null;
+    return this.findById(orgUnitId, qr);
   }
 
-  /**
-   * Finds a non-deleted organization unit by Code among siblings (or at root level).
-   */
   async findByCode(
-    parentOrgUnitId: string | null,
+    parentId: number | null,
     code: string,
     qr?: QueryRunner,
   ): Promise<IOrgUnit | null> {
     const sql = `
       SELECT
-        u.OrgUnitId AS orgUnitId,
-        u.OrgUnitTypeId AS orgUnitTypeId,
-        u.ParentOrgUnitId AS parentOrgUnitId,
-        u.Code AS code,
-        u.Name AS name,
-        u.NameAr AS nameAr,
-        u.ShortName AS shortName,
-        u.Description AS description,
-        u.MaterializedPath AS materializedPath,
-        u.Depth AS depth,
-        u.CostCenterCode AS costCenterCode,
-        u.ADObjectGuid AS adObjectGuid,
-        u.ADDistinguishedName AS adDistinguishedName,
-        u.OracleOrgCode AS oracleOrgCode,
-        u.HeadUserId AS headUserId,
-        u.EmailAddress AS emailAddress,
-        u.PhoneNumber AS phoneNumber,
-        u.SortOrder AS sortOrder,
-        u.EffectiveFrom AS effectiveFrom,
-        u.EffectiveTo AS effectiveTo,
-        u.IsActive AS isActive,
-        u.IsDeleted AS isDeleted,
-        u.CreatedBy AS createdBy,
-        u.CreatedAt AS createdAt,
-        u.UpdatedBy AS updatedBy,
-        u.UpdatedAt AS updatedAt,
-        u.DeletedBy AS deletedBy,
-        u.DeletedAt AS deletedAt,
-        CONVERT(VARCHAR(34), CAST(u.RowVersion AS VARBINARY(8)), 1) AS rowVersion
-      FROM org.OrgUnits u
-      WHERE u.Code = @0
-        AND ((@1 IS NULL AND u.ParentOrgUnitId IS NULL) OR (u.ParentOrgUnitId = @1))
-        AND u.IsDeleted = 0;
+        u.org_unit_id AS orgUnitId,
+        u.parent_id AS parentId,
+        u.unit_type_id AS unitTypeId,
+        u.org_code AS orgCode,
+        u.org_name AS orgName,
+        u.cost_center_code AS costCenterCode,
+        u.ad_object_guid AS adObjectGuid,
+        u.is_active AS isActive
+      FROM [masters].[tbl_Org_Unit] u
+      WHERE u.org_code = @0
+        AND ((@1 IS NULL AND u.parent_id IS NULL) OR (u.parent_id = @1));
     `;
-    const rows = await this.getExecutor(qr).query(sql, [code, parentOrgUnitId]);
+    const rows = await this.getExecutor(qr).query(sql, [code, parentId]);
     return rows.length > 0 ? rows[0] : null;
   }
 
-  /**
-   * Finds an active root organization unit (type ORGANIZATION with NULL parent).
-   */
   async findActiveRoot(qr?: QueryRunner): Promise<IOrgUnit | null> {
     const sql = `
       SELECT
-        u.OrgUnitId AS orgUnitId,
-        u.OrgUnitTypeId AS orgUnitTypeId,
-        u.ParentOrgUnitId AS parentOrgUnitId,
-        u.Code AS code,
-        u.Name AS name,
-        u.NameAr AS nameAr,
-        u.ShortName AS shortName,
-        u.Description AS description,
-        u.MaterializedPath AS materializedPath,
-        u.Depth AS depth,
-        u.CostCenterCode AS costCenterCode,
-        u.ADObjectGuid AS adObjectGuid,
-        u.ADDistinguishedName AS adDistinguishedName,
-        u.OracleOrgCode AS oracleOrgCode,
-        u.HeadUserId AS headUserId,
-        u.EmailAddress AS emailAddress,
-        u.PhoneNumber AS phoneNumber,
-        u.SortOrder AS sortOrder,
-        u.EffectiveFrom AS effectiveFrom,
-        u.EffectiveTo AS effectiveTo,
-        u.IsActive AS isActive,
-        u.IsDeleted AS isDeleted,
-        u.CreatedBy AS createdBy,
-        u.CreatedAt AS createdAt,
-        u.UpdatedBy AS updatedBy,
-        u.UpdatedAt AS updatedAt,
-        u.DeletedBy AS deletedBy,
-        u.DeletedAt AS deletedAt,
-        CONVERT(VARCHAR(34), CAST(u.RowVersion AS VARBINARY(8)), 1) AS rowVersion
-      FROM org.OrgUnits u
-      WHERE u.ParentOrgUnitId IS NULL 
-        AND u.OrgUnitTypeId = 1
-        AND u.IsDeleted = 0 
-        AND u.IsActive = 1;
+        u.org_unit_id AS orgUnitId,
+        u.parent_id AS parentId,
+        u.unit_type_id AS unitTypeId,
+        u.org_code AS orgCode,
+        u.org_name AS orgName,
+        u.cost_center_code AS costCenterCode,
+        u.ad_object_guid AS adObjectGuid,
+        u.is_active AS isActive
+      FROM [masters].[tbl_Org_Unit] u
+      INNER JOIN [masters].[tbl_Org_Unit_Types] t ON t.unit_type_id = u.unit_type_id
+      WHERE u.parent_id IS NULL 
+        AND t.level = 1
+        AND u.is_active = 1;
     `;
     const rows = await this.getExecutor(qr).query(sql);
     return rows.length > 0 ? rows[0] : null;
   }
 
-  /**
-   * Finds direct child nodes of a parent org unit.
-   */
   async findChildren(
-    parentOrgUnitId: string,
+    parentId: number,
     qr?: QueryRunner,
   ): Promise<IOrgUnit[]> {
     const sql = `
       SELECT
-        u.OrgUnitId AS orgUnitId,
-        u.OrgUnitTypeId AS orgUnitTypeId,
-        u.ParentOrgUnitId AS parentOrgUnitId,
-        u.Code AS code,
-        u.Name AS name,
-        u.NameAr AS nameAr,
-        u.ShortName AS shortName,
-        u.Description AS description,
-        u.MaterializedPath AS materializedPath,
-        u.Depth AS depth,
-        u.CostCenterCode AS costCenterCode,
-        u.ADObjectGuid AS adObjectGuid,
-        u.ADDistinguishedName AS adDistinguishedName,
-        u.OracleOrgCode AS oracleOrgCode,
-        u.HeadUserId AS headUserId,
-        u.EmailAddress AS emailAddress,
-        u.PhoneNumber AS phoneNumber,
-        u.SortOrder AS sortOrder,
-        u.EffectiveFrom AS effectiveFrom,
-        u.EffectiveTo AS effectiveTo,
-        u.IsActive AS isActive,
-        u.IsDeleted AS isDeleted,
-        u.CreatedBy AS createdBy,
-        u.CreatedAt AS createdAt,
-        u.UpdatedBy AS updatedBy,
-        u.UpdatedAt AS updatedAt,
-        CONVERT(VARCHAR(34), CAST(u.RowVersion AS VARBINARY(8)), 1) AS rowVersion
-      FROM org.OrgUnits u
-      WHERE u.ParentOrgUnitId = @0 AND u.IsDeleted = 0
-      ORDER BY u.SortOrder ASC, u.Name ASC;
+        u.org_unit_id AS orgUnitId,
+        u.parent_id AS parentId,
+        u.unit_type_id AS unitTypeId,
+        u.org_code AS orgCode,
+        u.org_name AS orgName,
+        u.cost_center_code AS costCenterCode,
+        u.ad_object_guid AS adObjectGuid,
+        u.is_active AS isActive
+      FROM [masters].[tbl_Org_Unit] u
+      WHERE u.parent_id = @0
+      ORDER BY u.org_name ASC;
     `;
-    return this.getExecutor(qr).query(sql, [parentOrgUnitId]);
+    return this.getExecutor(qr).query(sql, [parentId]);
   }
 
-  /**
-   * Finds direct child nodes strictly within the caller's visible scope.
-   */
   async findChildrenVisible(
-    parentOrgUnitId: string,
+    parentId: number,
     userId: string,
     qr?: QueryRunner,
   ): Promise<IOrgUnit[]> {
     const sql = `
       SELECT
-        u.OrgUnitId AS orgUnitId,
-        u.OrgUnitTypeId AS orgUnitTypeId,
-        u.ParentOrgUnitId AS parentOrgUnitId,
-        u.Code AS code,
-        u.Name AS name,
-        u.NameAr AS nameAr,
-        u.ShortName AS shortName,
-        u.Description AS description,
-        u.MaterializedPath AS materializedPath,
-        u.Depth AS depth,
-        u.CostCenterCode AS costCenterCode,
-        u.ADObjectGuid AS adObjectGuid,
-        u.ADDistinguishedName AS adDistinguishedName,
-        u.OracleOrgCode AS oracleOrgCode,
-        u.HeadUserId AS headUserId,
-        u.EmailAddress AS emailAddress,
-        u.PhoneNumber AS phoneNumber,
-        u.SortOrder AS sortOrder,
-        u.EffectiveFrom AS effectiveFrom,
-        u.EffectiveTo AS effectiveTo,
-        u.IsActive AS isActive,
-        u.IsDeleted AS isDeleted,
-        u.CreatedBy AS createdBy,
-        u.CreatedAt AS createdAt,
-        u.UpdatedBy AS updatedBy,
-        u.UpdatedAt AS updatedAt,
-        CONVERT(VARCHAR(34), CAST(u.RowVersion AS VARBINARY(8)), 1) AS rowVersion
-      FROM org.OrgUnits u
-      INNER JOIN org.fn_VisibleOrgUnits(@1) v ON v.OrgUnitId = u.OrgUnitId
-      WHERE u.ParentOrgUnitId = @0 AND u.IsDeleted = 0
-      ORDER BY u.SortOrder ASC, u.Name ASC;
+        u.org_unit_id AS orgUnitId,
+        u.parent_id AS parentId,
+        u.unit_type_id AS unitTypeId,
+        u.org_code AS orgCode,
+        u.org_name AS orgName,
+        u.cost_center_code AS costCenterCode,
+        u.ad_object_guid AS adObjectGuid,
+        u.is_active AS isActive
+      FROM [masters].[tbl_Org_Unit] u
+      INNER JOIN org.fn_VisibleOrgUnits(@1) v ON v.OrgUnitId = u.org_unit_id
+      WHERE u.parent_id = @0
+      ORDER BY u.org_name ASC;
     `;
-    return this.getExecutor(qr).query(sql, [parentOrgUnitId, userId]);
+    return this.getExecutor(qr).query(sql, [parentId, userId]);
   }
 
-  /**
-   * Retrieves all ordered ancestors of an org unit (from root down to parent).
-   */
   async findAncestors(
-    orgUnitId: string,
+    orgUnitId: number,
     qr?: QueryRunner,
   ): Promise<IOrgUnit[]> {
     const sql = `
-      SELECT
-        u.OrgUnitId AS orgUnitId,
-        u.OrgUnitTypeId AS orgUnitTypeId,
-        u.ParentOrgUnitId AS parentOrgUnitId,
-        u.Code AS code,
-        u.Name AS name,
-        u.NameAr AS nameAr,
-        u.ShortName AS shortName,
-        u.Description AS description,
-        u.MaterializedPath AS materializedPath,
-        u.Depth AS depth,
-        u.CostCenterCode AS costCenterCode,
-        u.ADObjectGuid AS adObjectGuid,
-        u.ADDistinguishedName AS adDistinguishedName,
-        u.OracleOrgCode AS oracleOrgCode,
-        u.HeadUserId AS headUserId,
-        u.EmailAddress AS emailAddress,
-        u.PhoneNumber AS phoneNumber,
-        u.SortOrder AS sortOrder,
-        u.EffectiveFrom AS effectiveFrom,
-        u.EffectiveTo AS effectiveTo,
-        u.IsActive AS isActive,
-        u.IsDeleted AS isDeleted,
-        u.CreatedBy AS createdBy,
-        u.CreatedAt AS createdAt,
-        u.UpdatedBy AS updatedBy,
-        u.UpdatedAt AS updatedAt,
-        CONVERT(VARCHAR(34), CAST(u.RowVersion AS VARBINARY(8)), 1) AS rowVersion
-      FROM org.OrgUnits u
-      INNER JOIN org.OrgUnitClosure c ON c.AncestorOrgUnitId = u.OrgUnitId
-      WHERE c.DescendantOrgUnitId = @0 
-        AND c.Depth > 0
-        AND u.IsDeleted = 0
-      ORDER BY c.Depth DESC;
+      WITH OrgPath AS (
+        SELECT org_unit_id, parent_id, unit_type_id, org_code, org_name, cost_center_code, ad_object_guid, is_active, 1 AS depth
+        FROM [masters].[tbl_Org_Unit] 
+        WHERE org_unit_id = @0
+        
+        UNION ALL
+        
+        SELECT ou.org_unit_id, ou.parent_id, ou.unit_type_id, ou.org_code, ou.org_name, ou.cost_center_code, ou.ad_object_guid, ou.is_active, p.depth + 1
+        FROM [masters].[tbl_Org_Unit] ou
+        INNER JOIN OrgPath p ON ou.org_unit_id = p.parent_id
+      )
+      SELECT 
+        org_unit_id AS orgUnitId,
+        parent_id AS parentId,
+        unit_type_id AS unitTypeId,
+        org_code AS orgCode,
+        org_name AS orgName,
+        cost_center_code AS costCenterCode,
+        ad_object_guid AS adObjectGuid,
+        is_active AS isActive
+      FROM OrgPath 
+      WHERE org_unit_id <> @0
+      ORDER BY depth DESC;
     `;
     return this.getExecutor(qr).query(sql, [orgUnitId]);
   }
 
-  /**
-   * Retrieves ordered ancestors of an org unit within the caller's visible scope.
-   */
   async findAncestorsVisible(
-    orgUnitId: string,
+    orgUnitId: number,
     userId: string,
     qr?: QueryRunner,
   ): Promise<IOrgUnit[]> {
     const sql = `
-      SELECT
-        u.OrgUnitId AS orgUnitId,
-        u.OrgUnitTypeId AS orgUnitTypeId,
-        u.ParentOrgUnitId AS parentOrgUnitId,
-        u.Code AS code,
-        u.Name AS name,
-        u.NameAr AS nameAr,
-        u.ShortName AS shortName,
-        u.Description AS description,
-        u.MaterializedPath AS materializedPath,
-        u.Depth AS depth,
-        u.CostCenterCode AS costCenterCode,
-        u.ADObjectGuid AS adObjectGuid,
-        u.ADDistinguishedName AS adDistinguishedName,
-        u.OracleOrgCode AS oracleOrgCode,
-        u.HeadUserId AS headUserId,
-        u.EmailAddress AS emailAddress,
-        u.PhoneNumber AS phoneNumber,
-        u.SortOrder AS sortOrder,
-        u.EffectiveFrom AS effectiveFrom,
-        u.EffectiveTo AS effectiveTo,
-        u.IsActive AS isActive,
-        u.IsDeleted AS isDeleted,
-        u.CreatedBy AS createdBy,
-        u.CreatedAt AS createdAt,
-        u.UpdatedBy AS updatedBy,
-        u.UpdatedAt AS updatedAt,
-        CONVERT(VARCHAR(34), CAST(u.RowVersion AS VARBINARY(8)), 1) AS rowVersion
-      FROM org.OrgUnits u
-      INNER JOIN org.OrgUnitClosure c ON c.AncestorOrgUnitId = u.OrgUnitId
-      INNER JOIN org.fn_VisibleOrgUnits(@1) v ON v.OrgUnitId = u.OrgUnitId
-      WHERE c.DescendantOrgUnitId = @0 
-        AND c.Depth > 0
-        AND u.IsDeleted = 0
-      ORDER BY c.Depth DESC;
+      WITH OrgPath AS (
+        SELECT org_unit_id, parent_id, unit_type_id, org_code, org_name, cost_center_code, ad_object_guid, is_active, 1 AS depth
+        FROM [masters].[tbl_Org_Unit] 
+        WHERE org_unit_id = @0
+        
+        UNION ALL
+        
+        SELECT ou.org_unit_id, ou.parent_id, ou.unit_type_id, ou.org_code, ou.org_name, ou.cost_center_code, ou.ad_object_guid, ou.is_active, p.depth + 1
+        FROM [masters].[tbl_Org_Unit] ou
+        INNER JOIN OrgPath p ON ou.org_unit_id = p.parent_id
+      )
+      SELECT 
+        p.org_unit_id AS orgUnitId,
+        p.parent_id AS parentId,
+        p.unit_type_id AS unitTypeId,
+        p.org_code AS orgCode,
+        p.org_name AS orgName,
+        p.cost_center_code AS costCenterCode,
+        p.ad_object_guid AS adObjectGuid,
+        p.is_active AS isActive
+      FROM OrgPath p
+      INNER JOIN org.fn_VisibleOrgUnits(@1) v ON v.OrgUnitId = p.org_unit_id
+      WHERE p.org_unit_id <> @0
+      ORDER BY p.depth DESC;
     `;
     return this.getExecutor(qr).query(sql, [orgUnitId, userId]);
   }
 
-  /**
-   * Retrieves all flat descendants of an org unit.
-   */
   async findDescendants(
-    orgUnitId: string,
+    orgUnitId: number,
     qr?: QueryRunner,
   ): Promise<IOrgUnit[]> {
     const sql = `
-      SELECT
-        u.OrgUnitId AS orgUnitId,
-        u.OrgUnitTypeId AS orgUnitTypeId,
-        u.ParentOrgUnitId AS parentOrgUnitId,
-        u.Code AS code,
-        u.Name AS name,
-        u.NameAr AS nameAr,
-        u.ShortName AS shortName,
-        u.Description AS description,
-        u.MaterializedPath AS materializedPath,
-        u.Depth AS depth,
-        u.CostCenterCode AS costCenterCode,
-        u.ADObjectGuid AS adObjectGuid,
-        u.ADDistinguishedName AS adDistinguishedName,
-        u.OracleOrgCode AS oracleOrgCode,
-        u.HeadUserId AS headUserId,
-        u.EmailAddress AS emailAddress,
-        u.PhoneNumber AS phoneNumber,
-        u.SortOrder AS sortOrder,
-        u.EffectiveFrom AS effectiveFrom,
-        u.EffectiveTo AS effectiveTo,
-        u.IsActive AS isActive,
-        u.IsDeleted AS isDeleted,
-        u.CreatedBy AS createdBy,
-        u.CreatedAt AS createdAt,
-        u.UpdatedBy AS updatedBy,
-        u.UpdatedAt AS updatedAt,
-        CONVERT(VARCHAR(34), CAST(u.RowVersion AS VARBINARY(8)), 1) AS rowVersion
-      FROM org.OrgUnits u
-      INNER JOIN org.OrgUnitClosure c ON c.DescendantOrgUnitId = u.OrgUnitId
-      WHERE c.AncestorOrgUnitId = @0 
-        AND c.Depth > 0
-        AND u.IsDeleted = 0
-      ORDER BY c.Depth ASC, u.SortOrder ASC;
+      WITH OrgTree AS (
+        SELECT org_unit_id, parent_id, unit_type_id, org_code, org_name, cost_center_code, ad_object_guid, is_active, 1 AS depth
+        FROM [masters].[tbl_Org_Unit] 
+        WHERE org_unit_id = @0
+        
+        UNION ALL
+        
+        SELECT ou.org_unit_id, ou.parent_id, ou.unit_type_id, ou.org_code, ou.org_name, ou.cost_center_code, ou.ad_object_guid, ou.is_active, t.depth + 1
+        FROM [masters].[tbl_Org_Unit] ou
+        INNER JOIN OrgTree t ON ou.parent_id = t.org_unit_id
+      )
+      SELECT 
+        org_unit_id AS orgUnitId,
+        parent_id AS parentId,
+        unit_type_id AS unitTypeId,
+        org_code AS orgCode,
+        org_name AS orgName,
+        cost_center_code AS costCenterCode,
+        ad_object_guid AS adObjectGuid,
+        is_active AS isActive
+      FROM OrgTree 
+      WHERE org_unit_id <> @0
+      ORDER BY depth ASC, org_name ASC;
     `;
     return this.getExecutor(qr).query(sql, [orgUnitId]);
   }
 
-  /**
-   * Retrieves flat descendants strictly within the caller's visible scope.
-   */
   async findDescendantsVisible(
-    orgUnitId: string,
+    orgUnitId: number,
     userId: string,
     qr?: QueryRunner,
   ): Promise<IOrgUnit[]> {
     const sql = `
-      SELECT
-        u.OrgUnitId AS orgUnitId,
-        u.OrgUnitTypeId AS orgUnitTypeId,
-        u.ParentOrgUnitId AS parentOrgUnitId,
-        u.Code AS code,
-        u.Name AS name,
-        u.NameAr AS nameAr,
-        u.ShortName AS shortName,
-        u.Description AS description,
-        u.MaterializedPath AS materializedPath,
-        u.Depth AS depth,
-        u.CostCenterCode AS costCenterCode,
-        u.ADObjectGuid AS adObjectGuid,
-        u.ADDistinguishedName AS adDistinguishedName,
-        u.OracleOrgCode AS oracleOrgCode,
-        u.HeadUserId AS headUserId,
-        u.EmailAddress AS emailAddress,
-        u.PhoneNumber AS phoneNumber,
-        u.SortOrder AS sortOrder,
-        u.EffectiveFrom AS effectiveFrom,
-        u.EffectiveTo AS effectiveTo,
-        u.IsActive AS isActive,
-        u.IsDeleted AS isDeleted,
-        u.CreatedBy AS createdBy,
-        u.CreatedAt AS createdAt,
-        u.UpdatedBy AS updatedBy,
-        u.UpdatedAt AS updatedAt,
-        CONVERT(VARCHAR(34), CAST(u.RowVersion AS VARBINARY(8)), 1) AS rowVersion
-      FROM org.OrgUnits u
-      INNER JOIN org.OrgUnitClosure c ON c.DescendantOrgUnitId = u.OrgUnitId
-      INNER JOIN org.fn_VisibleOrgUnits(@1) v ON v.OrgUnitId = u.OrgUnitId
-      WHERE c.AncestorOrgUnitId = @0 
-        AND c.Depth > 0
-        AND u.IsDeleted = 0
-      ORDER BY c.Depth ASC, u.SortOrder ASC;
+      WITH OrgTree AS (
+        SELECT org_unit_id, parent_id, unit_type_id, org_code, org_name, cost_center_code, ad_object_guid, is_active, 1 AS depth
+        FROM [masters].[tbl_Org_Unit] 
+        WHERE org_unit_id = @0
+        
+        UNION ALL
+        
+        SELECT ou.org_unit_id, ou.parent_id, ou.unit_type_id, ou.org_code, ou.org_name, ou.cost_center_code, ou.ad_object_guid, ou.is_active, t.depth + 1
+        FROM [masters].[tbl_Org_Unit] ou
+        INNER JOIN OrgTree t ON ou.parent_id = t.org_unit_id
+      )
+      SELECT 
+        t.org_unit_id AS orgUnitId,
+        t.parent_id AS parentId,
+        t.unit_type_id AS unitTypeId,
+        t.org_code AS orgCode,
+        t.org_name AS orgName,
+        t.cost_center_code AS costCenterCode,
+        t.ad_object_guid AS adObjectGuid,
+        t.is_active AS isActive
+      FROM OrgTree t
+      INNER JOIN org.fn_VisibleOrgUnits(@1) v ON v.OrgUnitId = t.org_unit_id
+      WHERE t.org_unit_id <> @0
+      ORDER BY t.depth ASC, t.org_name ASC;
     `;
     return this.getExecutor(qr).query(sql, [orgUnitId, userId]);
   }
 
-  /**
-   * Counts direct children of an org unit (active or soft-deleted check).
-   */
   async countDirectChildren(
-    orgUnitId: string,
+    orgUnitId: number,
     onlyActive = false,
     qr?: QueryRunner,
   ): Promise<number> {
     const sql = `
       SELECT COUNT(*) AS total
-      FROM org.OrgUnits
-      WHERE ParentOrgUnitId = @0 
-        AND IsDeleted = 0
-        ${onlyActive ? 'AND IsActive = 1' : ''};
+      FROM [masters].[tbl_Org_Unit]
+      WHERE parent_id = @0 
+        ${onlyActive ? 'AND is_active = 1' : ''};
     `;
     const res = await this.getExecutor(qr).query(sql, [orgUnitId]);
     return Number(res[0]?.total || 0);
   }
 
-  /**
-   * Counts total subtree descendants of an org unit.
-   */
   async countSubtreeDescendants(
-    orgUnitId: string,
+    orgUnitId: number,
     qr?: QueryRunner,
   ): Promise<number> {
     const sql = `
+      WITH OrgTree AS (
+        SELECT org_unit_id
+        FROM [masters].[tbl_Org_Unit] 
+        WHERE org_unit_id = @0
+        
+        UNION ALL
+        
+        SELECT ou.org_unit_id
+        FROM [masters].[tbl_Org_Unit] ou
+        INNER JOIN OrgTree t ON ou.parent_id = t.org_unit_id
+      )
       SELECT COUNT(*) AS total
-      FROM org.OrgUnitClosure c
-      INNER JOIN org.OrgUnits u ON u.OrgUnitId = c.DescendantOrgUnitId
-      WHERE c.AncestorOrgUnitId = @0 
-        AND c.Depth > 0
-        AND u.IsDeleted = 0;
+      FROM OrgTree
+      WHERE org_unit_id <> @0;
     `;
     const res = await this.getExecutor(qr).query(sql, [orgUnitId]);
     return Number(res[0]?.total || 0);
   }
 
-  /**
-   * Retrieves paginated, filtered org units within user scope.
-   */
   async findAllVisible(
     userId: string,
     options: {
-      orgUnitTypeId?: number;
-      depth?: number;
-      parentOrgUnitId?: string;
+      unitTypeId?: number;
+      parentId?: number;
       search?: string;
       isActive?: boolean;
       offset?: number;
@@ -575,23 +337,20 @@ export class OrgUnitsRepository {
 
     const countSql = `
       SELECT COUNT(*) AS total
-      FROM org.OrgUnits u
-      INNER JOIN org.fn_VisibleOrgUnits(@0) v ON v.OrgUnitId = u.OrgUnitId
-      WHERE u.IsDeleted = 0
-        AND (@1 IS NULL OR u.OrgUnitTypeId = @1)
-        AND (@2 IS NULL OR u.ParentOrgUnitId = @2)
-        AND (@3 IS NULL OR (u.Name LIKE '%' + @3 + '%' OR u.Code LIKE '%' + @3 + '%'))
-        AND (@4 IS NULL OR u.IsActive = @4)
-        AND (@5 IS NULL OR u.Depth = @5);
+      FROM [masters].[tbl_Org_Unit] u
+      INNER JOIN org.fn_VisibleOrgUnits(@0) v ON v.OrgUnitId = u.org_unit_id
+      WHERE (@1 IS NULL OR u.unit_type_id = @1)
+        AND (@2 IS NULL OR u.parent_id = @2)
+        AND (@3 IS NULL OR (u.org_name LIKE '%' + @3 + '%' OR u.org_code LIKE '%' + @3 + '%'))
+        AND (@4 IS NULL OR u.is_active = @4);
     `;
 
     const countParams = [
       userId,
-      options.orgUnitTypeId ?? null,
-      options.parentOrgUnitId ?? null,
+      options.unitTypeId ?? null,
+      options.parentId ?? null,
       options.search ?? null,
       options.isActive !== undefined ? (options.isActive ? 1 : 0) : null,
-      options.depth !== undefined ? options.depth : null,
     ];
 
     const countRes = await this.getExecutor(qr).query(countSql, countParams);
@@ -600,73 +359,25 @@ export class OrgUnitsRepository {
     const dataSql = `
       WITH NumberedRows AS (
         SELECT
-          u.OrgUnitId AS orgUnitId,
-          u.OrgUnitTypeId AS orgUnitTypeId,
-          u.ParentOrgUnitId AS parentOrgUnitId,
-          u.Code AS code,
-          u.Name AS name,
-          u.NameAr AS nameAr,
-          u.ShortName AS shortName,
-          u.Description AS description,
-          u.MaterializedPath AS materializedPath,
-          u.Depth AS depth,
-          u.CostCenterCode AS costCenterCode,
-          u.ADObjectGuid AS adObjectGuid,
-          u.ADDistinguishedName AS adDistinguishedName,
-          u.OracleOrgCode AS oracleOrgCode,
-          u.HeadUserId AS headUserId,
-          u.EmailAddress AS emailAddress,
-          u.PhoneNumber AS phoneNumber,
-          u.SortOrder AS sortOrder,
-          u.EffectiveFrom AS effectiveFrom,
-          u.EffectiveTo AS effectiveTo,
-          u.IsActive AS isActive,
-          u.IsDeleted AS isDeleted,
-          u.CreatedBy AS createdBy,
-          u.CreatedAt AS createdAt,
-          u.UpdatedBy AS updatedBy,
-          u.UpdatedAt AS updatedAt,
-          CONVERT(VARCHAR(34), CAST(u.RowVersion AS VARBINARY(8)), 1) AS rowVersion,
-          ROW_NUMBER() OVER (ORDER BY u.Depth ASC, u.SortOrder ASC, u.Name ASC) AS RowNum
-        FROM org.OrgUnits u
-        INNER JOIN org.fn_VisibleOrgUnits(@0) v ON v.OrgUnitId = u.OrgUnitId
-        WHERE u.IsDeleted = 0
-          AND (@1 IS NULL OR u.OrgUnitTypeId = @1)
-          AND (@2 IS NULL OR u.ParentOrgUnitId = @2)
-          AND (@3 IS NULL OR (u.Name LIKE '%' + @3 + '%' OR u.Code LIKE '%' + @3 + '%'))
-          AND (@4 IS NULL OR u.IsActive = @4)
-          AND (@5 IS NULL OR u.Depth = @5)
+          u.org_unit_id AS orgUnitId,
+          u.parent_id AS parentId,
+          u.unit_type_id AS unitTypeId,
+          u.org_code AS orgCode,
+          u.org_name AS orgName,
+          u.cost_center_code AS costCenterCode,
+          u.ad_object_guid AS adObjectGuid,
+          u.is_active AS isActive,
+          ROW_NUMBER() OVER (ORDER BY u.org_name ASC) AS RowNum
+        FROM [masters].[tbl_Org_Unit] u
+        INNER JOIN org.fn_VisibleOrgUnits(@0) v ON v.OrgUnitId = u.org_unit_id
+        WHERE (@1 IS NULL OR u.unit_type_id = @1)
+          AND (@2 IS NULL OR u.parent_id = @2)
+          AND (@3 IS NULL OR (u.org_name LIKE '%' + @3 + '%' OR u.org_code LIKE '%' + @3 + '%'))
+          AND (@4 IS NULL OR u.is_active = @4)
       )
-      SELECT
-        orgUnitId,
-        orgUnitTypeId,
-        parentOrgUnitId,
-        code,
-        name,
-        nameAr,
-        shortName,
-        description,
-        materializedPath,
-        depth,
-        costCenterCode,
-        adObjectGuid,
-        adDistinguishedName,
-        oracleOrgCode,
-        headUserId,
-        emailAddress,
-        phoneNumber,
-        sortOrder,
-        effectiveFrom,
-        effectiveTo,
-        isActive,
-        isDeleted,
-        createdBy,
-        createdAt,
-        updatedBy,
-        updatedAt,
-        rowVersion
+      SELECT *
       FROM NumberedRows
-      WHERE RowNum > @6 AND RowNum <= (@6 + @7)
+      WHERE RowNum > @5 AND RowNum <= (@5 + @6)
       ORDER BY RowNum;
     `;
 
@@ -675,410 +386,211 @@ export class OrgUnitsRepository {
     return [rows, total];
   }
 
-  /**
-   * Retrieves all visible org units for constructing tree hierarchy.
-   */
   async findVisibleTree(userId: string, qr?: QueryRunner): Promise<IOrgUnit[]> {
     const sql = `
       SELECT
-        u.OrgUnitId AS orgUnitId,
-        u.OrgUnitTypeId AS orgUnitTypeId,
-        u.ParentOrgUnitId AS parentOrgUnitId,
-        u.Code AS code,
-        u.Name AS name,
-        u.NameAr AS nameAr,
-        u.ShortName AS shortName,
-        u.Depth AS depth,
-        u.SortOrder AS sortOrder,
-        u.IsActive AS isActive,
-        u.HeadUserId AS headUserId,
-        CONVERT(VARCHAR(34), CAST(u.RowVersion AS VARBINARY(8)), 1) AS rowVersion
-      FROM org.OrgUnits u
-      INNER JOIN org.fn_VisibleOrgUnits(@0) v ON v.OrgUnitId = u.OrgUnitId
-      WHERE u.IsDeleted = 0
-      ORDER BY u.Depth ASC, u.SortOrder ASC, u.Name ASC;
+        u.org_unit_id AS orgUnitId,
+        u.parent_id AS parentId,
+        u.unit_type_id AS unitTypeId,
+        u.org_code AS orgCode,
+        u.org_name AS orgName,
+        u.is_active AS isActive
+      FROM [masters].[tbl_Org_Unit] u
+      INNER JOIN org.fn_VisibleOrgUnits(@0) v ON v.OrgUnitId = u.org_unit_id
+      ORDER BY u.org_name ASC;
     `;
     return this.getExecutor(qr).query(sql, [userId]);
   }
 
-  /**
-   * Creates a new organization unit node.
-   */
   async create(
     data: {
-      orgUnitTypeId: number;
-      parentOrgUnitId?: string | null;
-      code: string;
-      name: string;
-      nameAr?: string | null;
-      shortName?: string | null;
-      description?: string | null;
-      materializedPath: string;
-      depth: number;
+      unitTypeId: number;
+      parentId?: number | null;
+      orgCode: string;
+      orgName: string;
       costCenterCode?: string | null;
-      oracleOrgCode?: string | null;
-      emailAddress?: string | null;
-      phoneNumber?: string | null;
-      sortOrder?: number;
-      effectiveFrom: string;
-      createdBy?: string | null;
+      adObjectGuid?: string | null;
+      isActive: boolean;
     },
     qr?: QueryRunner,
   ): Promise<IOrgUnit> {
     const sql = `
-      INSERT INTO org.OrgUnits (
-        OrgUnitTypeId,
-        ParentOrgUnitId,
-        Code,
-        Name,
-        NameAr,
-        ShortName,
-        Description,
-        MaterializedPath,
-        Depth,
-        CostCenterCode,
-        OracleOrgCode,
-        EmailAddress,
-        PhoneNumber,
-        SortOrder,
-        EffectiveFrom,
-        IsActive,
-        IsDeleted,
-        CreatedBy,
-        CreatedAt
+      INSERT INTO [masters].[tbl_Org_Unit] (
+        unit_type_id,
+        parent_id,
+        org_code,
+        org_name,
+        cost_center_code,
+        ad_object_guid,
+        is_active
       )
       OUTPUT 
-        INSERTED.OrgUnitId AS orgUnitId,
-        INSERTED.OrgUnitTypeId AS orgUnitTypeId,
-        INSERTED.ParentOrgUnitId AS parentOrgUnitId,
-        INSERTED.Code AS code,
-        INSERTED.Name AS name,
-        INSERTED.NameAr AS nameAr,
-        INSERTED.ShortName AS shortName,
-        INSERTED.Description AS description,
-        INSERTED.MaterializedPath AS materializedPath,
-        INSERTED.Depth AS depth,
-        INSERTED.CostCenterCode AS costCenterCode,
-        INSERTED.ADObjectGuid AS adObjectGuid,
-        INSERTED.ADDistinguishedName AS adDistinguishedName,
-        INSERTED.OracleOrgCode AS oracleOrgCode,
-        INSERTED.HeadUserId AS headUserId,
-        INSERTED.EmailAddress AS emailAddress,
-        INSERTED.PhoneNumber AS phoneNumber,
-        INSERTED.SortOrder AS sortOrder,
-        INSERTED.EffectiveFrom AS effectiveFrom,
-        INSERTED.EffectiveTo AS effectiveTo,
-        INSERTED.IsActive AS isActive,
-        INSERTED.IsDeleted AS isDeleted,
-        INSERTED.CreatedBy AS createdBy,
-        INSERTED.CreatedAt AS createdAt,
-        INSERTED.UpdatedBy AS updatedBy,
-        INSERTED.UpdatedAt AS updatedAt,
-        CONVERT(VARCHAR(34), CAST(INSERTED.RowVersion AS VARBINARY(8)), 1) AS rowVersion
+        INSERTED.org_unit_id AS orgUnitId,
+        INSERTED.unit_type_id AS unitTypeId,
+        INSERTED.parent_id AS parentId,
+        INSERTED.org_code AS orgCode,
+        INSERTED.org_name AS orgName,
+        INSERTED.cost_center_code AS costCenterCode,
+        INSERTED.ad_object_guid AS adObjectGuid,
+        INSERTED.is_active AS isActive
       VALUES (
-        @0, @1, @2, @3, @4, @5, @6, @7, @8, @9, @10, @11, @12, @13, @14, 1, 0, @15, SYSUTCDATETIME()
+        @0, @1, @2, @3, @4, @5, @6
       );
     `;
 
     const params = [
-      data.orgUnitTypeId,
-      data.parentOrgUnitId ?? null,
-      data.code,
-      data.name,
-      data.nameAr ?? null,
-      data.shortName ?? null,
-      data.description ?? null,
-      data.materializedPath,
-      data.depth,
+      data.unitTypeId,
+      data.parentId ?? null,
+      data.orgCode,
+      data.orgName,
       data.costCenterCode ?? null,
-      data.oracleOrgCode ?? null,
-      data.emailAddress ?? null,
-      data.phoneNumber ?? null,
-      data.sortOrder ?? 0,
-      data.effectiveFrom,
-      data.createdBy ?? null,
+      data.adObjectGuid ?? null,
+      data.isActive ? 1 : 0,
     ];
 
     const rows = await this.getExecutor(qr).query(sql, params);
     return rows[0];
   }
 
-  /**
-   * Updates attributes of an organization unit (never reparents).
-   */
   async update(
-    orgUnitId: string,
+    orgUnitId: number,
     data: {
-      code?: string;
-      name?: string;
-      nameAr?: string | null;
-      shortName?: string | null;
-      description?: string | null;
+      orgCode?: string;
+      orgName?: string;
       costCenterCode?: string | null;
-      oracleOrgCode?: string | null;
-      emailAddress?: string | null;
-      phoneNumber?: string | null;
-      sortOrder?: number;
-      effectiveTo?: string | null;
-      updatedBy?: string | null;
+      adObjectGuid?: string | null;
+      isActive?: boolean;
     },
     qr?: QueryRunner,
   ): Promise<IOrgUnit> {
     const sql = `
-      UPDATE org.OrgUnits
+      UPDATE [masters].[tbl_Org_Unit]
       SET
-        Code = COALESCE(@1, Code),
-        Name = COALESCE(@2, Name),
-        NameAr = CASE WHEN @3 IS NOT NULL THEN @3 ELSE NameAr END,
-        ShortName = CASE WHEN @4 IS NOT NULL THEN @4 ELSE ShortName END,
-        Description = CASE WHEN @5 IS NOT NULL THEN @5 ELSE Description END,
-        CostCenterCode = CASE WHEN @6 IS NOT NULL THEN @6 ELSE CostCenterCode END,
-        OracleOrgCode = CASE WHEN @7 IS NOT NULL THEN @7 ELSE OracleOrgCode END,
-        EmailAddress = CASE WHEN @8 IS NOT NULL THEN @8 ELSE EmailAddress END,
-        PhoneNumber = CASE WHEN @9 IS NOT NULL THEN @9 ELSE PhoneNumber END,
-        SortOrder = COALESCE(@10, SortOrder),
-        EffectiveTo = CASE WHEN @11 IS NOT NULL THEN @11 ELSE EffectiveTo END,
-        UpdatedBy = @12,
-        UpdatedAt = SYSUTCDATETIME()
+        org_code = COALESCE(@1, org_code),
+        org_name = COALESCE(@2, org_name),
+        cost_center_code = CASE WHEN @3 IS NOT NULL THEN @3 ELSE cost_center_code END,
+        ad_object_guid = CASE WHEN @4 IS NOT NULL THEN @4 ELSE ad_object_guid END,
+        is_active = COALESCE(@5, is_active)
       OUTPUT
-        INSERTED.OrgUnitId AS orgUnitId,
-        INSERTED.OrgUnitTypeId AS orgUnitTypeId,
-        INSERTED.ParentOrgUnitId AS parentOrgUnitId,
-        INSERTED.Code AS code,
-        INSERTED.Name AS name,
-        INSERTED.NameAr AS nameAr,
-        INSERTED.ShortName AS shortName,
-        INSERTED.Description AS description,
-        INSERTED.MaterializedPath AS materializedPath,
-        INSERTED.Depth AS depth,
-        INSERTED.CostCenterCode AS costCenterCode,
-        INSERTED.ADObjectGuid AS adObjectGuid,
-        INSERTED.ADDistinguishedName AS adDistinguishedName,
-        INSERTED.OracleOrgCode AS oracleOrgCode,
-        INSERTED.HeadUserId AS headUserId,
-        INSERTED.EmailAddress AS emailAddress,
-        INSERTED.PhoneNumber AS phoneNumber,
-        INSERTED.SortOrder AS sortOrder,
-        INSERTED.EffectiveFrom AS effectiveFrom,
-        INSERTED.EffectiveTo AS effectiveTo,
-        INSERTED.IsActive AS isActive,
-        INSERTED.IsDeleted AS isDeleted,
-        INSERTED.CreatedBy AS createdBy,
-        INSERTED.CreatedAt AS createdAt,
-        INSERTED.UpdatedBy AS updatedBy,
-        INSERTED.UpdatedAt AS updatedAt,
-        CONVERT(VARCHAR(34), CAST(INSERTED.RowVersion AS VARBINARY(8)), 1) AS rowVersion
-      WHERE OrgUnitId = @0 AND IsDeleted = 0;
+        INSERTED.org_unit_id AS orgUnitId,
+        INSERTED.unit_type_id AS unitTypeId,
+        INSERTED.parent_id AS parentId,
+        INSERTED.org_code AS orgCode,
+        INSERTED.org_name AS orgName,
+        INSERTED.cost_center_code AS costCenterCode,
+        INSERTED.ad_object_guid AS adObjectGuid,
+        INSERTED.is_active AS isActive
+      WHERE org_unit_id = @0;
     `;
 
     const params = [
       orgUnitId,
-      data.code ?? null,
-      data.name ?? null,
-      data.nameAr !== undefined ? data.nameAr : null,
-      data.shortName !== undefined ? data.shortName : null,
-      data.description !== undefined ? data.description : null,
+      data.orgCode ?? null,
+      data.orgName ?? null,
       data.costCenterCode !== undefined ? data.costCenterCode : null,
-      data.oracleOrgCode !== undefined ? data.oracleOrgCode : null,
-      data.emailAddress !== undefined ? data.emailAddress : null,
-      data.phoneNumber !== undefined ? data.phoneNumber : null,
-      data.sortOrder ?? null,
-      data.effectiveTo !== undefined ? data.effectiveTo : null,
-      data.updatedBy ?? null,
+      data.adObjectGuid !== undefined ? data.adObjectGuid : null,
+      data.isActive !== undefined ? (data.isActive ? 1 : 0) : null,
     ];
 
     const rows = await this.getExecutor(qr).query(sql, params);
     return rows[0];
   }
 
-  /**
-   * §6.2 Reparents node, updates ParentOrgUnitId, and recomputes Depth across entire subtree.
-   */
   async updateParentAndSubtreeDepth(
-    nodeId: string,
-    newParentId: string,
+    nodeId: number,
+    newParentId: number,
     actorUserId: string | null,
     qr?: QueryRunner,
   ): Promise<void> {
-    // 1. Update direct parent
     const sqlAdjacency = `
-      UPDATE org.OrgUnits
-      SET ParentOrgUnitId = @1,
-          UpdatedBy = @2,
-          UpdatedAt = SYSUTCDATETIME()
-      WHERE OrgUnitId = @0;
+      UPDATE [masters].[tbl_Org_Unit]
+      SET parent_id = @1
+      WHERE org_unit_id = @0;
     `;
-    await this.getExecutor(qr).query(sqlAdjacency, [
-      nodeId,
-      newParentId,
-      actorUserId,
-    ]);
-
-    // 2. Recompute Depth for every node in the subtree from closure table (§6.2)
-    const sqlDepth = `
-      UPDATE u
-      SET u.Depth = c.Depth
-      FROM org.OrgUnits AS u
-      INNER JOIN (
-          SELECT cl.DescendantOrgUnitId, MAX(cl.Depth) AS Depth
-          FROM org.OrgUnitClosure AS cl
-          INNER JOIN org.OrgUnitClosure AS sub
-                  ON sub.DescendantOrgUnitId = cl.DescendantOrgUnitId
-          WHERE sub.AncestorOrgUnitId = @0
-            AND cl.AncestorOrgUnitId IN (SELECT OrgUnitId FROM org.OrgUnits WHERE ParentOrgUnitId IS NULL)
-          GROUP BY cl.DescendantOrgUnitId
-      ) AS c ON c.DescendantOrgUnitId = u.OrgUnitId;
-    `;
-    await this.getExecutor(qr).query(sqlDepth, [nodeId]);
+    await this.getExecutor(qr).query(sqlAdjacency, [nodeId, newParentId]);
   }
 
-  /**
-   * §6.2 Rebuilds MaterializedPath for an entire subtree using recursive CTE.
-   */
-  async rebuildSubtreePaths(nodeId: string, qr?: QueryRunner): Promise<void> {
-    const sql = `
-      WITH Subtree AS (
-          SELECT u.OrgUnitId,
-                 u.ParentOrgUnitId,
-                 CAST(p.MaterializedPath + REPLACE(CAST(u.OrgUnitId AS VARCHAR(36)), '-', '') + '/' AS VARCHAR(900)) AS NewPath
-          FROM org.OrgUnits AS u
-          INNER JOIN org.OrgUnits AS p ON p.OrgUnitId = u.ParentOrgUnitId
-          WHERE u.OrgUnitId = @0
-
-          UNION ALL
-
-          SELECT c.OrgUnitId,
-                 c.ParentOrgUnitId,
-                 CAST(s.NewPath + REPLACE(CAST(c.OrgUnitId AS VARCHAR(36)), '-', '') + '/' AS VARCHAR(900))
-          FROM org.OrgUnits AS c
-          INNER JOIN Subtree AS s ON s.OrgUnitId = c.ParentOrgUnitId
-          WHERE c.IsDeleted = 0
-      )
-      UPDATE u
-      SET u.MaterializedPath = s.NewPath
-      FROM org.OrgUnits AS u
-      INNER JOIN Subtree AS s ON s.OrgUnitId = u.OrgUnitId
-      OPTION (MAXRECURSION 100);
-    `;
-    await this.getExecutor(qr).query(sql, [nodeId]);
+  async rebuildSubtreePaths(nodeId: number, qr?: QueryRunner): Promise<void> {
+    // No-op. Materialized path is gone.
   }
 
-  /**
-   * Updates the denormalized primary HeadUserId on an org unit.
-   */
   async updateHeadUser(
-    orgUnitId: string,
+    orgUnitId: number,
     headUserId: string | null,
     actorUserId: string | null,
     qr?: QueryRunner,
   ): Promise<void> {
-    const sql = `
-      UPDATE org.OrgUnits
-      SET HeadUserId = @1,
-          UpdatedBy = @2,
-          UpdatedAt = SYSUTCDATETIME()
-      WHERE OrgUnitId = @0;
-    `;
-    await this.getExecutor(qr).query(sql, [orgUnitId, headUserId, actorUserId]);
+    // No-op. Head user is gone from this table. Managed in OrgUnitManagers.
   }
 
-  /**
-   * Updates active state of an org unit.
-   */
   async setActiveStatus(
-    orgUnitId: string,
+    orgUnitId: number,
     isActive: boolean,
     effectiveTo: string | null,
     actorUserId: string | null,
     qr?: QueryRunner,
   ): Promise<void> {
     const sql = `
-      UPDATE org.OrgUnits
-      SET IsActive = @1,
-          EffectiveTo = CASE
-            WHEN @1 = 1 THEN NULL
-            WHEN @2 IS NOT NULL AND CAST(@2 AS DATE) >= EffectiveFrom THEN CAST(@2 AS DATE)
-            ELSE EffectiveFrom
-          END,
-          UpdatedBy = @3,
-          UpdatedAt = SYSUTCDATETIME()
-      WHERE OrgUnitId = @0 AND IsDeleted = 0;
+      UPDATE [masters].[tbl_Org_Unit]
+      SET is_active = @1
+      WHERE org_unit_id = @0;
     `;
-    await this.getExecutor(qr).query(sql, [
-      orgUnitId,
-      isActive ? 1 : 0,
-      effectiveTo,
-      actorUserId,
-    ]);
+    await this.getExecutor(qr).query(sql, [orgUnitId, isActive ? 1 : 0]);
   }
 
-  /**
-   * Soft deletes an org unit.
-   */
   async softDelete(
-    orgUnitId: string,
+    orgUnitId: number,
     deletedBy: string | null,
     qr?: QueryRunner,
   ): Promise<void> {
     const sql = `
-      UPDATE org.OrgUnits
-      SET IsDeleted = 1,
-          IsActive = 0,
-          DeletedBy = @1,
-          DeletedAt = SYSUTCDATETIME()
-      WHERE OrgUnitId = @0;
+      UPDATE [masters].[tbl_Org_Unit]
+      SET is_active = 0
+      WHERE org_unit_id = @0;
     `;
-    await this.getExecutor(qr).query(sql, [orgUnitId, deletedBy]);
+    await this.getExecutor(qr).query(sql, [orgUnitId]);
   }
 
-  /**
-   * §8.4 Finds nearest ancestor org unit with AllowsBudget = 1.
-   */
   async findBudgetOwner(
-    orgUnitId: string,
+    orgUnitId: number,
     qr?: QueryRunner,
   ): Promise<IOrgUnit | null> {
     const sql = `
+      WITH OrgPath AS (
+        SELECT org_unit_id, parent_id, unit_type_id, org_code, org_name, cost_center_code, ad_object_guid, is_active, 1 AS depth
+        FROM [masters].[tbl_Org_Unit] 
+        WHERE org_unit_id = @0
+        
+        UNION ALL
+        
+        SELECT ou.org_unit_id, ou.parent_id, ou.unit_type_id, ou.org_code, ou.org_name, ou.cost_center_code, ou.ad_object_guid, ou.is_active, p.depth + 1
+        FROM [masters].[tbl_Org_Unit] ou
+        INNER JOIN OrgPath p ON ou.org_unit_id = p.parent_id
+      )
       SELECT TOP 1
-        u.OrgUnitId AS orgUnitId,
-        u.OrgUnitTypeId AS orgUnitTypeId,
-        u.ParentOrgUnitId AS parentOrgUnitId,
-        u.Code AS code,
-        u.Name AS name,
-        u.NameAr AS nameAr,
-        u.ShortName AS shortName,
-        u.Description AS description,
-        u.MaterializedPath AS materializedPath,
-        u.Depth AS depth,
-        u.CostCenterCode AS costCenterCode,
-        u.HeadUserId AS headUserId,
-        u.SortOrder AS sortOrder,
-        u.EffectiveFrom AS effectiveFrom,
-        u.EffectiveTo AS effectiveTo,
-        u.IsActive AS isActive,
-        u.IsDeleted AS isDeleted,
-        CONVERT(VARCHAR(34), CAST(u.RowVersion AS VARBINARY(8)), 1) AS rowVersion
-      FROM org.OrgUnits u
-      INNER JOIN org.OrgUnitTypes t ON t.OrgUnitTypeId = u.OrgUnitTypeId
-      INNER JOIN org.OrgUnitClosure c ON c.AncestorOrgUnitId = u.OrgUnitId
-      WHERE c.DescendantOrgUnitId = @0
-        AND t.AllowsBudget = 1
-        AND u.IsDeleted = 0
-        AND u.IsActive = 1
-      ORDER BY c.Depth ASC; -- Nearest ancestor first (smallest depth distance)
+        p.org_unit_id AS orgUnitId,
+        p.parent_id AS parentId,
+        p.unit_type_id AS unitTypeId,
+        p.org_code AS orgCode,
+        p.org_name AS orgName,
+        p.cost_center_code AS costCenterCode,
+        p.ad_object_guid AS adObjectGuid,
+        p.is_active AS isActive
+      FROM OrgPath p
+      INNER JOIN [masters].[tbl_Org_Unit_Types] t ON t.unit_type_id = p.unit_type_id
+      WHERE t.allows_budget = 1
+        AND p.is_active = 1
+      ORDER BY p.depth ASC;
     `;
     const rows = await this.getExecutor(qr).query(sql, [orgUnitId]);
     return rows.length > 0 ? rows[0] : null;
   }
 
-  /**
-   * Counts total matching records within caller's visible scope for export.
-   */
   async countForExport(
     userId: string,
     filters: {
-      orgUnitTypeId?: number;
-      parentOrgUnitId?: string;
+      unitTypeId?: number;
+      parentId?: number;
       search?: string;
       isActive?: boolean;
     },
@@ -1086,32 +598,28 @@ export class OrgUnitsRepository {
   ): Promise<number> {
     const sql = `
       SELECT COUNT(1) AS total
-      FROM org.OrgUnits u
-      INNER JOIN org.fn_VisibleOrgUnits(@0) v ON v.OrgUnitId = u.OrgUnitId
-      WHERE u.IsDeleted = 0
-        AND (@1 IS NULL OR u.OrgUnitTypeId = @1)
-        AND (@2 IS NULL OR u.ParentOrgUnitId = @2)
-        AND (@3 IS NULL OR (u.Code LIKE '%' + @3 + '%' OR u.Name LIKE '%' + @3 + '%'))
-        AND (@4 IS NULL OR u.IsActive = @4);
+      FROM [masters].[tbl_Org_Unit] u
+      INNER JOIN org.fn_VisibleOrgUnits(@0) v ON v.OrgUnitId = u.org_unit_id
+      WHERE (@1 IS NULL OR u.unit_type_id = @1)
+        AND (@2 IS NULL OR u.parent_id = @2)
+        AND (@3 IS NULL OR (u.org_code LIKE '%' + @3 + '%' OR u.org_name LIKE '%' + @3 + '%'))
+        AND (@4 IS NULL OR u.is_active = @4);
     `;
     const rows = await this.getExecutor(qr).query(sql, [
       userId,
-      filters.orgUnitTypeId ?? null,
-      filters.parentOrgUnitId ?? null,
+      filters.unitTypeId ?? null,
+      filters.parentId ?? null,
       filters.search ?? null,
       filters.isActive !== undefined ? (filters.isActive ? 1 : 0) : null,
     ]);
     return Number(rows[0]?.total ?? 0);
   }
 
-  /**
-   * Retrieves enriched org units dataset within caller's visible scope for Excel export.
-   */
   async findForExport(
     userId: string,
     filters: {
-      orgUnitTypeId?: number;
-      parentOrgUnitId?: string;
+      unitTypeId?: number;
+      parentId?: number;
       search?: string;
       isActive?: boolean;
     },
@@ -1119,49 +627,34 @@ export class OrgUnitsRepository {
   ): Promise<any[]> {
     const sql = `
       SELECT
-        u.OrgUnitId AS orgUnitId,
-        u.Code AS code,
-        u.Name AS name,
-        u.NameAr AS nameAr,
-        t.Name AS typeName,
-        t.Code AS typeCode,
-        p.Code AS parentCode,
-        p.Name AS parentName,
-        u.Depth AS depth,
-        u.CostCenterCode AS costCenterCode,
-        CASE
-          WHEN up.FirstName IS NOT NULL THEN CONCAT(up.FirstName, ' ', up.LastName)
-          WHEN usr.Username IS NOT NULL THEN usr.Username
-          ELSE NULL
-        END AS headDisplayName,
-        u.IsActive AS isActive,
-        CONVERT(VARCHAR(10), u.EffectiveFrom, 120) AS effectiveFrom,
-        CONVERT(VARCHAR(10), u.EffectiveTo, 120) AS effectiveTo
-      FROM org.OrgUnits u
-      INNER JOIN org.fn_VisibleOrgUnits(@0) v ON v.OrgUnitId = u.OrgUnitId
-      INNER JOIN org.OrgUnitTypes t ON t.OrgUnitTypeId = u.OrgUnitTypeId
-      LEFT JOIN org.OrgUnits p ON p.OrgUnitId = u.ParentOrgUnitId AND p.IsDeleted = 0
-      LEFT JOIN auth.Users usr ON usr.UserID = u.HeadUserId
-      LEFT JOIN auth.UserProfiles up ON up.UserID = usr.UserID
-      WHERE u.IsDeleted = 0
-        AND (@1 IS NULL OR u.OrgUnitTypeId = @1)
-        AND (@2 IS NULL OR u.ParentOrgUnitId = @2)
-        AND (@3 IS NULL OR (u.Code LIKE '%' + @3 + '%' OR u.Name LIKE '%' + @3 + '%'))
-        AND (@4 IS NULL OR u.IsActive = @4)
-      ORDER BY u.Depth ASC, u.SortOrder ASC, u.Name ASC;
+        u.org_unit_id AS orgUnitId,
+        u.org_code AS orgCode,
+        u.org_name AS orgName,
+        t.org_unit_name AS typeName,
+        t.org_unit_code AS typeCode,
+        p.org_code AS parentCode,
+        p.org_name AS parentName,
+        u.cost_center_code AS costCenterCode,
+        u.is_active AS isActive
+      FROM [masters].[tbl_Org_Unit] u
+      INNER JOIN org.fn_VisibleOrgUnits(@0) v ON v.OrgUnitId = u.org_unit_id
+      INNER JOIN [masters].[tbl_Org_Unit_Types] t ON t.unit_type_id = u.unit_type_id
+      LEFT JOIN [masters].[tbl_Org_Unit] p ON p.org_unit_id = u.parent_id
+      WHERE (@1 IS NULL OR u.unit_type_id = @1)
+        AND (@2 IS NULL OR u.parent_id = @2)
+        AND (@3 IS NULL OR (u.org_code LIKE '%' + @3 + '%' OR u.org_name LIKE '%' + @3 + '%'))
+        AND (@4 IS NULL OR u.is_active = @4)
+      ORDER BY u.org_name ASC;
     `;
     return this.getExecutor(qr).query(sql, [
       userId,
-      filters.orgUnitTypeId ?? null,
-      filters.parentOrgUnitId ?? null,
+      filters.unitTypeId ?? null,
+      filters.parentId ?? null,
       filters.search ?? null,
       filters.isActive !== undefined ? (filters.isActive ? 1 : 0) : null,
     ]);
   }
 
-  /**
-   * Resolves a user's display name from auth.Users and auth.UserProfiles.
-   */
   async findUserDisplayName(
     userId: string,
     qr?: QueryRunner,
@@ -1172,94 +665,81 @@ export class OrgUnitsRepository {
   } | null> {
     const sql = `
       SELECT
-        u.UserID AS userId,
-        u.Username AS username,
+        u.user_id AS userId,
+        u.username AS username,
         CASE
-          WHEN p.FirstName IS NOT NULL THEN CONCAT(p.FirstName, ' ', p.LastName)
-          ELSE u.Username
+          WHEN u.first_name IS NOT NULL THEN CONCAT(u.first_name, ' ', u.last_name)
+          ELSE u.username
         END AS displayName
-      FROM auth.Users u
-      LEFT JOIN auth.UserProfiles p ON p.UserID = u.UserID
-      WHERE u.UserID = @0;
+      FROM auth.tbl_Users u
+      WHERE u.user_id = @0;
     `;
     const rows = await this.getExecutor(qr).query(sql, [userId]);
     return rows.length > 0 ? rows[0] : null;
   }
 
-  /**
-   * Counts active people assigned or scoped to this organization unit.
-   */
-  async countPeople(orgUnitId: string, qr?: QueryRunner): Promise<number> {
+  async countPeople(orgUnitId: number, qr?: QueryRunner): Promise<number> {
     const sql = `
-      SELECT COUNT(DISTINCT u.UserID) AS total
-      FROM auth.Users u
-      LEFT JOIN auth.UserProfiles p ON p.UserID = u.UserID
-      LEFT JOIN auth.UserOrganizationScopes s ON s.UserID = u.UserID
-      LEFT JOIN org.OrgUnitManagers m ON m.UserId = u.UserID AND m.OrgUnitId = @0 AND m.IsActive = 1 AND m.IsDeleted = 0
-      LEFT JOIN org.OrgUnits ou ON ou.OrgUnitId = @0 AND ou.HeadUserId = u.UserID
-      WHERE u.IsDeleted = 0
+      SELECT COUNT(DISTINCT u.user_id) AS total
+      FROM auth.tbl_Users u
+      LEFT JOIN auth.tbl_User_Roles s ON s.user_id = u.user_id
+      LEFT JOIN org.OrgUnitManagers m ON m.UserId = u.user_id AND m.OrgUnitId = @0 AND m.is_active = 1 AND m.IsDeleted = 0
+      WHERE u.is_active = 1
         AND (
-          s.DepartmentID = @0 OR s.BusinessUnitID = @0 OR s.SectionID = @0 OR s.OrganizationID = @0
-          OR p.DepartmentID = @0 OR p.BusinessUnitID = @0 OR p.SectionID = @0
+          s.org_unit_id = @0
+          OR u.org_unit_id = @0
           OR m.OrgUnitId = @0
-          OR ou.OrgUnitId = @0
         );
     `;
     const rows = await this.getExecutor(qr).query(sql, [orgUnitId]);
     return Number(rows[0]?.total ?? 0);
   }
 
-  /**
-   * Finds all active members and leadership assigned or scoped to this organization unit.
-   */
   async findMembers(
-    orgUnitId: string,
+    orgUnitId: number,
     qr?: QueryRunner,
   ): Promise<any[]> {
     const sql = `
       WITH UnitMembers AS (
         SELECT DISTINCT
-          u.UserID AS userId,
-          u.Username AS username,
-          u.Email AS email,
-          u.IsActive AS isActive,
+          u.user_id AS userId,
+          u.username AS username,
+          u.email AS email,
+          u.is_active AS isActive,
           CASE
-            WHEN p.FirstName IS NOT NULL OR p.LastName IS NOT NULL THEN
-              LTRIM(RTRIM(CONCAT(COALESCE(p.FirstName, ''), ' ', COALESCE(p.LastName, ''))))
-            ELSE u.Username
+            WHEN u.first_name IS NOT NULL OR u.last_name IS NOT NULL THEN
+              LTRIM(RTRIM(CONCAT(COALESCE(u.first_name, ''), ' ', COALESCE(u.last_name, ''))))
+            ELSE u.username
           END AS displayName,
-          p.JobTitle AS jobTitle,
-          p.MobileNo AS mobileNo,
+          u.job_title AS jobTitle,
+          u.mobile_no AS mobileNo,
           CASE 
-            WHEN ouHead.OrgUnitId IS NOT NULL OR mgr.ManagerRoleCode = 'HEAD' OR EXISTS (
-              SELECT 1 FROM auth.UserRoles ur 
-              INNER JOIN auth.Roles r ON r.RoleID = ur.RoleID 
-              WHERE ur.UserID = u.UserID AND r.RoleCode IN ('HOD', 'SECTION_HEAD')
+            WHEN mgr.manager_role_code = 'HEAD' OR EXISTS (
+              SELECT 1 FROM auth.tbl_User_Roles ur 
+              INNER JOIN auth.tbl_Roles r ON r.role_id = ur.role_id 
+              WHERE ur.user_id = u.user_id AND r.role_code IN ('HOD', 'SECTION_HEAD')
             ) THEN 1 
             ELSE 0 
           END AS isHead,
-          mgr.ManagerRoleCode AS managerRoleCode,
+          mgr.manager_role_code AS managerRoleCode,
           (
-            SELECT STRING_AGG(r.RoleName, ', ')
-            FROM auth.UserRoles ur
-            INNER JOIN auth.Roles r ON r.RoleID = ur.RoleID
-            WHERE ur.UserID = u.UserID
+            SELECT STRING_AGG(r.role_name, ', ')
+            FROM auth.tbl_User_Roles ur
+            INNER JOIN auth.tbl_Roles r ON r.role_id = ur.role_id
+            WHERE ur.user_id = u.user_id
           ) AS rolesString
-        FROM auth.Users u
-        LEFT JOIN auth.UserProfiles p ON p.UserID = u.UserID
-        LEFT JOIN auth.UserOrganizationScopes s ON s.UserID = u.UserID
+        FROM auth.tbl_Users u
+        LEFT JOIN auth.tbl_User_Roles s ON s.user_id = u.user_id
         LEFT JOIN (
-          SELECT m.UserId, m.ManagerRoleCode
+          SELECT m.UserId, m.manager_role_code
           FROM org.OrgUnitManagers m
-          WHERE m.OrgUnitId = @0 AND m.IsActive = 1 AND m.IsDeleted = 0
-        ) mgr ON mgr.UserId = u.UserID
-        LEFT JOIN org.OrgUnits ouHead ON ouHead.OrgUnitId = @0 AND ouHead.HeadUserId = u.UserID
-        WHERE u.IsDeleted = 0
+          WHERE m.OrgUnitId = @0 AND m.is_active = 1 AND m.IsDeleted = 0
+        ) mgr ON mgr.UserId = u.user_id
+        WHERE u.is_active = 1
           AND (
-            s.DepartmentID = @0 OR s.BusinessUnitID = @0 OR s.SectionID = @0 OR s.OrganizationID = @0
-            OR p.DepartmentID = @0 OR p.BusinessUnitID = @0 OR p.SectionID = @0
+            s.org_unit_id = @0
+            OR u.org_unit_id = @0
             OR mgr.UserId IS NOT NULL
-            OR ouHead.OrgUnitId IS NOT NULL
           )
       )
       SELECT *

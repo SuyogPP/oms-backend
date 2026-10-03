@@ -31,7 +31,7 @@ export class OrgManagersService {
   /**
    * Retrieves all manager assignment history for an organization unit.
    */
-  async findByUnitId(orgUnitId: string): Promise<OrgManagerEntity[]> {
+  async findByUnitId(orgUnitId: number): Promise<OrgManagerEntity[]> {
     const rows = await this.managersRepository.findByUnitId(orgUnitId);
     return this.mapper.toEntities(rows);
   }
@@ -40,7 +40,7 @@ export class OrgManagersService {
    * Retrieves current active primary HEAD manager for an organization unit.
    */
   async findCurrentHead(
-    orgUnitId: string,
+    orgUnitId: number,
     asOfDate?: string,
   ): Promise<OrgManagerEntity | null> {
     const row = await this.managersRepository.findCurrentHead(
@@ -63,7 +63,7 @@ export class OrgManagersService {
    * Enforces rules G1 through G6 in a single atomic transaction.
    */
   async assignManager(
-    orgUnitId: string,
+    orgUnitId: number,
     dto: AssignManagerDto,
     actorUserId: string,
   ): Promise<OrgManagerEntity> {
@@ -98,7 +98,6 @@ export class OrgManagersService {
           isPrimary: Boolean(dto.isPrimary),
           effectiveFrom: dto.effectiveFrom,
           effectiveTo: dto.effectiveTo ?? null,
-          assignmentReason: dto.assignmentReason ?? null,
         },
         actorUserId,
         qr,
@@ -126,7 +125,6 @@ export class OrgManagersService {
             isPrimary: dto.isPrimary,
             effectiveFrom: dto.effectiveFrom,
           },
-          affectedNodeCount: 1,
           reason: dto.assignmentReason ?? 'Manager assigned',
           performedBy: actorUserId,
         },
@@ -135,7 +133,7 @@ export class OrgManagersService {
 
       // 6. Emit audit event
       await this.auditService.logOrgUnitChange({
-        orgUnitId,
+        orgUnitId: String(orgUnitId),
         operationType: 'INSERT',
         changeCategory: 'MANAGER_CHANGE',
         changeReason: `Assigned manager [${dto.managerRoleCode}]`,
@@ -168,7 +166,7 @@ export class OrgManagersService {
    * Updates an existing manager assignment tenure or reason.
    */
   async updateManager(
-    managerId: string,
+    managerId: number,
     dto: UpdateManagerDto,
     actorUserId: string,
   ): Promise<OrgManagerEntity> {
@@ -240,7 +238,6 @@ export class OrgManagersService {
           changeType: 'MANAGER_UPDATED',
           oldValues: existing,
           newValues: dto,
-          affectedNodeCount: 1,
           reason: dto.assignmentReason ?? 'Manager details updated',
           performedBy: actorUserId,
         },
@@ -248,7 +245,7 @@ export class OrgManagersService {
       );
 
       await this.auditService.logOrgUnitChange({
-        orgUnitId: existing.orgUnitId,
+        orgUnitId: String(existing.orgUnitId),
         operationType: 'UPDATE',
         changeCategory: 'MANAGER_CHANGE',
         changeReason: 'Updated manager assignment details',
@@ -272,7 +269,7 @@ export class OrgManagersService {
   /**
    * Removes / ends a manager assignment.
    */
-  async removeManager(managerId: string, actorUserId: string): Promise<void> {
+  async removeManager(managerId: number, actorUserId: string): Promise<void> {
     const existing = await this.managersRepository.findById(managerId);
     if (!existing) {
       throw new HttpException(
@@ -314,7 +311,6 @@ export class OrgManagersService {
           orgUnitId: existing.orgUnitId,
           changeType: 'MANAGER_REMOVED',
           oldValues: existing,
-          affectedNodeCount: 1,
           reason: 'Manager removed',
           performedBy: actorUserId,
         },
@@ -322,7 +318,7 @@ export class OrgManagersService {
       );
 
       await this.auditService.logOrgUnitChange({
-        orgUnitId: existing.orgUnitId,
+        orgUnitId: String(existing.orgUnitId),
         operationType: 'SOFT_DELETE',
         changeCategory: 'MANAGER_CHANGE',
         changeReason: 'Removed manager assignment',
@@ -346,7 +342,7 @@ export class OrgManagersService {
    * JSDOC IMPORTANT: Domain 5 (Requisition & Approval Workflow) strictly depends on this method
    * and its query contract. Its contract must not change without cross-domain coordination.
    */
-  async getApprovalChain(orgUnitId: string): Promise<any[]> {
+  async getApprovalChain(orgUnitId: number): Promise<any[]> {
     return this.managersRepository.getApprovalChain(orgUnitId);
   }
 }

@@ -23,21 +23,21 @@ export class UserRolesRepository {
     const rows = await this.getExecutor(qr).query(
       `
       SELECT 
-          ur.UserRoleID AS userRoleId,
-          ur.UserID AS userId,
-          ur.RoleID AS roleId,
-          r.RoleCode AS roleCode,
-          r.RoleName AS roleName,
-          r.IsSystemRole AS isSystemRole,
-          ur.EffectiveFrom AS effectiveFrom,
-          ur.EffectiveTo AS effectiveTo,
+          ur.user_role_id AS userRoleId,
+          ur.user_id AS userId,
+          ur.role_id AS roleId,
+          r.role_code AS roleCode,
+          r.role_name AS roleName,
+          r.is_system_role AS isSystemRole,
+          ur.effective_from AS effectiveFrom,
+          ur.effective_to AS effectiveTo,
           ur.IsActive AS isActive,
-          ur.AssignedBy AS assignedBy,
-          ur.AssignedAt AS assignedAt
-      FROM [auth].[UserRoles] ur
-      INNER JOIN [auth].[Roles] r ON r.RoleID = ur.RoleID
-      WHERE ur.UserID = @0
-      ORDER BY ur.EffectiveFrom DESC;
+          ur.assigned_by AS assignedBy,
+          ur.assigned_at AS assignedAt
+      FROM [auth].[tbl_User_Roles] ur
+      INNER JOIN [auth].[tbl_Roles] r ON r.role_id = ur.role_id
+      WHERE ur.user_id = @0
+      ORDER BY ur.effective_from DESC;
       `,
       [userId],
     );
@@ -67,25 +67,25 @@ export class UserRolesRepository {
     const rows = await this.getExecutor(qr).query(
       `
       SELECT 
-          ur.UserRoleID AS userRoleId,
-          ur.UserID AS userId,
-          ur.RoleID AS roleId,
-          r.RoleCode AS roleCode,
-          r.RoleName AS roleName,
-          r.IsSystemRole AS isSystemRole,
-          ur.EffectiveFrom AS effectiveFrom,
-          ur.EffectiveTo AS effectiveTo,
+          ur.user_role_id AS userRoleId,
+          ur.user_id AS userId,
+          ur.role_id AS roleId,
+          r.role_code AS roleCode,
+          r.role_name AS roleName,
+          r.is_system_role AS isSystemRole,
+          ur.effective_from AS effectiveFrom,
+          ur.effective_to AS effectiveTo,
           ur.IsActive AS isActive,
-          ur.AssignedBy AS assignedBy,
-          ur.AssignedAt AS assignedAt
-      FROM [auth].[UserRoles] ur
-      INNER JOIN [auth].[Roles] r ON r.RoleID = ur.RoleID
-      WHERE ur.UserID = @0
+          ur.assigned_by AS assignedBy,
+          ur.assigned_at AS assignedAt
+      FROM [auth].[tbl_User_Roles] ur
+      INNER JOIN [auth].[tbl_Roles] r ON r.role_id = ur.role_id
+      WHERE ur.user_id = @0
         AND ur.IsActive = 1
-        AND r.IsActive = 1
-        AND ur.EffectiveFrom <= SYSUTCDATETIME()
-        AND (ur.EffectiveTo IS NULL OR ur.EffectiveTo > SYSUTCDATETIME())
-      ORDER BY ur.EffectiveFrom DESC;
+        AND r.is_active = 1
+        AND ur.effective_from <= SYSUTCDATETIME()
+        AND (ur.effective_to IS NULL OR ur.effective_to > SYSUTCDATETIME())
+      ORDER BY ur.effective_from DESC;
       `,
       [userId],
     );
@@ -115,20 +115,20 @@ export class UserRolesRepository {
     const rows = await this.getExecutor(qr).query(
       `
       SELECT 
-          ur.UserRoleID AS userRoleId,
-          ur.UserID AS userId,
-          ur.RoleID AS roleId,
-          r.RoleCode AS roleCode,
-          r.RoleName AS roleName,
-          r.IsSystemRole AS isSystemRole,
-          ur.EffectiveFrom AS effectiveFrom,
-          ur.EffectiveTo AS effectiveTo,
+          ur.user_role_id AS userRoleId,
+          ur.user_id AS userId,
+          ur.role_id AS roleId,
+          r.role_code AS roleCode,
+          r.role_name AS roleName,
+          r.is_system_role AS isSystemRole,
+          ur.effective_from AS effectiveFrom,
+          ur.effective_to AS effectiveTo,
           ur.IsActive AS isActive,
-          ur.AssignedBy AS assignedBy,
-          ur.AssignedAt AS assignedAt
-      FROM [auth].[UserRoles] ur
-      INNER JOIN [auth].[Roles] r ON r.RoleID = ur.RoleID
-      WHERE ur.UserRoleID = @0;
+          ur.assigned_by AS assignedBy,
+          ur.assigned_at AS assignedAt
+      FROM [auth].[tbl_User_Roles] ur
+      INNER JOIN [auth].[tbl_Roles] r ON r.role_id = ur.role_id
+      WHERE ur.user_role_id = @0;
       `,
       [userRoleId],
     );
@@ -159,7 +159,7 @@ export class UserRolesRepository {
   async assignRole(data: IAssignRoleData, qr?: QueryRunner): Promise<string> {
     const rows = await this.getExecutor(qr).query(
       `
-      INSERT INTO [auth].[UserRoles] (
+      INSERT INTO [auth].[tbl_User_Roles] (
           UserRoleID,
           UserID,
           RoleID,
@@ -169,7 +169,7 @@ export class UserRolesRepository {
           AssignedBy,
           AssignedAt
       )
-      OUTPUT INSERTED.UserRoleID AS userRoleId
+      OUTPUT INSERTED.user_role_id AS userRoleId
       VALUES (
           NEWID(),
           @0,
@@ -203,9 +203,9 @@ export class UserRolesRepository {
   async revokeRole(userRoleId: string, qr?: QueryRunner): Promise<void> {
     await this.getExecutor(qr).query(
       `
-      UPDATE [auth].[UserRoles]
-      SET EffectiveTo = SYSUTCDATETIME()
-      WHERE UserRoleID = @0;
+      UPDATE [auth].[tbl_User_Roles]
+      SET effective_to = SYSUTCDATETIME()
+      WHERE user_role_id = @0;
       `,
       [userRoleId],
     );
@@ -217,13 +217,13 @@ export class UserRolesRepository {
   async revokeAllForUser(userId: string, qr?: QueryRunner): Promise<void> {
     await this.getExecutor(qr).query(
       `
-      UPDATE [auth].[UserRoles]
+      UPDATE [auth].[tbl_User_Roles]
       SET 
           IsActive = 0,
           EffectiveTo = SYSUTCDATETIME()
-      WHERE UserID = @0
-        AND IsActive = 1
-        AND (EffectiveTo IS NULL OR EffectiveTo > SYSUTCDATETIME());
+      WHERE user_id = @0
+        AND is_active = 1
+        AND (EffectiveTo IS NULL OR effective_to > SYSUTCDATETIME());
       `,
       [userId],
     );
@@ -240,14 +240,14 @@ export class UserRolesRepository {
     const rows = await this.getExecutor(qr).query(
       `
       SELECT TOP 1 1 AS hasRole
-      FROM [auth].[UserRoles] ur
-      INNER JOIN [auth].[Roles] r ON r.RoleID = ur.RoleID
-      WHERE ur.UserID = @0
-        AND r.RoleCode = @1
+      FROM [auth].[tbl_User_Roles] ur
+      INNER JOIN [auth].[tbl_Roles] r ON r.role_id = ur.role_id
+      WHERE ur.user_id = @0
+        AND r.role_code = @1
         AND ur.IsActive = 1
-        AND r.IsActive = 1
-        AND ur.EffectiveFrom <= SYSUTCDATETIME()
-        AND (ur.EffectiveTo IS NULL OR ur.EffectiveTo > SYSUTCDATETIME());
+        AND r.is_active = 1
+        AND ur.effective_from <= SYSUTCDATETIME()
+        AND (ur.effective_to IS NULL OR ur.effective_to > SYSUTCDATETIME());
       `,
       [userId, roleCode],
     );
@@ -277,9 +277,9 @@ export class UserRolesRepository {
           Description AS description,
           IsSystemRole AS isSystemRole,
           IsActive AS isActive
-      FROM [auth].[Roles]
-      WHERE IsActive = 1
-      ORDER BY RoleName ASC;
+      FROM [auth].[tbl_Roles]
+      WHERE is_active = 1
+      ORDER BY role_name ASC;
       `,
     );
 
@@ -316,9 +316,9 @@ export class UserRolesRepository {
           Description AS description,
           IsSystemRole AS isSystemRole,
           IsActive AS isActive
-      FROM [auth].[Roles]
+      FROM [auth].[tbl_Roles]
       WHERE (CAST(RoleID AS NVARCHAR(50)) = @0 OR LOWER(RoleCode) = LOWER(@0))
-        AND IsActive = 1;
+        AND is_active = 1;
       `,
       [identifier],
     );

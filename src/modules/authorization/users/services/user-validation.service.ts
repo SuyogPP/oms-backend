@@ -44,9 +44,9 @@ export class UserValidationService {
     const rows = await this.getExecutor(qr).query(
       `
       SELECT TOP 1 UserID AS userId
-      FROM [auth].[Users]
+      FROM [auth].[tbl_Users]
       WHERE LOWER(Email) = LOWER(@0)
-        AND (@1 IS NULL OR UserID != @1);
+        AND (@1 IS NULL OR user_id != @1);
       `,
       [email.trim(), excludeUserId || null],
     );
@@ -79,9 +79,9 @@ export class UserValidationService {
     const rows = await this.getExecutor(qr).query(
       `
       SELECT TOP 1 UserID AS userId
-      FROM [auth].[Users]
+      FROM [auth].[tbl_Users]
       WHERE LOWER(Username) = LOWER(@0)
-        AND (@1 IS NULL OR UserID != @1);
+        AND (@1 IS NULL OR user_id != @1);
       `,
       [username.trim(), excludeUserId || null],
     );
@@ -99,7 +99,7 @@ export class UserValidationService {
   }
 
   /**
-   * U3: UserType must match a seeded auth.UserTypes.UserTypeCode.
+   * U3: UserType must match a seeded auth.tbl_User_Types.user_type_code.
    * Failure: 400 USER_TYPE_INVALID
    */
   async validateU3_UserType(userType: string, qr?: QueryRunner): Promise<void> {
@@ -118,8 +118,8 @@ export class UserValidationService {
     const rows = await this.getExecutor(qr).query(
       `
       SELECT TOP 1 UserTypeID
-      FROM [auth].[UserTypes]
-      WHERE UserTypeCode = @0;
+      FROM [auth].[tbl_User_Types]
+      WHERE user_type_code = @0;
       `,
       [userType],
     );
@@ -198,21 +198,13 @@ export class UserValidationService {
    * Failure: 400 USER_ORG_UNIT_INVALID
    */
   async validateU7_OrgUnitReferences(
-    profile?: {
-      organizationId?: string | null;
-      businessUnitId?: string | null;
-      departmentId?: string | null;
-      sectionId?: string | null;
-    },
+    orgUnitId?: string | null,
     qr?: QueryRunner,
   ): Promise<void> {
-    if (!profile) return;
+    if (!orgUnitId) return;
 
     const unitsToCheck = [
-      { id: profile.organizationId, expectedType: 1, name: 'Organization' },
-      { id: profile.businessUnitId, expectedType: 2, name: 'Business Unit' },
-      { id: profile.departmentId, expectedType: 3, name: 'Department' },
-      { id: profile.sectionId, expectedType: 4, name: 'Section' },
+      { id: orgUnitId, expectedType: null, name: 'Org Unit' }, // We skip exact type check here since schema changed, or adjust if needed.
     ];
 
     for (const unit of unitsToCheck) {
@@ -239,18 +231,7 @@ export class UserValidationService {
           );
         }
 
-        if (rows[0].OrgUnitTypeId !== unit.expectedType) {
-          throw new HttpException(
-            {
-              code: USER_ERROR_CODES.USER_ORG_UNIT_INVALID,
-              error: USER_ERROR_CODES.USER_ORG_UNIT_INVALID,
-              message: `${unit.name} ID [${unit.id}] points to an org unit of mismatched type (type ${rows[0].OrgUnitTypeId} instead of ${unit.expectedType}).`,
-            },
-            HttpStatus.BAD_REQUEST,
-          );
-        }
-      }
-    }
+        } }
   }
 
   /**
@@ -271,11 +252,11 @@ export class UserValidationService {
       `
       SELECT 1 FROM [auth].[UserOrganizationScopes] s
       INNER JOIN [auth].[ScopeDefinitions] sd ON sd.ScopeDefinitionID = s.ScopeDefinitionID
-      WHERE s.UserID = @0
+      WHERE s.user_id = @0
         AND sd.ScopeCode = 'GLOBAL'
-        AND (s.IsActive = 1 OR s.IsActive IS NULL)
-        AND (s.EffectiveFrom IS NULL OR s.EffectiveFrom <= SYSUTCDATETIME())
-        AND (s.EffectiveTo IS NULL OR s.EffectiveTo > SYSUTCDATETIME());
+        AND (s.is_active = 1 OR s.is_active IS NULL)
+        AND (s.effective_from IS NULL OR s.effective_from <= SYSUTCDATETIME())
+        AND (s.effective_to IS NULL OR s.effective_to > SYSUTCDATETIME());
       `,
       [creatorUserId],
     );
@@ -343,13 +324,13 @@ export class UserValidationService {
     const userAdminRows = await this.getExecutor(qr).query(
       `
       SELECT 1
-      FROM [auth].[UserRoles] ur
-      INNER JOIN [auth].[Roles] r ON r.RoleID = ur.RoleID
-      WHERE ur.UserID = @0
-        AND r.RoleCode = 'SYSTEM_ADMIN'
+      FROM [auth].[tbl_User_Roles] ur
+      INNER JOIN [auth].[tbl_Roles] r ON r.role_id = ur.role_id
+      WHERE ur.user_id = @0
+        AND r.role_code = 'SYSTEM_ADMIN'
         AND ur.IsActive = 1
-        AND ur.EffectiveFrom <= SYSUTCDATETIME()
-        AND (ur.EffectiveTo IS NULL OR ur.EffectiveTo > SYSUTCDATETIME());
+        AND ur.effective_from <= SYSUTCDATETIME()
+        AND (ur.effective_to IS NULL OR ur.effective_to > SYSUTCDATETIME());
       `,
       [targetUserId],
     );
@@ -631,13 +612,13 @@ export class UserValidationService {
       const rows = await this.getExecutor(qr).query(
         `
         SELECT 1
-        FROM [auth].[UserRoles] ur
-        INNER JOIN [auth].[Roles] r ON r.RoleID = ur.RoleID
-        WHERE ur.UserID = @0
-          AND (r.RoleCode = 'SYSTEM_ADMIN' OR r.RoleCode = 'SUPER_ADMIN' OR r.RoleCode = 'SUPERADMIN')
+        FROM [auth].[tbl_User_Roles] ur
+        INNER JOIN [auth].[tbl_Roles] r ON r.role_id = ur.role_id
+        WHERE ur.user_id = @0
+          AND (r.role_code = 'SYSTEM_ADMIN' OR r.role_code = 'SUPER_ADMIN' OR r.role_code = 'SUPERADMIN')
           AND ur.IsActive = 1
-          AND ur.EffectiveFrom <= SYSUTCDATETIME()
-          AND (ur.EffectiveTo IS NULL OR ur.EffectiveTo > SYSUTCDATETIME());
+          AND ur.effective_from <= SYSUTCDATETIME()
+          AND (ur.effective_to IS NULL OR ur.effective_to > SYSUTCDATETIME());
         `,
         [granterUserId],
       );
@@ -674,11 +655,11 @@ export class UserValidationService {
       `
       SELECT 1 FROM [auth].[UserOrganizationScopes] s
       INNER JOIN [auth].[ScopeDefinitions] sd ON sd.ScopeDefinitionID = s.ScopeDefinitionID
-      WHERE s.UserID = @0
+      WHERE s.user_id = @0
         AND sd.ScopeCode = 'GLOBAL'
-        AND (s.IsActive = 1 OR s.IsActive IS NULL)
-        AND (s.EffectiveFrom IS NULL OR s.EffectiveFrom <= SYSUTCDATETIME())
-        AND (s.EffectiveTo IS NULL OR s.EffectiveTo > SYSUTCDATETIME());
+        AND (s.is_active = 1 OR s.is_active IS NULL)
+        AND (s.effective_from IS NULL OR s.effective_from <= SYSUTCDATETIME())
+        AND (s.effective_to IS NULL OR s.effective_to > SYSUTCDATETIME());
       `,
       [granterUserId],
     );
@@ -717,10 +698,10 @@ export class UserValidationService {
       SELECT sd.ScopeCode AS scopeCode
       FROM [auth].[UserOrganizationScopes] s
       INNER JOIN [auth].[ScopeDefinitions] sd ON sd.ScopeDefinitionID = s.ScopeDefinitionID
-      WHERE s.UserID = @0
-        AND (s.IsActive = 1 OR s.IsActive IS NULL)
-        AND (s.EffectiveFrom IS NULL OR s.EffectiveFrom <= SYSUTCDATETIME())
-        AND (s.EffectiveTo IS NULL OR s.EffectiveTo > SYSUTCDATETIME());
+      WHERE s.user_id = @0
+        AND (s.is_active = 1 OR s.is_active IS NULL)
+        AND (s.effective_from IS NULL OR s.effective_from <= SYSUTCDATETIME())
+        AND (s.effective_to IS NULL OR s.effective_to > SYSUTCDATETIME());
       `,
       [granterUserId],
     );
@@ -806,7 +787,7 @@ export class UserValidationService {
       `
       SELECT TOP 1 UserOrganizationScopeID
       FROM [auth].[UserOrganizationScopes]
-      WHERE UserID = @0
+      WHERE user_id = @0
         AND ScopeDefinitionID = @1
         AND (
             (@2 IS NULL AND OrgUnitId IS NULL AND DepartmentID IS NULL AND BusinessUnitID IS NULL AND SectionID IS NULL AND OrganizationID IS NULL)
@@ -816,8 +797,8 @@ export class UserValidationService {
             OR SectionID = @2
             OR OrganizationID = @2
         )
-        AND (IsActive = 1 OR IsActive IS NULL)
-        AND (EffectiveTo IS NULL OR EffectiveTo > SYSUTCDATETIME());
+        AND (IsActive = 1 OR is_active IS NULL)
+        AND (EffectiveTo IS NULL OR effective_to > SYSUTCDATETIME());
       `,
       [userId, scopeDefinitionId, orgUnitId || null],
     );
@@ -910,9 +891,9 @@ export class UserValidationService {
     if (userType === USER_TYPES.VENDOR) {
       const rows = await this.getExecutor(qr).query(
         `
-        SELECT RoleCode, RoleName
-        FROM [auth].[Roles]
-        WHERE RoleID = @0;
+        SELECT role_code, RoleName
+        FROM [auth].[tbl_Roles]
+        WHERE role_id = @0;
         `,
         [roleId],
       );

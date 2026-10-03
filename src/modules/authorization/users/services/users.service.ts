@@ -2,7 +2,7 @@ import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import * as crypto from 'crypto';
 import { DataSource } from 'typeorm';
 import { UsersRepository } from '../repositories/users.repository';
-import { UserProfilesRepository } from '../repositories/user-profiles.repository';
+import { UserOrgUnitAssignmentRepository } from '../../../organization/org-units/repositories/user-org-unit-assignment.repository';
 import { UserInvitationsRepository } from '../repositories/user-invitations.repository';
 import { UserValidationService } from './user-validation.service';
 import { SecurityEventsService } from '../../../security-events/services/security-events.service';
@@ -34,7 +34,7 @@ export class UsersService {
 
   constructor(
     private readonly usersRepository: UsersRepository,
-    private readonly userProfilesRepository: UserProfilesRepository,
+    private readonly userOrgUnitAssignmentRepository: UserOrgUnitAssignmentRepository,
     private readonly userInvitationsRepository: UserInvitationsRepository,
     private readonly userValidationService: UserValidationService,
     private readonly securityEventsService: SecurityEventsService,
@@ -73,7 +73,7 @@ export class UsersService {
     requesterUserId?: string,
   ): Promise<UserEntity> {
     const user = await this.usersRepository.findById(userId);
-    if (!user || user.isDeleted) {
+    if (!user ) {
       throw new NotFoundException({
         code: USER_ERROR_CODES.USER_NOT_FOUND,
         message: `User [${userId}] not found.`,
@@ -98,9 +98,9 @@ export class UsersService {
    * Creates a new user transactionally (§5.1 & §8).
    * Sequence:
    * 1. Validate rules (U1 - U10)
-   * 2. Insert auth.Users
+   * 2. Insert auth.tbl_Users
    * 3. Insert auth.UserProfiles
-   * 4. Generate & insert invitation token in auth.UserInvitations
+   * 4. Generate & insert invitation token in auth.tbl_User_Invitations
    * 5. Record SecurityEvent & Audit log
    */
   async create(
@@ -121,37 +121,30 @@ export class UsersService {
     try {
       // 2. Insert User
       createdUserId = await this.usersRepository.create(
-        {
+                {
           employeeId: dto.employeeId,
           username: dto.username,
           email: dto.email,
           userType: dto.userType,
           isActive: false, // New users start in INVITED/inactive state
           adObjectId: dto.adObjectId,
+          firstName: dto.firstName,
+          lastName: dto.lastName,
+          mobileNo: dto.mobileNo,
+          jobTitle: dto.jobTitle,
+          orgUnitId: dto.orgUnitId,
+          vendorId: dto.vendorId,
         },
         queryRunner,
       );
 
-      // 3. Insert Profile
-      await this.userProfilesRepository.create(
-        createdUserId,
-        {
-          firstName: dto.profile.firstName,
-          lastName: dto.profile.lastName,
-          displayName: dto.profile.displayName,
-          phoneNumber: dto.profile.phoneNumber,
-          jobTitle: dto.profile.jobTitle,
-          organizationId: dto.profile.organizationId,
-          businessUnitId: dto.profile.businessUnitId,
-          departmentId: dto.profile.departmentId,
-          sectionId: dto.profile.sectionId,
-          vendorId: dto.profile.vendorId,
-          createdBy: creatorUserId,
-        },
-        queryRunner,
-      );
 
-      // 4. Generate invitation token if not AD-linked
+
+      
+      if (dto.orgUnitId) {
+        await this.userOrgUnitAssignmentRepository.reassignUser(createdUserId, dto.orgUnitId, true, queryRunner);
+      }
+// 4. Generate invitation token if not AD-linked
       if (!dto.adObjectId) {
         rawToken = crypto.randomBytes(32).toString('hex');
         const tokenHash = crypto
@@ -216,7 +209,7 @@ export class UsersService {
     updaterUserId?: string,
   ): Promise<UserEntity> {
     const existing = await this.usersRepository.findById(userId);
-    if (!existing || existing.isDeleted) {
+    if (!existing ) {
       throw new NotFoundException({
         code: USER_ERROR_CODES.USER_NOT_FOUND,
         message: `User [${userId}] not found.`,
@@ -247,35 +240,30 @@ export class UsersService {
 
     try {
       // 1. Update User core fields
-      if (
-        dto.email ||
-        dto.username ||
-        dto.employeeId !== undefined ||
-        dto.userType
-      ) {
-        await this.usersRepository.update(
+      if (true) {
+        
+      if (dto.orgUnitId !== undefined && dto.orgUnitId !== existing.orgUnitId) {
+        await this.userOrgUnitAssignmentRepository.reassignUser(userId, dto.orgUnitId, true, queryRunner);
+      }
+      await this.usersRepository.update(
           userId,
-          {
+                    {
             email: dto.email,
             username: dto.username,
             employeeId: dto.employeeId,
             userType: dto.userType,
+            firstName: dto.firstName,
+            lastName: dto.lastName,
+            mobileNo: dto.mobileNo,
+            jobTitle: dto.jobTitle,
+            orgUnitId: dto.orgUnitId,
+            vendorId: dto.vendorId,
           },
           queryRunner,
         );
       }
 
-      // 2. Update Profile fields
-      if (dto.profile) {
-        await this.userProfilesRepository.update(
-          userId,
-          {
-            ...dto.profile,
-            updatedBy: updaterUserId,
-          },
-          queryRunner,
-        );
-      }
+
 
       await queryRunner.commitTransaction();
     } catch (error) {
@@ -324,7 +312,7 @@ export class UsersService {
     limit: number = 50,
   ): Promise<UserActivityEntity[]> {
     const user = await this.usersRepository.findById(userId);
-    if (!user || user.isDeleted) {
+    if (!user ) {
       throw new NotFoundException({
         code: USER_ERROR_CODES.USER_NOT_FOUND,
         message: `User [${userId}] not found.`,
@@ -357,11 +345,11 @@ export class UsersService {
       `
       SELECT 1 FROM [auth].[UserOrganizationScopes] s
       INNER JOIN [auth].[ScopeDefinitions] sd ON sd.ScopeDefinitionID = s.ScopeDefinitionID
-      WHERE s.UserID = @0
+      WHERE s.user_id = @0
         AND sd.ScopeCode = 'GLOBAL'
-        AND (s.IsActive = 1 OR s.IsActive IS NULL)
-        AND (s.EffectiveFrom IS NULL OR s.EffectiveFrom <= SYSUTCDATETIME())
-        AND (s.EffectiveTo IS NULL OR s.EffectiveTo > SYSUTCDATETIME());
+        AND (s.is_active = 1 OR s.is_active IS NULL)
+        AND (s.effective_from IS NULL OR s.effective_from <= SYSUTCDATETIME())
+        AND (s.effective_to IS NULL OR s.effective_to > SYSUTCDATETIME());
       `,
       [requesterUserId],
     );
@@ -371,11 +359,9 @@ export class UsersService {
     }
 
     // 2. If target user has no department/bu/section, they are invisible to non-global admins unless self
-    const targetDept = targetUser.profile?.departmentId;
-    const targetBu = targetUser.profile?.businessUnitId;
-    const targetSec = targetUser.profile?.sectionId;
+    const targetOrgUnit = targetUser.orgUnitId;
 
-    if (!targetDept && !targetBu && !targetSec) {
+    if (!targetOrgUnit) {
       return false;
     }
 
@@ -384,14 +370,11 @@ export class UsersService {
       `
       SELECT 1 FROM [org].[fn_VisibleOrgUnits](@0) v
       WHERE (@1 IS NOT NULL AND v.OrgUnitId = @1)
-         OR (@2 IS NOT NULL AND v.OrgUnitId = @2)
-         OR (@3 IS NOT NULL AND v.OrgUnitId = @3);
+         ;
       `,
       [
         requesterUserId,
-        targetDept || null,
-        targetBu || null,
-        targetSec || null,
+        targetOrgUnit || null,
       ],
     );
 

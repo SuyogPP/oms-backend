@@ -1,0 +1,146 @@
+[
+  {
+    "TABLE_SCHEMA": "dbo",
+    "TABLE_NAME": "tbl_Audit_Log",
+    "COLUMN_NAME": "audit_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "dbo",
+    "TABLE_NAME": "tbl_Audit_Log",
+    "COLUMN_NAME": "transaction_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "dbo",
+    "TABLE_NAME": "tbl_Audit_Log",
+    "COLUMN_NAME": "source_db",
+    "DATA_TYPE": "varchar"
+  },
+  {
+    "TABLE_SCHEMA": "dbo",
+    "TABLE_NAME": "tbl_Audit_Log",
+    "COLUMN_NAME": "schema_name",
+    "DATA_TYPE": "varchar"
+  },
+  {
+    "TABLE_SCHEMA": "dbo",
+    "TABLE_NAME": "tbl_Audit_Log",
+    "COLUMN_NAME": "table_name",
+    "DATA_TYPE": "varchar"
+  },
+  {
+    "TABLE_SCHEMA": "dbo",
+    "TABLE_NAME": "tbl_Audit_Log",
+    "COLUMN_NAME": "record_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "dbo",
+    "TABLE_NAME": "tbl_Audit_Log",
+    "COLUMN_NAME": "record_id_text",
+    "DATA_TYPE": "varchar"
+  },
+  {
+    "TABLE_SCHEMA": "dbo",
+    "TABLE_NAME": "tbl_Audit_Log",
+    "COLUMN_NAME": "operation",
+    "DATA_TYPE": "varchar"
+  },
+  {
+    "TABLE_SCHEMA": "dbo",
+    "TABLE_NAME": "tbl_Audit_Log",
+    "COLUMN_NAME": "old_values",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "dbo",
+    "TABLE_NAME": "tbl_Audit_Log",
+    "COLUMN_NAME": "new_values",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "dbo",
+    "TABLE_NAME": "tbl_Audit_Log",
+    "COLUMN_NAME": "changed_columns",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "dbo",
+    "TABLE_NAME": "tbl_Audit_Log",
+    "COLUMN_NAME": "performed_by",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "dbo",
+    "TABLE_NAME": "tbl_Audit_Log",
+    "COLUMN_NAME": "performed_by_name",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "dbo",
+    "TABLE_NAME": "tbl_Audit_Log",
+    "COLUMN_NAME": "source_app",
+    "DATA_TYPE": "varchar"
+  },
+  {
+    "TABLE_SCHEMA": "dbo",
+    "TABLE_NAME": "tbl_Audit_Log",
+    "COLUMN_NAME": "source_module",
+    "DATA_TYPE": "varchar"
+  },
+  {
+    "TABLE_SCHEMA": "dbo",
+    "TABLE_NAME": "tbl_Audit_Log",
+    "COLUMN_NAME": "client_ip",
+    "DATA_TYPE": "varchar"
+  },
+  {
+    "TABLE_SCHEMA": "dbo",
+    "TABLE_NAME": "tbl_Audit_Log",
+    "COLUMN_NAME": "reason",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "dbo",
+    "TABLE_NAME": "tbl_Audit_Log",
+    "COLUMN_NAME": "performed_at",
+    "DATA_TYPE": "datetime2"
+  },
+  {
+    "TABLE_SCHEMA": "sys",
+    "TABLE_NAME": "database_firewall_rules",
+    "COLUMN_NAME": "id",
+    "DATA_TYPE": "int"
+  },
+  {
+    "TABLE_SCHEMA": "sys",
+    "TABLE_NAME": "database_firewall_rules",
+    "COLUMN_NAME": "name",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "sys",
+    "TABLE_NAME": "database_firewall_rules",
+    "COLUMN_NAME": "start_ip_address",
+    "DATA_TYPE": "varchar"
+  },
+  {
+    "TABLE_SCHEMA": "sys",
+    "TABLE_NAME": "database_firewall_rules",
+    "COLUMN_NAME": "end_ip_address",
+    "DATA_TYPE": "varchar"
+  },
+  {
+    "TABLE_SCHEMA": "sys",
+    "TABLE_NAME": "database_firewall_rules",
+    "COLUMN_NAME": "create_date",
+    "DATA_TYPE": "datetime"
+  },
+  {
+    "TABLE_SCHEMA": "sys",
+    "TABLE_NAME": "database_firewall_rules",
+    "COLUMN_NAME": "modify_date",
+    "DATA_TYPE": "datetime"
+  }
+]
