@@ -50,25 +50,13 @@ export class VendorUsersRepository {
       email: r.email,
       userType: r.userType,
       isActive: r.isActive === 1 || r.isActive === true,
-      isDeleted: r.isDeleted === 1 || r.isDeleted === true,
+      
       failedLoginCount: Number(r.failedLoginCount || 0),
       lockedUntil: r.lockedUntil ? new Date(r.lockedUntil) : null,
       vendorId: r.vendorId,
       createdAt: new Date(r.createdAt),
       updatedAt: new Date(r.updatedAt),
-      profile: {
-        userProfileId: r.userProfileId,
-        userId: r.userId,
-        firstName: r.firstName,
-        lastName: r.lastName,
-        displayName: r.displayName,
-        phoneNumber: r.phoneNumber,
-        jobTitle: r.jobTitle,
-        vendorId: r.vendorId,
-        mustChangePassword: false,
-        createdAt: new Date(r.createdAt),
-        updatedAt: new Date(r.updatedAt),
-      },
+      firstName: r.firstName, lastName: r.lastName, mobileNo: r.phoneNumber, jobTitle: r.jobTitle,
     }));
   }
 
@@ -117,25 +105,13 @@ export class VendorUsersRepository {
       email: r.email,
       userType: r.userType,
       isActive: r.isActive === 1 || r.isActive === true,
-      isDeleted: r.isDeleted === 1 || r.isDeleted === true,
+      
       failedLoginCount: Number(r.failedLoginCount || 0),
       lockedUntil: r.lockedUntil ? new Date(r.lockedUntil) : null,
       vendorId: r.vendorId,
       createdAt: new Date(r.createdAt),
       updatedAt: new Date(r.updatedAt),
-      profile: {
-        userProfileId: r.userProfileId,
-        userId: r.userId,
-        firstName: r.firstName,
-        lastName: r.lastName,
-        displayName: r.displayName,
-        phoneNumber: r.phoneNumber,
-        jobTitle: r.jobTitle,
-        vendorId: r.vendorId,
-        mustChangePassword: false,
-        createdAt: new Date(r.createdAt),
-        updatedAt: new Date(r.updatedAt),
-      },
+      firstName: r.firstName, lastName: r.lastName, mobileNo: r.phoneNumber, jobTitle: r.jobTitle,
     };
   }
 

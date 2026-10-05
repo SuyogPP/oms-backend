@@ -6,7 +6,6 @@ export * from './dto/update-user.dto';
 export * from './dto/user-filter.dto';
 export * from './dto/user-credentials.dto';
 export * from './repositories/users.repository';
-export * from './repositories/user-profiles.repository';
 export * from './repositories/user-invitations.repository';
 export * from './repositories/password-history.repository';
 export * from './services/users.service';

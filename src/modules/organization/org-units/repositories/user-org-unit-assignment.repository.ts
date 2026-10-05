@@ -15,7 +15,7 @@ export class UserOrgUnitAssignmentRepository {
    */
   async reassignUser(
     userId: string,
-    newOrgUnitId: number | null,
+    newOrgUnitId: string | null,
     isPrimary: boolean,
     qr?: QueryRunner,
   ): Promise<void> {
@@ -23,7 +23,7 @@ export class UserOrgUnitAssignmentRepository {
     
     // 1. Close out the previous active row for this user (where is_primary matches)
     const closeSql = `
-      UPDATE auth.user_org_unit_assignment
+      UPDATE auth.tbl_User_Org_Unit_Assignment
       SET
         effective_to = CAST(GETUTCDATE() AS DATE),
         is_active = 0
@@ -36,7 +36,7 @@ export class UserOrgUnitAssignmentRepository {
     // 2. Insert new row
     if (newOrgUnitId !== null) {
       const insertSql = `
-        INSERT INTO auth.user_org_unit_assignment (
+        INSERT INTO auth.tbl_User_Org_Unit_Assignment (
           user_id,
           org_unit_id,
           is_primary,

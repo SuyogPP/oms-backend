@@ -35,7 +35,7 @@ export class UserRolesService {
     requesterUserId?: string,
   ): Promise<IUserRoleAssignment[]> {
     const user = await this.usersRepository.findById(userId);
-    if (!user || user.isDeleted) {
+    if (!user ) {
       throw new NotFoundException({
         code: USER_ERROR_CODES.USER_NOT_FOUND,
         message: `User [${userId}] not found.`,

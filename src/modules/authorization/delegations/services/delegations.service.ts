@@ -42,7 +42,7 @@ export class DelegationsService {
     requesterUserId?: string,
   ): Promise<IDelegation[]> {
     const user = await this.usersRepository.findById(userId);
-    if (!user || user.isDeleted) {
+    if (!user ) {
       throw new NotFoundException({
         code: USER_ERROR_CODES.USER_NOT_FOUND,
         message: `User [${userId}] not found.`,
@@ -166,7 +166,6 @@ export class DelegationsService {
     const delegate = await this.usersRepository.findById(dto.toUserId);
     if (
       !delegate ||
-      delegate.isDeleted ||
       !delegate.isActive ||
       delegate.userType !== USER_TYPES.INTERNAL
     ) {

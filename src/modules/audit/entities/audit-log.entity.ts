@@ -10,52 +10,52 @@ export class AuditLog {
   audit_id: string;
 
   /** Groups related changes under a single logical transaction */
-  transaction_id: string | null;
+  transaction_id?: string | null;
 
   /** Source database name (e.g. 'DIEZ-BUILD-DB') */
-  source_db: string | null;
+  source_db?: string | null;
 
   /** Schema name of the affected table (e.g. 'dbo') */
-  schema_name: string | null;
+  schema_name?: string | null;
 
   /** Name of the affected table (e.g. 'tbl_Users') */
   table_name: string;
 
   /** Numeric primary key of the changed record (NULL for text/uuid PKs) */
-  record_id: number | null;
+  record_id?: number | null;
 
   /** Text/UUID primary key of the changed record */
-  record_id_text: string | null;
+  record_id_text?: string | null;
 
   /** DML operation type: 'INSERT' | 'UPDATE' | 'DELETE' */
   operation: 'INSERT' | 'UPDATE' | 'DELETE' | string;
 
   /** JSON snapshot of column values before the change (UPDATE/DELETE) */
-  old_values: string | null;
+  old_values?: string | null;
 
   /** JSON snapshot of column values after the change (INSERT/UPDATE) */
-  new_values: string | null;
+  new_values?: string | null;
 
   /** Comma-separated list of columns that changed (UPDATE only) */
-  changed_columns: string | null;
+  changed_columns?: string | null;
 
   /** User ID of the actor who performed the operation */
-  performed_by: string | null;
+  performed_by?: string | null;
 
   /** Human-readable name of the actor */
-  performed_by_name: string | null;
+  performed_by_name?: string | null;
 
   /** Application that triggered the change (e.g. 'OMS-Backend') */
-  source_app: string | null;
+  source_app?: string | null;
 
   /** Functional module within the app (e.g. 'OrganizationModule') */
-  source_module: string | null;
+  source_module?: string | null;
 
   /** Client IP address at the time of the operation */
-  client_ip: string | null;
+  client_ip?: string | null;
 
   /** Optional free-text reason / justification for the change */
-  reason: string | null;
+  reason?: string | null;
 
   /** UTC timestamp when the operation was performed */
   performed_at: Date;
