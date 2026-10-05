@@ -3,11 +3,11 @@ require('dotenv').config();
 
 const ds = new DataSource({
   type: 'mssql',
-  host: process.env.DB_HOST,
-  port: parseInt(process.env.DB_PORT || '1433'),
-  username: process.env.DB_USERNAME,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_DATABASE,
+  host: process.env.AUDIT_DB_HOST || process.env.DB_HOST,
+  port: parseInt(process.env.AUDIT_DB_PORT || process.env.DB_PORT || '1433'),
+  username: process.env.AUDIT_DB_USERNAME || process.env.DB_USERNAME,
+  password: process.env.AUDIT_DB_PASSWORD || process.env.DB_PASSWORD,
+  database: process.env.AUDIT_DB_DATABASE || 'DIEZ-AUDIT-DB',
   options: { encrypt: process.env.DB_ENCRYPT === 'true', trustServerCertificate: true },
 });
 
@@ -134,6 +134,40 @@ async function run() {
         HttpStatusCode INT NULL,
         IsSuccess BIT NULL,
         failure_reason NVARCHAR(MAX) NULL,
+        CreatedAt DATETIME2 DEFAULT SYSUTCDATETIME()
+      );
+    END
+  `);
+
+  await ds.query(`
+    IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[audit].[ChangeLog_Auth]') AND type in (N'U'))
+    BEGIN
+      CREATE TABLE [audit].[ChangeLog_Auth] (
+        ChangeLogID UNIQUEIDENTIFIER DEFAULT NEWID() PRIMARY KEY,
+        SessionID UNIQUEIDENTIFIER NULL,
+        DeviceID UNIQUEIDENTIFIER NULL,
+        ip_address NVARCHAR(50) NULL,
+        device_fingerprint NVARCHAR(255) NULL,
+        device_type NVARCHAR(50) NULL,
+        browser_name NVARCHAR(100) NULL,
+        OSName NVARCHAR(100) NULL,
+        UserAgentRaw NVARCHAR(MAX) NULL,
+        ApiCallID UNIQUEIDENTIFIER NULL,
+        ChangedByUserID UNIQUEIDENTIFIER NULL,
+        ChangedByUsername NVARCHAR(255) NULL,
+        TableName NVARCHAR(150) NULL,
+        EntityType NVARCHAR(150) NULL,
+        EntityID UNIQUEIDENTIFIER NULL,
+        AffectedUserID UNIQUEIDENTIFIER NULL,
+        OperationType NVARCHAR(50) NULL,
+        field_name NVARCHAR(150) NULL,
+        OldValue NVARCHAR(MAX) NULL,
+        NewValue NVARCHAR(MAX) NULL,
+        RowSnapshotBefore NVARCHAR(MAX) NULL,
+        RowSnapshotAfter NVARCHAR(MAX) NULL,
+        ChangeCategory NVARCHAR(100) NULL,
+        ChangeReason NVARCHAR(500) NULL,
+        IsSystemChange BIT NULL,
         CreatedAt DATETIME2 DEFAULT SYSUTCDATETIME()
       );
     END
