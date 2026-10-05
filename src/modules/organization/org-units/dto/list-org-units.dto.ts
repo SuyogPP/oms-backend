@@ -11,15 +11,13 @@ import {
 export class ListOrgUnitsDto {
   @ApiPropertyOptional({ description: 'Filter by org unit type ID' })
   @IsOptional()
-  @IsNumber()
-  @Transform(({ value }) => parseInt(value, 10))
-  unitTypeId?: number;
+  @IsString()
+  unitTypeId?: any;
 
   @ApiPropertyOptional({ description: 'Filter by parent unit ID' })
   @IsOptional()
-  @IsNumber()
-  @Transform(({ value }) => parseInt(value, 10))
-  parentId?: number;
+  @IsString()
+  parentId?: any;
 
   @ApiPropertyOptional({ description: 'Filter by active status' })
   @IsOptional()

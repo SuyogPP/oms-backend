@@ -11,17 +11,17 @@ import {
 import { ORG_CODE_REGEX } from '../org-units.constants';
 
 export class CreateOrgUnitDto {
-  @ApiProperty({ example: 3, description: 'Org unit type identifier' })
-  @IsNumber()
-  unitTypeId: number;
+  @ApiProperty({ example: '33333333-3333-3333-3333-333333333333', description: 'Org unit type identifier' })
+  @IsString()
+  unitTypeId: any;
 
   @ApiPropertyOptional({
-    example: 123,
+    example: '11111111-1111-1111-1111-111111111111',
     description: 'Parent org unit ID (null for root)',
   })
   @IsOptional()
-  @IsNumber()
-  parentId?: number;
+  @IsString()
+  parentId?: any;
 
   @ApiProperty({ example: 'IT', description: 'Unique org code' })
   @IsString()
