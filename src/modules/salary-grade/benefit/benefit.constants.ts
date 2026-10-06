@@ -1,0 +1,40 @@
+/**
+ * Salary & Grade — Benefit Master Constants
+ */
+
+export const BENEFIT_PERMISSIONS = {
+  VIEW: 'SALARY_GRADE.BENEFIT.VIEW',
+  CREATE: 'SALARY_GRADE.BENEFIT.CREATE',
+  UPDATE: 'SALARY_GRADE.BENEFIT.UPDATE',
+  DELETE: 'SALARY_GRADE.BENEFIT.DELETE',
+} as const;
+
+export type BenefitPermission =
+  (typeof BENEFIT_PERMISSIONS)[keyof typeof BENEFIT_PERMISSIONS];
+
+export const BENEFIT_ERROR_CODES = {
+  BENEFIT_NOT_FOUND:
+    'BENEFIT_NOT_FOUND',
+
+  BENEFIT_NAME_DUPLICATE:
+    'BENEFIT_NAME_DUPLICATE',
+
+  BENEFIT_CREATE_FAILED:
+    'BENEFIT_CREATE_FAILED',
+
+  BENEFIT_UPDATE_FAILED:
+    'BENEFIT_UPDATE_FAILED',
+
+  BENEFIT_DELETE_FAILED:
+    'BENEFIT_DELETE_FAILED',
+} as const;
+
+export type BenefitErrorCode =
+  (typeof BENEFIT_ERROR_CODES)[keyof typeof BENEFIT_ERROR_CODES];
+
+export const BENEFIT_DEFAULTS = {
+  IS_ACTIVE: true,
+  IS_DELETED: false,
+  PAGE: 1,
+  PAGE_SIZE: 20,
+} as const;
