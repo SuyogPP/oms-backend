@@ -61,7 +61,10 @@ const mssqlOptions = (encrypt: boolean) => ({
         database: config.get<string>('auditDatabase.database'),
         autoLoadEntities: false, // Audit DB has no TypeORM entities; raw SQL only
         synchronize: false,
-        ...mssqlOptions(process.env.DB_ENCRYPT === 'true'),
+        ...mssqlOptions(
+          process.env.AUDIT_DB_ENCRYPT === 'true' ||
+            process.env.DB_ENCRYPT === 'true',
+        ),
       }),
     }),
   ],

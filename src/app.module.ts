@@ -28,6 +28,7 @@ import { CandidateTokensModule } from './modules/onboarding/candidate-tokens/can
 import { BudgetCategoriesModule } from './modules/organization/budget-categories/budget-categories.module';
 import { FiscalYearsModule } from './modules/organization/fiscal-years/fiscal-years.module';
 
+import { CategoriesModule } from './modules/salary-grade/categories/categories.module';
 // Guards
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 
@@ -67,6 +68,8 @@ import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
     CandidateTokensModule,
     BudgetCategoriesModule,
     FiscalYearsModule,
+
+    CategoriesModule,
   ],
   providers: [
     // 1. Rate Limiting Guard (Applies before JWT auth)
