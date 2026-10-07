@@ -49,7 +49,7 @@ export class CategoriesRepository {
         c.modified_by AS modifiedBy,
         CONVERT(VARCHAR(10), c.modified_date, 23) AS modifiedDate
 
-      FROM [masters].[tbl_category] c
+      FROM [masters].[tbl_Grade_Category] c
 
       WHERE
         c.category_id = @0
@@ -97,7 +97,7 @@ export class CategoriesRepository {
         c.modified_by AS modifiedBy,
         CONVERT(VARCHAR(10), c.modified_date, 23) AS modifiedDate
 
-      FROM [masters].[tbl_category] c
+      FROM [masters].[tbl_Grade_Category] c
 
       WHERE
         LOWER(c.cat_code) = LOWER(@0)
@@ -196,7 +196,7 @@ export class CategoriesRepository {
       SELECT
         COUNT(*) AS total
 
-      FROM [masters].[tbl_category] c
+      FROM [masters].[tbl_Grade_Category] c
 
       WHERE ${where};
     `;
@@ -222,7 +222,7 @@ export class CategoriesRepository {
         c.modified_by AS modifiedBy,
         CONVERT(VARCHAR(10), c.modified_date, 23) AS modifiedDate
 
-      FROM [masters].[tbl_category] c
+      FROM [masters].[tbl_Grade_Category] c
 
       WHERE ${where}
 
@@ -300,7 +300,7 @@ export class CategoriesRepository {
         category_id UNIQUEIDENTIFIER
       );
 
-      INSERT INTO [masters].[tbl_category]
+      INSERT INTO [masters].[tbl_Grade_Category]
       (
         category_id,
         cat_code,
@@ -443,7 +443,7 @@ export class CategoriesRepository {
     );
 
     const sql = `
-      UPDATE [masters].[tbl_category]
+      UPDATE [masters].[tbl_Grade_Category]
 
       SET
         ${setClauses.join(
@@ -474,7 +474,7 @@ export class CategoriesRepository {
     qr?: QueryRunner,
   ): Promise<void> {
     const sql = `
-      UPDATE [masters].[tbl_category]
+      UPDATE [masters].[tbl_Grade_Category]
 
       SET
         is_deleted = 1,

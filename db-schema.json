@@ -1,5 +1,473 @@
 [
   {
+    "TABLE_SCHEMA": "audit",
+    "TABLE_NAME": "ApiCallLog_Auth",
+    "COLUMN_NAME": "ApiCallID",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "audit",
+    "TABLE_NAME": "ApiCallLog_Auth",
+    "COLUMN_NAME": "SessionID",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "audit",
+    "TABLE_NAME": "ApiCallLog_Auth",
+    "COLUMN_NAME": "DeviceID",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "audit",
+    "TABLE_NAME": "ApiCallLog_Auth",
+    "COLUMN_NAME": "ip_address",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "audit",
+    "TABLE_NAME": "ApiCallLog_Auth",
+    "COLUMN_NAME": "device_fingerprint",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "audit",
+    "TABLE_NAME": "ApiCallLog_Auth",
+    "COLUMN_NAME": "device_type",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "audit",
+    "TABLE_NAME": "ApiCallLog_Auth",
+    "COLUMN_NAME": "browser_name",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "audit",
+    "TABLE_NAME": "ApiCallLog_Auth",
+    "COLUMN_NAME": "OSName",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "audit",
+    "TABLE_NAME": "ApiCallLog_Auth",
+    "COLUMN_NAME": "UserAgentRaw",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "audit",
+    "TABLE_NAME": "ApiCallLog_Auth",
+    "COLUMN_NAME": "user_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "audit",
+    "TABLE_NAME": "ApiCallLog_Auth",
+    "COLUMN_NAME": "Username",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "audit",
+    "TABLE_NAME": "ApiCallLog_Auth",
+    "COLUMN_NAME": "HttpMethod",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "audit",
+    "TABLE_NAME": "ApiCallLog_Auth",
+    "COLUMN_NAME": "Endpoint",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "audit",
+    "TABLE_NAME": "ApiCallLog_Auth",
+    "COLUMN_NAME": "ControllerName",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "audit",
+    "TABLE_NAME": "ApiCallLog_Auth",
+    "COLUMN_NAME": "ActionName",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "audit",
+    "TABLE_NAME": "ApiCallLog_Auth",
+    "COLUMN_NAME": "AuthEventType",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "audit",
+    "TABLE_NAME": "ApiCallLog_Auth",
+    "COLUMN_NAME": "TargetUserID",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "audit",
+    "TABLE_NAME": "ApiCallLog_Auth",
+    "COLUMN_NAME": "HttpStatusCode",
+    "DATA_TYPE": "int"
+  },
+  {
+    "TABLE_SCHEMA": "audit",
+    "TABLE_NAME": "ApiCallLog_Auth",
+    "COLUMN_NAME": "IsSuccess",
+    "DATA_TYPE": "bit"
+  },
+  {
+    "TABLE_SCHEMA": "audit",
+    "TABLE_NAME": "ApiCallLog_Auth",
+    "COLUMN_NAME": "failure_reason",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "audit",
+    "TABLE_NAME": "ApiCallLog_Auth",
+    "COLUMN_NAME": "CreatedAt",
+    "DATA_TYPE": "datetime2"
+  },
+  {
+    "TABLE_SCHEMA": "audit",
+    "TABLE_NAME": "ApiCallLog_Business",
+    "COLUMN_NAME": "ApiCallID",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "audit",
+    "TABLE_NAME": "ApiCallLog_Business",
+    "COLUMN_NAME": "SessionID",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "audit",
+    "TABLE_NAME": "ApiCallLog_Business",
+    "COLUMN_NAME": "DeviceID",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "audit",
+    "TABLE_NAME": "ApiCallLog_Business",
+    "COLUMN_NAME": "ip_address",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "audit",
+    "TABLE_NAME": "ApiCallLog_Business",
+    "COLUMN_NAME": "device_fingerprint",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "audit",
+    "TABLE_NAME": "ApiCallLog_Business",
+    "COLUMN_NAME": "device_type",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "audit",
+    "TABLE_NAME": "ApiCallLog_Business",
+    "COLUMN_NAME": "browser_name",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "audit",
+    "TABLE_NAME": "ApiCallLog_Business",
+    "COLUMN_NAME": "OSName",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "audit",
+    "TABLE_NAME": "ApiCallLog_Business",
+    "COLUMN_NAME": "UserAgentRaw",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "audit",
+    "TABLE_NAME": "ApiCallLog_Business",
+    "COLUMN_NAME": "user_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "audit",
+    "TABLE_NAME": "ApiCallLog_Business",
+    "COLUMN_NAME": "Username",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "audit",
+    "TABLE_NAME": "ApiCallLog_Business",
+    "COLUMN_NAME": "HttpMethod",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "audit",
+    "TABLE_NAME": "ApiCallLog_Business",
+    "COLUMN_NAME": "Endpoint",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "audit",
+    "TABLE_NAME": "ApiCallLog_Business",
+    "COLUMN_NAME": "ControllerName",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "audit",
+    "TABLE_NAME": "ApiCallLog_Business",
+    "COLUMN_NAME": "ActionName",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "audit",
+    "TABLE_NAME": "ApiCallLog_Business",
+    "COLUMN_NAME": "TargetEntityID",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "audit",
+    "TABLE_NAME": "ApiCallLog_Business",
+    "COLUMN_NAME": "TargetEntityType",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "audit",
+    "TABLE_NAME": "ApiCallLog_Business",
+    "COLUMN_NAME": "ActionType",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "audit",
+    "TABLE_NAME": "ApiCallLog_Business",
+    "COLUMN_NAME": "HttpStatusCode",
+    "DATA_TYPE": "int"
+  },
+  {
+    "TABLE_SCHEMA": "audit",
+    "TABLE_NAME": "ApiCallLog_Business",
+    "COLUMN_NAME": "IsSuccess",
+    "DATA_TYPE": "bit"
+  },
+  {
+    "TABLE_SCHEMA": "audit",
+    "TABLE_NAME": "ApiCallLog_Business",
+    "COLUMN_NAME": "failure_reason",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "audit",
+    "TABLE_NAME": "ApiCallLog_Business",
+    "COLUMN_NAME": "CreatedAt",
+    "DATA_TYPE": "datetime2"
+  },
+  {
+    "TABLE_SCHEMA": "audit",
+    "TABLE_NAME": "ApiCallLog_Org",
+    "COLUMN_NAME": "ApiCallID",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "audit",
+    "TABLE_NAME": "ApiCallLog_Org",
+    "COLUMN_NAME": "SessionID",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "audit",
+    "TABLE_NAME": "ApiCallLog_Org",
+    "COLUMN_NAME": "DeviceID",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "audit",
+    "TABLE_NAME": "ApiCallLog_Org",
+    "COLUMN_NAME": "ip_address",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "audit",
+    "TABLE_NAME": "ApiCallLog_Org",
+    "COLUMN_NAME": "device_fingerprint",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "audit",
+    "TABLE_NAME": "ApiCallLog_Org",
+    "COLUMN_NAME": "device_type",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "audit",
+    "TABLE_NAME": "ApiCallLog_Org",
+    "COLUMN_NAME": "browser_name",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "audit",
+    "TABLE_NAME": "ApiCallLog_Org",
+    "COLUMN_NAME": "OSName",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "audit",
+    "TABLE_NAME": "ApiCallLog_Org",
+    "COLUMN_NAME": "UserAgentRaw",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "audit",
+    "TABLE_NAME": "ApiCallLog_Org",
+    "COLUMN_NAME": "user_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "audit",
+    "TABLE_NAME": "ApiCallLog_Org",
+    "COLUMN_NAME": "Username",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "audit",
+    "TABLE_NAME": "ApiCallLog_Org",
+    "COLUMN_NAME": "HttpMethod",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "audit",
+    "TABLE_NAME": "ApiCallLog_Org",
+    "COLUMN_NAME": "Endpoint",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "audit",
+    "TABLE_NAME": "ApiCallLog_Org",
+    "COLUMN_NAME": "ControllerName",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "audit",
+    "TABLE_NAME": "ApiCallLog_Org",
+    "COLUMN_NAME": "ActionName",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "audit",
+    "TABLE_NAME": "ApiCallLog_Org",
+    "COLUMN_NAME": "TargetEntityID",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "audit",
+    "TABLE_NAME": "ApiCallLog_Org",
+    "COLUMN_NAME": "TargetEntityType",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "audit",
+    "TABLE_NAME": "ApiCallLog_Org",
+    "COLUMN_NAME": "ActionType",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "audit",
+    "TABLE_NAME": "ApiCallLog_Org",
+    "COLUMN_NAME": "HttpStatusCode",
+    "DATA_TYPE": "int"
+  },
+  {
+    "TABLE_SCHEMA": "audit",
+    "TABLE_NAME": "ApiCallLog_Org",
+    "COLUMN_NAME": "IsSuccess",
+    "DATA_TYPE": "bit"
+  },
+  {
+    "TABLE_SCHEMA": "audit",
+    "TABLE_NAME": "ApiCallLog_Org",
+    "COLUMN_NAME": "failure_reason",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "audit",
+    "TABLE_NAME": "ApiCallLog_Org",
+    "COLUMN_NAME": "CreatedAt",
+    "DATA_TYPE": "datetime2"
+  },
+  {
+    "TABLE_SCHEMA": "audit",
+    "TABLE_NAME": "Devices",
+    "COLUMN_NAME": "DeviceID",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "audit",
+    "TABLE_NAME": "Devices",
+    "COLUMN_NAME": "device_fingerprint",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "audit",
+    "TABLE_NAME": "Devices",
+    "COLUMN_NAME": "ip_address",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "audit",
+    "TABLE_NAME": "Devices",
+    "COLUMN_NAME": "LastKnownIP",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "audit",
+    "TABLE_NAME": "Devices",
+    "COLUMN_NAME": "device_type",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "audit",
+    "TABLE_NAME": "Devices",
+    "COLUMN_NAME": "browser_name",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "audit",
+    "TABLE_NAME": "Devices",
+    "COLUMN_NAME": "OSName",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "audit",
+    "TABLE_NAME": "Devices",
+    "COLUMN_NAME": "UserAgentRaw",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "audit",
+    "TABLE_NAME": "Devices",
+    "COLUMN_NAME": "LastSeenAt",
+    "DATA_TYPE": "datetime2"
+  },
+  {
+    "TABLE_SCHEMA": "audit",
+    "TABLE_NAME": "Devices",
+    "COLUMN_NAME": "SeenCount",
+    "DATA_TYPE": "int"
+  },
+  {
+    "TABLE_SCHEMA": "audit",
+    "TABLE_NAME": "Devices",
+    "COLUMN_NAME": "CreatedAt",
+    "DATA_TYPE": "datetime2"
+  },
+  {
+    "TABLE_SCHEMA": "audit",
+    "TABLE_NAME": "Sessions",
+    "COLUMN_NAME": "SessionID",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "audit",
+    "TABLE_NAME": "Sessions",
+    "COLUMN_NAME": "CreatedAt",
+    "DATA_TYPE": "datetime2"
+  },
+  {
     "TABLE_SCHEMA": "auth",
     "TABLE_NAME": "tbl_Delegation_Permissions",
     "COLUMN_NAME": "delegation_id",
@@ -931,6 +1399,90 @@
   },
   {
     "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Benefit",
+    "COLUMN_NAME": "benefit_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Benefit",
+    "COLUMN_NAME": "benefit_name",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Benefit",
+    "COLUMN_NAME": "benefit_description",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Benefit",
+    "COLUMN_NAME": "attr1",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Benefit",
+    "COLUMN_NAME": "attr2",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Benefit",
+    "COLUMN_NAME": "attr3",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Benefit",
+    "COLUMN_NAME": "attr4",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Benefit",
+    "COLUMN_NAME": "attr5",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Benefit",
+    "COLUMN_NAME": "is_active",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Benefit",
+    "COLUMN_NAME": "is_deleted",
+    "DATA_TYPE": "bit"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Benefit",
+    "COLUMN_NAME": "created_by",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Benefit",
+    "COLUMN_NAME": "created_date",
+    "DATA_TYPE": "date"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Benefit",
+    "COLUMN_NAME": "modified_by",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Benefit",
+    "COLUMN_NAME": "modified_date",
+    "DATA_TYPE": "date"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
     "TABLE_NAME": "tbl_Budget_Categories",
     "COLUMN_NAME": "budget_category_id",
     "DATA_TYPE": "uniqueidentifier"
@@ -1141,90 +1693,6 @@
   },
   {
     "TABLE_SCHEMA": "masters",
-    "TABLE_NAME": "tbl_category",
-    "COLUMN_NAME": "category_id",
-    "DATA_TYPE": "uniqueidentifier"
-  },
-  {
-    "TABLE_SCHEMA": "masters",
-    "TABLE_NAME": "tbl_category",
-    "COLUMN_NAME": "cat_code",
-    "DATA_TYPE": "nvarchar"
-  },
-  {
-    "TABLE_SCHEMA": "masters",
-    "TABLE_NAME": "tbl_category",
-    "COLUMN_NAME": "cat_details",
-    "DATA_TYPE": "nvarchar"
-  },
-  {
-    "TABLE_SCHEMA": "masters",
-    "TABLE_NAME": "tbl_category",
-    "COLUMN_NAME": "attr1",
-    "DATA_TYPE": "nvarchar"
-  },
-  {
-    "TABLE_SCHEMA": "masters",
-    "TABLE_NAME": "tbl_category",
-    "COLUMN_NAME": "attr2",
-    "DATA_TYPE": "nvarchar"
-  },
-  {
-    "TABLE_SCHEMA": "masters",
-    "TABLE_NAME": "tbl_category",
-    "COLUMN_NAME": "attr3",
-    "DATA_TYPE": "nvarchar"
-  },
-  {
-    "TABLE_SCHEMA": "masters",
-    "TABLE_NAME": "tbl_category",
-    "COLUMN_NAME": "attr4",
-    "DATA_TYPE": "nvarchar"
-  },
-  {
-    "TABLE_SCHEMA": "masters",
-    "TABLE_NAME": "tbl_category",
-    "COLUMN_NAME": "attr5",
-    "DATA_TYPE": "nvarchar"
-  },
-  {
-    "TABLE_SCHEMA": "masters",
-    "TABLE_NAME": "tbl_category",
-    "COLUMN_NAME": "is_active",
-    "DATA_TYPE": "nvarchar"
-  },
-  {
-    "TABLE_SCHEMA": "masters",
-    "TABLE_NAME": "tbl_category",
-    "COLUMN_NAME": "is_deleted",
-    "DATA_TYPE": "bit"
-  },
-  {
-    "TABLE_SCHEMA": "masters",
-    "TABLE_NAME": "tbl_category",
-    "COLUMN_NAME": "created_by",
-    "DATA_TYPE": "nvarchar"
-  },
-  {
-    "TABLE_SCHEMA": "masters",
-    "TABLE_NAME": "tbl_category",
-    "COLUMN_NAME": "created_date",
-    "DATA_TYPE": "date"
-  },
-  {
-    "TABLE_SCHEMA": "masters",
-    "TABLE_NAME": "tbl_category",
-    "COLUMN_NAME": "modified_by",
-    "DATA_TYPE": "nvarchar"
-  },
-  {
-    "TABLE_SCHEMA": "masters",
-    "TABLE_NAME": "tbl_category",
-    "COLUMN_NAME": "modified_date",
-    "DATA_TYPE": "date"
-  },
-  {
-    "TABLE_SCHEMA": "masters",
     "TABLE_NAME": "tbl_Data_Access_Policies",
     "COLUMN_NAME": "data_access_policy_id",
     "DATA_TYPE": "uniqueidentifier"
@@ -1300,6 +1768,90 @@
     "TABLE_NAME": "tbl_Data_Access_Rules",
     "COLUMN_NAME": "created_at",
     "DATA_TYPE": "datetime2"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Dependency_Tier",
+    "COLUMN_NAME": "tier_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Dependency_Tier",
+    "COLUMN_NAME": "tier_code",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Dependency_Tier",
+    "COLUMN_NAME": "description",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Dependency_Tier",
+    "COLUMN_NAME": "attr1",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Dependency_Tier",
+    "COLUMN_NAME": "attr2",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Dependency_Tier",
+    "COLUMN_NAME": "attr3",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Dependency_Tier",
+    "COLUMN_NAME": "attr4",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Dependency_Tier",
+    "COLUMN_NAME": "attr5",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Dependency_Tier",
+    "COLUMN_NAME": "is_active",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Dependency_Tier",
+    "COLUMN_NAME": "is_deleted",
+    "DATA_TYPE": "bit"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Dependency_Tier",
+    "COLUMN_NAME": "created_by",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Dependency_Tier",
+    "COLUMN_NAME": "created_date",
+    "DATA_TYPE": "date"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Dependency_Tier",
+    "COLUMN_NAME": "modified_by",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Dependency_Tier",
+    "COLUMN_NAME": "modified_date",
+    "DATA_TYPE": "date"
   },
   {
     "TABLE_SCHEMA": "masters",
@@ -1663,6 +2215,90 @@
   },
   {
     "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Grade_Category",
+    "COLUMN_NAME": "category_id",
+    "DATA_TYPE": "uniqueidentifier"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Grade_Category",
+    "COLUMN_NAME": "cat_code",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Grade_Category",
+    "COLUMN_NAME": "cat_details",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Grade_Category",
+    "COLUMN_NAME": "attr1",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Grade_Category",
+    "COLUMN_NAME": "attr2",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Grade_Category",
+    "COLUMN_NAME": "attr3",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Grade_Category",
+    "COLUMN_NAME": "attr4",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Grade_Category",
+    "COLUMN_NAME": "attr5",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Grade_Category",
+    "COLUMN_NAME": "is_active",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Grade_Category",
+    "COLUMN_NAME": "is_deleted",
+    "DATA_TYPE": "bit"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Grade_Category",
+    "COLUMN_NAME": "created_by",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Grade_Category",
+    "COLUMN_NAME": "created_date",
+    "DATA_TYPE": "date"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Grade_Category",
+    "COLUMN_NAME": "modified_by",
+    "DATA_TYPE": "nvarchar"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Grade_Category",
+    "COLUMN_NAME": "modified_date",
+    "DATA_TYPE": "date"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
     "TABLE_NAME": "tbl_Grades",
     "COLUMN_NAME": "grade_id",
     "DATA_TYPE": "uniqueidentifier"
@@ -1744,6 +2380,18 @@
     "TABLE_NAME": "tbl_Grades",
     "COLUMN_NAME": "modified_date",
     "DATA_TYPE": "date"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Grades",
+    "COLUMN_NAME": "min_salary",
+    "DATA_TYPE": "decimal"
+  },
+  {
+    "TABLE_SCHEMA": "masters",
+    "TABLE_NAME": "tbl_Grades",
+    "COLUMN_NAME": "max_salary",
+    "DATA_TYPE": "decimal"
   },
   {
     "TABLE_SCHEMA": "masters",

@@ -62,17 +62,17 @@ export class CategoriesService {
     return value.toLowerCase() === 'true';
   }
 
-  /**
-   * Convert API boolean into the value stored
-   * inside masters.tbl_category.is_active.
-   */
-  private toDbActive(
-    value: boolean,
-  ): string {
-    return value
-      ? 'True'
-      : 'False';
-  }
+/**
+ * Convert API boolean into the value stored
+ * inside masters.tbl_Grade_Category.is_active.
+ */
+private toDbActive(
+  value: boolean,
+): string {
+  return value
+    ? 'True'
+    : 'False';
+}
 
   /**
    * Convert raw database row into the

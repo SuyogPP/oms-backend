@@ -22,6 +22,10 @@ export class GradeBenefitsRepository {
     return qr ?? this.dataSource;
   }
 
+  // ============================================================
+  // BASE SELECT
+  // ============================================================
+
   private readonly baseSelect = `
     SELECT
       gb.salary_grade_id AS salaryGradeId,
@@ -69,7 +73,7 @@ export class GradeBenefitsRepository {
     INNER JOIN [masters].[tbl_Deployment_Model] dm
       ON dm.deployment_id = gb.deployment_id
 
-    INNER JOIN [masters].[tbl_category] c
+    INNER JOIN [masters].[tbl_Grade_Category] c
       ON c.category_id = gb.category_id
 
     INNER JOIN [masters].[tbl_Designation] d
@@ -138,7 +142,7 @@ export class GradeBenefitsRepository {
 
         CASE WHEN EXISTS (
           SELECT 1
-          FROM [masters].[tbl_category]
+          FROM [masters].[tbl_Grade_Category]
           WHERE category_id = @1
             AND is_deleted = 0
         ) THEN 1 ELSE 0 END AS categoryExists,
@@ -255,7 +259,7 @@ export class GradeBenefitsRepository {
       );
 
     return rows.length > 0
-      ? rows[0].salaryGradeId
+      ? (rows[0].salaryGradeId as string)
       : null;
   }
 
@@ -271,7 +275,7 @@ export class GradeBenefitsRepository {
     deploymentId?: string,
     qr?: QueryRunner,
   ): Promise<IGradeBenefitCounts> {
-    const conditions = [
+    const conditions: string[] = [
       'is_deleted = 0',
     ];
 
@@ -389,7 +393,9 @@ export class GradeBenefitsRepository {
       paramIndex++;
     }
 
-    if (isActive !== undefined) {
+    if (
+      isActive !== undefined
+    ) {
       conditions.push(
         `gb.is_active = @${paramIndex}`,
       );
@@ -435,7 +441,9 @@ export class GradeBenefitsRepository {
     }
 
     const where =
-      conditions.join(' AND ');
+      conditions.join(
+        ' AND ',
+      );
 
     const countSql = `
       SELECT
@@ -446,7 +454,7 @@ export class GradeBenefitsRepository {
       INNER JOIN [masters].[tbl_Deployment_Model] dm
         ON dm.deployment_id = gb.deployment_id
 
-      INNER JOIN [masters].[tbl_category] c
+      INNER JOIN [masters].[tbl_Grade_Category] c
         ON c.category_id = gb.category_id
 
       INNER JOIN [masters].[tbl_Designation] d
@@ -644,12 +652,30 @@ export class GradeBenefitsRepository {
     let paramIndex = 1;
 
     const fields = [
-      ['deployment_id', data.deploymentId],
-      ['category_id', data.categoryId],
-      ['designation_id', data.designationId],
-      ['grade_id', data.gradeId],
-      ['tier_id', data.tierId],
-      ['benefit_id', data.benefitId],
+      [
+        'deployment_id',
+        data.deploymentId,
+      ],
+      [
+        'category_id',
+        data.categoryId,
+      ],
+      [
+        'designation_id',
+        data.designationId,
+      ],
+      [
+        'grade_id',
+        data.gradeId,
+      ],
+      [
+        'tier_id',
+        data.tierId,
+      ],
+      [
+        'benefit_id',
+        data.benefitId,
+      ],
     ] as const;
 
     for (
@@ -725,7 +751,7 @@ export class GradeBenefitsRepository {
   }
 
   // ============================================================
-  // DELETE
+  // SOFT DELETE
   // ============================================================
 
   async softDelete(
