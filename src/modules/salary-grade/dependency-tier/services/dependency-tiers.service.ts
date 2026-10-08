@@ -14,44 +14,36 @@ import type {
 } from '../../../auth/interfaces/current-user.interface';
 
 import {
-  CreateCategoryDto,
-} from '../dto/create-category.dto';
+  CreateDependencyTierDto,
+} from '../dto/create-dependency-tier.dto';
 
 import {
-  UpdateCategoryDto,
-} from '../dto/update-category.dto';
+  UpdateDependencyTierDto,
+} from '../dto/update-dependency-tier.dto';
 
 import {
-  CategoryEntity,
-} from '../entities/category.entity';
+  DependencyTierEntity,
+} from '../entities/dependency-tier.entity';
 
 import {
-  ICategory,
-} from '../interfaces/category.interface';
+  IDependencyTier,
+} from '../interfaces/dependency-tier.interface';
 
 import {
-  CATEGORY_ERROR_CODES,
-} from '../categories.constants';
+  DEPENDENCY_TIER_ERROR_CODES,
+} from '../dependency-tier.constants';
 
 import {
-  CategoriesRepository,
-} from '../repositories/categories.repository';
+  DependencyTiersRepository,
+} from '../repositories/dependency-tiers.repository';
 
 @Injectable()
-export class CategoriesService {
+export class DependencyTiersService {
   constructor(
-    private readonly categoriesRepository: CategoriesRepository,
+    private readonly dependencyTiersRepository: DependencyTiersRepository,
     private readonly dataSource: DataSource,
   ) {}
 
-  // ============================================================
-  // HELPERS
-  // ============================================================
-
-  /**
-   * Convert DB NVARCHAR is_active value
-   * into a proper boolean for the API.
-   */
   private toBoolean(
     value: string | null,
   ): boolean {
@@ -62,34 +54,26 @@ export class CategoriesService {
     return value.toLowerCase() === 'true';
   }
 
-/**
- * Convert API boolean into the value stored
- * inside masters.tbl_Grade_Category.is_active.
- */
-private toDbActive(
-  value: boolean,
-): string {
-  return value
-    ? 'True'
-    : 'False';
-}
+  private toDbActive(
+    value: boolean,
+  ): string {
+    return value
+      ? 'True'
+      : 'False';
+  }
 
-  /**
-   * Convert raw database row into the
-   * response entity returned to frontend.
-   */
   private toEntity(
-    row: ICategory,
-  ): CategoryEntity {
+    row: IDependencyTier,
+  ): DependencyTierEntity {
     return {
-      categoryId:
-        row.categoryId,
+      tierId:
+        row.tierId,
 
-      categoryCode:
-        row.categoryCode,
+      tierCode:
+        row.tierCode,
 
-      categoryDetails:
-        row.categoryDetails,
+      description:
+        row.description,
 
       isActive:
         this.toBoolean(
@@ -118,21 +102,21 @@ private toDbActive(
   // ============================================================
 
   async findById(
-    categoryId: string,
-  ): Promise<CategoryEntity> {
+    tierId: string,
+  ): Promise<DependencyTierEntity> {
     const row =
-      await this.categoriesRepository.findById(
-        categoryId,
+      await this.dependencyTiersRepository.findById(
+        tierId,
       );
 
     if (!row) {
       throw new HttpException(
         {
           code:
-            CATEGORY_ERROR_CODES.CATEGORY_NOT_FOUND,
+            DEPENDENCY_TIER_ERROR_CODES.DEPENDENCY_TIER_NOT_FOUND,
 
           message:
-            `Category [${categoryId}] was not found.`,
+            `Dependency Tier [${tierId}] was not found.`,
         },
         HttpStatus.NOT_FOUND,
       );
@@ -159,7 +143,7 @@ private toDbActive(
       rows,
       total,
     } =
-      await this.categoriesRepository.findAll(
+      await this.dependencyTiersRepository.findAll(
         {
           search:
             options.search?.trim(),
@@ -201,25 +185,25 @@ private toDbActive(
   // ============================================================
 
   async create(
-    dto: CreateCategoryDto,
+    dto: CreateDependencyTierDto,
     user: ICurrentUser,
-  ): Promise<CategoryEntity> {
-    const categoryCode =
-      dto.categoryCode.trim();
+  ): Promise<DependencyTierEntity> {
+    const tierCode =
+      dto.tierCode.trim();
 
     const existing =
-      await this.categoriesRepository.findByCode(
-        categoryCode,
+      await this.dependencyTiersRepository.findByCode(
+        tierCode,
       );
 
     if (existing) {
       throw new HttpException(
         {
           code:
-            CATEGORY_ERROR_CODES.CATEGORY_CODE_DUPLICATE,
+            DEPENDENCY_TIER_ERROR_CODES.DEPENDENCY_TIER_CODE_DUPLICATE,
 
           message:
-            `A category with code [${categoryCode}] already exists.`,
+            `A dependency tier with code [${tierCode}] already exists.`,
         },
         HttpStatus.CONFLICT,
       );
@@ -229,27 +213,25 @@ private toDbActive(
       this.dataSource.createQueryRunner();
 
     await qr.connect();
-
     await qr.startTransaction();
 
-    try {
-      const newId =
-        await this.categoriesRepository.create(
-          {
-            categoryCode,
+    let newId: string;
 
-            categoryDetails:
-              dto.categoryDetails !==
-              undefined
-                ? dto.categoryDetails
-                    ?.trim() ||
+    try {
+      newId =
+        await this.dependencyTiersRepository.create(
+          {
+            tierCode,
+
+            description:
+              dto.description !== undefined
+                ? dto.description?.trim() ||
                   null
                 : null,
 
             isActive:
               this.toDbActive(
-                dto.isActive ??
-                  true,
+                dto.isActive ?? true,
               ),
 
             createdBy:
@@ -259,17 +241,19 @@ private toDbActive(
         );
 
       await qr.commitTransaction();
-
-      return this.findById(
-        newId,
-      );
     } catch (error) {
-      await qr.rollbackTransaction();
+      if (qr.isTransactionActive) {
+        await qr.rollbackTransaction();
+      }
 
       throw error;
     } finally {
       await qr.release();
     }
+
+    return this.findById(
+      newId,
+    );
   }
 
   // ============================================================
@@ -277,61 +261,54 @@ private toDbActive(
   // ============================================================
 
   async update(
-    categoryId: string,
-    dto: UpdateCategoryDto,
+    tierId: string,
+    dto: UpdateDependencyTierDto,
     user: ICurrentUser,
-  ): Promise<CategoryEntity> {
+  ): Promise<DependencyTierEntity> {
     const existing =
-      await this.categoriesRepository.findById(
-        categoryId,
+      await this.dependencyTiersRepository.findById(
+        tierId,
       );
 
     if (!existing) {
       throw new HttpException(
         {
           code:
-            CATEGORY_ERROR_CODES.CATEGORY_NOT_FOUND,
+            DEPENDENCY_TIER_ERROR_CODES.DEPENDENCY_TIER_NOT_FOUND,
 
           message:
-            `Category [${categoryId}] was not found.`,
+            `Dependency Tier [${tierId}] was not found.`,
         },
         HttpStatus.NOT_FOUND,
       );
     }
 
-    /**
-     * If category code is being changed,
-     * check that another record does not
-     * already use that code.
-     */
     if (
-      dto.categoryCode !==
-      undefined
+      dto.tierCode !== undefined
     ) {
       const newCode =
-        dto.categoryCode.trim();
+        dto.tierCode.trim();
 
       if (
         newCode.toLowerCase() !==
-        existing.categoryCode.toLowerCase()
+        existing.tierCode.toLowerCase()
       ) {
         const duplicate =
-          await this.categoriesRepository.findByCode(
+          await this.dependencyTiersRepository.findByCode(
             newCode,
           );
 
         if (
           duplicate &&
-          duplicate.categoryId !==
-            categoryId
+          duplicate.tierId !== tierId
         ) {
           throw new HttpException(
             {
               code:
-                CATEGORY_ERROR_CODES.CATEGORY_CODE_DUPLICATE,
+                DEPENDENCY_TIER_ERROR_CODES.DEPENDENCY_TIER_CODE_DUPLICATE,
 
               message:
-                `A category with code [${newCode}] already exists.`,
+                `A dependency tier with code [${newCode}] already exists.`,
             },
             HttpStatus.CONFLICT,
           );
@@ -343,30 +320,25 @@ private toDbActive(
       this.dataSource.createQueryRunner();
 
     await qr.connect();
-
     await qr.startTransaction();
 
     try {
-      await this.categoriesRepository.update(
-        categoryId,
+      await this.dependencyTiersRepository.update(
+        tierId,
         {
-          categoryCode:
-            dto.categoryCode !==
-            undefined
-              ? dto.categoryCode.trim()
+          tierCode:
+            dto.tierCode !== undefined
+              ? dto.tierCode.trim()
               : undefined,
 
-          categoryDetails:
-            dto.categoryDetails !==
-            undefined
-              ? dto.categoryDetails
-                  ?.trim() ||
+          description:
+            dto.description !== undefined
+              ? dto.description?.trim() ||
                 null
               : undefined,
 
           isActive:
-            dto.isActive !==
-            undefined
+            dto.isActive !== undefined
               ? this.toDbActive(
                   dto.isActive,
                 )
@@ -379,40 +351,42 @@ private toDbActive(
       );
 
       await qr.commitTransaction();
-
-      return this.findById(
-        categoryId,
-      );
     } catch (error) {
-      await qr.rollbackTransaction();
+      if (qr.isTransactionActive) {
+        await qr.rollbackTransaction();
+      }
 
       throw error;
     } finally {
       await qr.release();
     }
+
+    return this.findById(
+      tierId,
+    );
   }
 
   // ============================================================
-  // DELETE — SOFT DELETE
+  // DELETE
   // ============================================================
 
   async remove(
-    categoryId: string,
+    tierId: string,
     user: ICurrentUser,
   ): Promise<void> {
     const existing =
-      await this.categoriesRepository.findById(
-        categoryId,
+      await this.dependencyTiersRepository.findById(
+        tierId,
       );
 
     if (!existing) {
       throw new HttpException(
         {
           code:
-            CATEGORY_ERROR_CODES.CATEGORY_NOT_FOUND,
+            DEPENDENCY_TIER_ERROR_CODES.DEPENDENCY_TIER_NOT_FOUND,
 
           message:
-            `Category [${categoryId}] was not found.`,
+            `Dependency Tier [${tierId}] was not found.`,
         },
         HttpStatus.NOT_FOUND,
       );
@@ -422,19 +396,20 @@ private toDbActive(
       this.dataSource.createQueryRunner();
 
     await qr.connect();
-
     await qr.startTransaction();
 
     try {
-      await this.categoriesRepository.softDelete(
-        categoryId,
+      await this.dependencyTiersRepository.softDelete(
+        tierId,
         user.userId,
         qr,
       );
 
       await qr.commitTransaction();
     } catch (error) {
-      await qr.rollbackTransaction();
+      if (qr.isTransactionActive) {
+        await qr.rollbackTransaction();
+      }
 
       throw error;
     } finally {

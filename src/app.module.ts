@@ -29,6 +29,12 @@ import { BudgetCategoriesModule } from './modules/organization/budget-categories
 import { FiscalYearsModule } from './modules/organization/fiscal-years/fiscal-years.module';
 
 import { CategoriesModule } from './modules/salary-grade/categories/categories.module';
+import { DesignationsModule } from './modules/salary-grade/designation/designations.module';
+import { GradesModule } from './modules/salary-grade/grade/grades.module';
+import { DependencyTiersModule } from './modules/salary-grade/dependency-tier/dependency-tier.module';
+import { BenefitsModule } from './modules/salary-grade/benefit/benefit.module';
+import { DeploymentModelsModule } from './modules/salary-grade/deployment-model/deployment-model.module';
+import { GradeBenefitModule } from './modules/salary-grade/grade-benefit/grade-benefit.module';
 // Guards
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 
@@ -70,6 +76,12 @@ import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
     FiscalYearsModule,
 
     CategoriesModule,
+    DesignationsModule,
+    GradesModule,
+    DependencyTiersModule,
+    BenefitsModule,
+    DeploymentModelsModule,
+    GradeBenefitModule,
   ],
   providers: [
     // 1. Rate Limiting Guard (Applies before JWT auth)

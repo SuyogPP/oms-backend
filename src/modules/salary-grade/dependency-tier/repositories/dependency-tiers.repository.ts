@@ -2,20 +2,16 @@ import { Injectable } from '@nestjs/common';
 import { DataSource, QueryRunner } from 'typeorm';
 
 import {
-  ICategory,
-  ICategoryFilterOptions,
-} from '../interfaces/category.interface';
+  IDependencyTier,
+  IDependencyTierFilterOptions,
+} from '../interfaces/dependency-tier.interface';
 
 @Injectable()
-export class CategoriesRepository {
+export class DependencyTiersRepository {
   constructor(
     private readonly dataSource: DataSource,
   ) {}
 
-  /**
-   * Use the QueryRunner when a transaction is supplied.
-   * Otherwise, use the normal DataSource.
-   */
   private getExecutor(qr?: QueryRunner) {
     return qr ?? this.dataSource;
   }
@@ -25,106 +21,104 @@ export class CategoriesRepository {
   // ============================================================
 
   async findById(
-    categoryId: string,
+    tierId: string,
     qr?: QueryRunner,
-  ): Promise<ICategory | null> {
+  ): Promise<IDependencyTier | null> {
     const sql = `
       SELECT
-        c.category_id AS categoryId,
-        c.cat_code AS categoryCode,
-        c.cat_details AS categoryDetails,
+        t.tier_id AS tierId,
+        t.tier_code AS tierCode,
+        t.description AS description,
 
-        c.attr1 AS attr1,
-        c.attr2 AS attr2,
-        c.attr3 AS attr3,
-        c.attr4 AS attr4,
-        c.attr5 AS attr5,
+        t.attr1 AS attr1,
+        t.attr2 AS attr2,
+        t.attr3 AS attr3,
+        t.attr4 AS attr4,
+        t.attr5 AS attr5,
 
-        c.is_active AS isActive,
-        c.is_deleted AS isDeleted,
+        t.is_active AS isActive,
+        t.is_deleted AS isDeleted,
 
-        c.created_by AS createdBy,
-        CONVERT(VARCHAR(10), c.created_date, 23) AS createdDate,
+        t.created_by AS createdBy,
+        CONVERT(VARCHAR(10), t.created_date, 23) AS createdDate,
 
-        c.modified_by AS modifiedBy,
-        CONVERT(VARCHAR(10), c.modified_date, 23) AS modifiedDate
+        t.modified_by AS modifiedBy,
+        CONVERT(VARCHAR(10), t.modified_date, 23) AS modifiedDate
 
-      FROM [masters].[tbl_Grade_Category] c
+      FROM [masters].[tbl_Dependency_Tier] t
 
       WHERE
-        c.category_id = @0
-        AND c.is_deleted = 0;
+        t.tier_id = @0
+        AND t.is_deleted = 0;
     `;
 
     const rows =
       await this.getExecutor(qr).query(
         sql,
-        [categoryId],
+        [tierId],
       );
 
     return rows.length > 0
-      ? (rows[0] as ICategory)
+      ? (rows[0] as IDependencyTier)
       : null;
   }
 
   // ============================================================
-  // FIND BY CATEGORY CODE
-  // Used later to check for duplicate category codes.
+  // FIND BY CODE
   // ============================================================
 
   async findByCode(
-    categoryCode: string,
+    tierCode: string,
     qr?: QueryRunner,
-  ): Promise<ICategory | null> {
+  ): Promise<IDependencyTier | null> {
     const sql = `
       SELECT
-        c.category_id AS categoryId,
-        c.cat_code AS categoryCode,
-        c.cat_details AS categoryDetails,
+        t.tier_id AS tierId,
+        t.tier_code AS tierCode,
+        t.description AS description,
 
-        c.attr1 AS attr1,
-        c.attr2 AS attr2,
-        c.attr3 AS attr3,
-        c.attr4 AS attr4,
-        c.attr5 AS attr5,
+        t.attr1 AS attr1,
+        t.attr2 AS attr2,
+        t.attr3 AS attr3,
+        t.attr4 AS attr4,
+        t.attr5 AS attr5,
 
-        c.is_active AS isActive,
-        c.is_deleted AS isDeleted,
+        t.is_active AS isActive,
+        t.is_deleted AS isDeleted,
 
-        c.created_by AS createdBy,
-        CONVERT(VARCHAR(10), c.created_date, 23) AS createdDate,
+        t.created_by AS createdBy,
+        CONVERT(VARCHAR(10), t.created_date, 23) AS createdDate,
 
-        c.modified_by AS modifiedBy,
-        CONVERT(VARCHAR(10), c.modified_date, 23) AS modifiedDate
+        t.modified_by AS modifiedBy,
+        CONVERT(VARCHAR(10), t.modified_date, 23) AS modifiedDate
 
-      FROM [masters].[tbl_Grade_Category] c
+      FROM [masters].[tbl_Dependency_Tier] t
 
       WHERE
-        LOWER(c.cat_code) = LOWER(@0)
-        AND c.is_deleted = 0;
+        LOWER(t.tier_code) = LOWER(@0)
+        AND t.is_deleted = 0;
     `;
 
     const rows =
       await this.getExecutor(qr).query(
         sql,
-        [categoryCode],
+        [tierCode],
       );
 
     return rows.length > 0
-      ? (rows[0] as ICategory)
+      ? (rows[0] as IDependencyTier)
       : null;
   }
 
   // ============================================================
   // FIND ALL
-  // Pagination + search + active filter
   // ============================================================
 
   async findAll(
-    options: ICategoryFilterOptions = {},
+    options: IDependencyTierFilterOptions = {},
     qr?: QueryRunner,
   ): Promise<{
-    rows: ICategory[];
+    rows: IDependencyTier[];
     total: number;
   }> {
     const {
@@ -143,11 +137,10 @@ export class CategoriesRepository {
         : 20;
 
     const offset =
-      (safePage - 1) *
-      safePageSize;
+      (safePage - 1) * safePageSize;
 
     const conditions: string[] = [
-      'c.is_deleted = 0',
+      't.is_deleted = 0',
     ];
 
     const params: Array<
@@ -160,7 +153,7 @@ export class CategoriesRepository {
       isActive !== undefined
     ) {
       conditions.push(
-        `c.is_active = @${paramIndex}`,
+        `t.is_active = @${paramIndex}`,
       );
 
       params.push(isActive);
@@ -174,9 +167,9 @@ export class CategoriesRepository {
     ) {
       conditions.push(`
         (
-          c.cat_code LIKE @${paramIndex}
+          t.tier_code LIKE @${paramIndex}
           OR
-          c.cat_details LIKE @${paramIndex}
+          t.description LIKE @${paramIndex}
         )
       `);
 
@@ -188,51 +181,47 @@ export class CategoriesRepository {
     }
 
     const where =
-      conditions.join(
-        ' AND ',
-      );
+      conditions.join(' AND ');
 
     const countSql = `
       SELECT
         COUNT(*) AS total
 
-      FROM [masters].[tbl_Grade_Category] c
+      FROM [masters].[tbl_Dependency_Tier] t
 
       WHERE ${where};
     `;
 
     const dataSql = `
       SELECT
-        c.category_id AS categoryId,
-        c.cat_code AS categoryCode,
-        c.cat_details AS categoryDetails,
+        t.tier_id AS tierId,
+        t.tier_code AS tierCode,
+        t.description AS description,
 
-        c.attr1 AS attr1,
-        c.attr2 AS attr2,
-        c.attr3 AS attr3,
-        c.attr4 AS attr4,
-        c.attr5 AS attr5,
+        t.attr1 AS attr1,
+        t.attr2 AS attr2,
+        t.attr3 AS attr3,
+        t.attr4 AS attr4,
+        t.attr5 AS attr5,
 
-        c.is_active AS isActive,
-        c.is_deleted AS isDeleted,
+        t.is_active AS isActive,
+        t.is_deleted AS isDeleted,
 
-        c.created_by AS createdBy,
-        CONVERT(VARCHAR(10), c.created_date, 23) AS createdDate,
+        t.created_by AS createdBy,
+        CONVERT(VARCHAR(10), t.created_date, 23) AS createdDate,
 
-        c.modified_by AS modifiedBy,
-        CONVERT(VARCHAR(10), c.modified_date, 23) AS modifiedDate
+        t.modified_by AS modifiedBy,
+        CONVERT(VARCHAR(10), t.modified_date, 23) AS modifiedDate
 
-      FROM [masters].[tbl_Grade_Category] c
+      FROM [masters].[tbl_Dependency_Tier] t
 
       WHERE ${where}
 
       ORDER BY
-        c.cat_code ASC
+        t.tier_code ASC
 
       OFFSET @${paramIndex} ROWS
-
-      FETCH NEXT @${paramIndex + 1}
-      ROWS ONLY;
+      FETCH NEXT @${paramIndex + 1} ROWS ONLY;
     `;
 
     const executor =
@@ -256,11 +245,10 @@ export class CategoriesRepository {
 
     return {
       rows:
-        rows as ICategory[],
+        rows as IDependencyTier[],
 
       total: Number(
-        countResult[0]
-          ?.total ?? 0,
+        countResult[0]?.total ?? 0,
       ),
     };
   }
@@ -271,21 +259,12 @@ export class CategoriesRepository {
 
   async create(
     data: {
-      categoryCode: string;
+      tierCode: string;
 
-      categoryDetails?:
+      description?:
         | string
         | null;
 
-      /**
-       * Raw DB value because the existing
-       * database column is NVARCHAR(10).
-       *
-       * We will convert the API boolean
-       * to the correct DB value in the
-       * service after checking the
-       * existing DB convention.
-       */
       isActive:
         | string
         | null;
@@ -295,16 +274,16 @@ export class CategoriesRepository {
     qr?: QueryRunner,
   ): Promise<string> {
     const sql = `
-      DECLARE @NewCategory TABLE
+      DECLARE @NewTier TABLE
       (
-        category_id UNIQUEIDENTIFIER
+        tier_id UNIQUEIDENTIFIER
       );
 
-      INSERT INTO [masters].[tbl_Grade_Category]
+      INSERT INTO [masters].[tbl_Dependency_Tier]
       (
-        category_id,
-        cat_code,
-        cat_details,
+        tier_id,
+        tier_code,
+        description,
 
         is_active,
         is_deleted,
@@ -317,8 +296,8 @@ export class CategoriesRepository {
       )
 
       OUTPUT
-        INSERTED.category_id
-        INTO @NewCategory
+        INSERTED.tier_id
+        INTO @NewTier
 
       VALUES
       (
@@ -337,37 +316,35 @@ export class CategoriesRepository {
       );
 
       SELECT
-        category_id AS categoryId
-      FROM @NewCategory;
+        tier_id AS tierId
+      FROM @NewTier;
     `;
 
     const result =
       await this.getExecutor(qr).query(
         sql,
         [
-          data.categoryCode,
-          data.categoryDetails ??
-            null,
+          data.tierCode,
+          data.description ?? null,
           data.isActive,
           data.createdBy,
         ],
       );
 
     return result[0]
-      .categoryId as string;
+      .tierId as string;
   }
 
   // ============================================================
   // UPDATE
-  // Only updates fields actually supplied.
   // ============================================================
 
   async update(
-    categoryId: string,
+    tierId: string,
     data: {
-      categoryCode?: string;
+      tierCode?: string;
 
-      categoryDetails?:
+      description?:
         | string
         | null;
 
@@ -379,11 +356,10 @@ export class CategoriesRepository {
     },
     qr?: QueryRunner,
   ): Promise<void> {
-    const setClauses: string[] =
-      [
-        'modified_by = @0',
-        'modified_date = CAST(SYSUTCDATETIME() AS DATE)',
-      ];
+    const setClauses: string[] = [
+      'modified_by = @0',
+      'modified_date = CAST(SYSUTCDATETIME() AS DATE)',
+    ];
 
     const params: Array<
       string | null
@@ -394,30 +370,30 @@ export class CategoriesRepository {
     let paramIndex = 1;
 
     if (
-      data.categoryCode !==
+      data.tierCode !==
       undefined
     ) {
       setClauses.push(
-        `cat_code = @${paramIndex}`,
+        `tier_code = @${paramIndex}`,
       );
 
       params.push(
-        data.categoryCode,
+        data.tierCode,
       );
 
       paramIndex++;
     }
 
     if (
-      data.categoryDetails !==
+      data.description !==
       undefined
     ) {
       setClauses.push(
-        `cat_details = @${paramIndex}`,
+        `description = @${paramIndex}`,
       );
 
       params.push(
-        data.categoryDetails,
+        data.description,
       );
 
       paramIndex++;
@@ -439,11 +415,11 @@ export class CategoriesRepository {
     }
 
     params.push(
-      categoryId,
+      tierId,
     );
 
     const sql = `
-      UPDATE [masters].[tbl_Grade_Category]
+      UPDATE [masters].[tbl_Dependency_Tier]
 
       SET
         ${setClauses.join(
@@ -451,7 +427,7 @@ export class CategoriesRepository {
         )}
 
       WHERE
-        category_id = @${paramIndex}
+        tier_id = @${paramIndex}
         AND is_deleted = 0;
     `;
 
@@ -465,16 +441,15 @@ export class CategoriesRepository {
 
   // ============================================================
   // SOFT DELETE
-  // We do NOT physically delete the database row.
   // ============================================================
 
   async softDelete(
-    categoryId: string,
+    tierId: string,
     modifiedBy: string,
     qr?: QueryRunner,
   ): Promise<void> {
     const sql = `
-      UPDATE [masters].[tbl_Grade_Category]
+      UPDATE [masters].[tbl_Dependency_Tier]
 
       SET
         is_deleted = 1,
@@ -482,16 +457,14 @@ export class CategoriesRepository {
         modified_date = CAST(SYSUTCDATETIME() AS DATE)
 
       WHERE
-        category_id = @0
+        tier_id = @0
         AND is_deleted = 0;
     `;
 
-    await this.getExecutor(
-      qr,
-    ).query(
+    await this.getExecutor(qr).query(
       sql,
       [
-        categoryId,
+        tierId,
         modifiedBy,
       ],
     );

@@ -14,33 +14,33 @@ import type {
 } from '../../../auth/interfaces/current-user.interface';
 
 import {
-  CreateCategoryDto,
-} from '../dto/create-category.dto';
+  CreateGradeDto,
+} from '../dto/create-grade.dto';
 
 import {
-  UpdateCategoryDto,
-} from '../dto/update-category.dto';
+  UpdateGradeDto,
+} from '../dto/update-grade.dto';
 
 import {
-  CategoryEntity,
-} from '../entities/category.entity';
+  GradeEntity,
+} from '../entities/grade.entity';
 
 import {
-  ICategory,
-} from '../interfaces/category.interface';
+  IGrade,
+} from '../interfaces/grade.interface';
 
 import {
-  CATEGORY_ERROR_CODES,
-} from '../categories.constants';
+  GRADE_ERROR_CODES,
+} from '../grades.constants';
 
 import {
-  CategoriesRepository,
-} from '../repositories/categories.repository';
+  GradesRepository,
+} from '../repositories/grades.repository';
 
 @Injectable()
-export class CategoriesService {
+export class GradesService {
   constructor(
-    private readonly categoriesRepository: CategoriesRepository,
+    private readonly gradesRepository: GradesRepository,
     private readonly dataSource: DataSource,
   ) {}
 
@@ -50,7 +50,7 @@ export class CategoriesService {
 
   /**
    * Convert DB NVARCHAR is_active value
-   * into a proper boolean for the API.
+   * into a boolean for the API.
    */
   private toBoolean(
     value: string | null,
@@ -62,42 +62,78 @@ export class CategoriesService {
     return value.toLowerCase() === 'true';
   }
 
-/**
- * Convert API boolean into the value stored
- * inside masters.tbl_Grade_Category.is_active.
- */
-private toDbActive(
-  value: boolean,
-): string {
-  return value
-    ? 'True'
-    : 'False';
-}
+  /**
+   * Convert API boolean into DB value.
+   */
+  private toDbActive(
+    value: boolean,
+  ): string {
+    return value
+      ? 'True'
+      : 'False';
+  }
 
   /**
-   * Convert raw database row into the
-   * response entity returned to frontend.
+   * Validate salary range.
+   *
+   * If both salaries exist:
+   * maxSalary must be greater than or equal to minSalary.
+   */
+  private validateSalaryRange(
+    minSalary: number | null,
+    maxSalary: number | null,
+  ): void {
+    if (
+      minSalary !== null &&
+      maxSalary !== null &&
+      maxSalary < minSalary
+    ) {
+      throw new HttpException(
+        {
+          code:
+            GRADE_ERROR_CODES.INVALID_SALARY_RANGE,
+
+          message:
+            'Maximum salary must be greater than or equal to minimum salary.',
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  /**
+   * Convert raw database row into API entity.
    */
   private toEntity(
-    row: ICategory,
-  ): CategoryEntity {
+    row: IGrade,
+  ): GradeEntity {
     return {
-      categoryId:
-        row.categoryId,
+      gradeId:
+        row.gradeId,
 
-      categoryCode:
-        row.categoryCode,
+      gradeCode:
+        row.gradeCode,
 
-      categoryDetails:
-        row.categoryDetails,
+      gradeDetails:
+        row.gradeDetails,
+
+      minSalary:
+        row.minSalary !== null
+          ? Number(row.minSalary)
+          : null,
+
+      maxSalary:
+        row.maxSalary !== null
+          ? Number(row.maxSalary)
+          : null,
 
       isActive:
         this.toBoolean(
           row.isActive,
         ),
 
-      isDeleted:
-        row.isDeleted,
+      isDelete:
+        row.isDelete,
 
       createdBy:
         row.createdBy,
@@ -118,21 +154,21 @@ private toDbActive(
   // ============================================================
 
   async findById(
-    categoryId: string,
-  ): Promise<CategoryEntity> {
+    gradeId: string,
+  ): Promise<GradeEntity> {
     const row =
-      await this.categoriesRepository.findById(
-        categoryId,
+      await this.gradesRepository.findById(
+        gradeId,
       );
 
     if (!row) {
       throw new HttpException(
         {
           code:
-            CATEGORY_ERROR_CODES.CATEGORY_NOT_FOUND,
+            GRADE_ERROR_CODES.GRADE_NOT_FOUND,
 
           message:
-            `Category [${categoryId}] was not found.`,
+            `Grade [${gradeId}] was not found.`,
         },
         HttpStatus.NOT_FOUND,
       );
@@ -159,7 +195,7 @@ private toDbActive(
       rows,
       total,
     } =
-      await this.categoriesRepository.findAll(
+      await this.gradesRepository.findAll(
         {
           search:
             options.search?.trim(),
@@ -201,29 +237,40 @@ private toDbActive(
   // ============================================================
 
   async create(
-    dto: CreateCategoryDto,
+    dto: CreateGradeDto,
     user: ICurrentUser,
-  ): Promise<CategoryEntity> {
-    const categoryCode =
-      dto.categoryCode.trim();
+  ): Promise<GradeEntity> {
+    const gradeCode =
+      dto.gradeCode.trim();
 
     const existing =
-      await this.categoriesRepository.findByCode(
-        categoryCode,
+      await this.gradesRepository.findByCode(
+        gradeCode,
       );
 
     if (existing) {
       throw new HttpException(
         {
           code:
-            CATEGORY_ERROR_CODES.CATEGORY_CODE_DUPLICATE,
+            GRADE_ERROR_CODES.GRADE_CODE_DUPLICATE,
 
           message:
-            `A category with code [${categoryCode}] already exists.`,
+            `A grade with code [${gradeCode}] already exists.`,
         },
         HttpStatus.CONFLICT,
       );
     }
+
+    const minSalary =
+      dto.minSalary ?? null;
+
+    const maxSalary =
+      dto.maxSalary ?? null;
+
+    this.validateSalaryRange(
+      minSalary,
+      maxSalary,
+    );
 
     const qr: QueryRunner =
       this.dataSource.createQueryRunner();
@@ -232,24 +279,27 @@ private toDbActive(
 
     await qr.startTransaction();
 
-    try {
-      const newId =
-        await this.categoriesRepository.create(
-          {
-            categoryCode,
+    let newId: string;
 
-            categoryDetails:
-              dto.categoryDetails !==
-              undefined
-                ? dto.categoryDetails
-                    ?.trim() ||
+    try {
+      newId =
+        await this.gradesRepository.create(
+          {
+            gradeCode,
+
+            gradeDetails:
+              dto.gradeDetails !== undefined
+                ? dto.gradeDetails?.trim() ||
                   null
                 : null,
 
+            minSalary,
+
+            maxSalary,
+
             isActive:
               this.toDbActive(
-                dto.isActive ??
-                  true,
+                dto.isActive ?? true,
               ),
 
             createdBy:
@@ -259,17 +309,19 @@ private toDbActive(
         );
 
       await qr.commitTransaction();
-
-      return this.findById(
-        newId,
-      );
     } catch (error) {
-      await qr.rollbackTransaction();
+      if (qr.isTransactionActive) {
+        await qr.rollbackTransaction();
+      }
 
       throw error;
     } finally {
       await qr.release();
     }
+
+    return this.findById(
+      newId,
+    );
   }
 
   // ============================================================
@@ -277,67 +329,87 @@ private toDbActive(
   // ============================================================
 
   async update(
-    categoryId: string,
-    dto: UpdateCategoryDto,
+    gradeId: string,
+    dto: UpdateGradeDto,
     user: ICurrentUser,
-  ): Promise<CategoryEntity> {
+  ): Promise<GradeEntity> {
     const existing =
-      await this.categoriesRepository.findById(
-        categoryId,
+      await this.gradesRepository.findById(
+        gradeId,
       );
 
     if (!existing) {
       throw new HttpException(
         {
           code:
-            CATEGORY_ERROR_CODES.CATEGORY_NOT_FOUND,
+            GRADE_ERROR_CODES.GRADE_NOT_FOUND,
 
           message:
-            `Category [${categoryId}] was not found.`,
+            `Grade [${gradeId}] was not found.`,
         },
         HttpStatus.NOT_FOUND,
       );
     }
 
-    /**
-     * If category code is being changed,
-     * check that another record does not
-     * already use that code.
-     */
+    // ----------------------------------------------------------
+    // Check duplicate Grade Code
+    // ----------------------------------------------------------
+
     if (
-      dto.categoryCode !==
-      undefined
+      dto.gradeCode !== undefined
     ) {
       const newCode =
-        dto.categoryCode.trim();
+        dto.gradeCode.trim();
 
       if (
         newCode.toLowerCase() !==
-        existing.categoryCode.toLowerCase()
+        existing.gradeCode.toLowerCase()
       ) {
         const duplicate =
-          await this.categoriesRepository.findByCode(
+          await this.gradesRepository.findByCode(
             newCode,
           );
 
         if (
           duplicate &&
-          duplicate.categoryId !==
-            categoryId
+          duplicate.gradeId !== gradeId
         ) {
           throw new HttpException(
             {
               code:
-                CATEGORY_ERROR_CODES.CATEGORY_CODE_DUPLICATE,
+                GRADE_ERROR_CODES.GRADE_CODE_DUPLICATE,
 
               message:
-                `A category with code [${newCode}] already exists.`,
+                `A grade with code [${newCode}] already exists.`,
             },
             HttpStatus.CONFLICT,
           );
         }
       }
     }
+
+    // ----------------------------------------------------------
+    // Work out the final salary values after the update
+    // ----------------------------------------------------------
+
+    const effectiveMinSalary =
+      dto.minSalary !== undefined
+        ? dto.minSalary
+        : existing.minSalary;
+
+    const effectiveMaxSalary =
+      dto.maxSalary !== undefined
+        ? dto.maxSalary
+        : existing.maxSalary;
+
+    this.validateSalaryRange(
+      effectiveMinSalary,
+      effectiveMaxSalary,
+    );
+
+    // ----------------------------------------------------------
+    // Transaction
+    // ----------------------------------------------------------
 
     const qr: QueryRunner =
       this.dataSource.createQueryRunner();
@@ -347,26 +419,32 @@ private toDbActive(
     await qr.startTransaction();
 
     try {
-      await this.categoriesRepository.update(
-        categoryId,
+      await this.gradesRepository.update(
+        gradeId,
         {
-          categoryCode:
-            dto.categoryCode !==
-            undefined
-              ? dto.categoryCode.trim()
+          gradeCode:
+            dto.gradeCode !== undefined
+              ? dto.gradeCode.trim()
               : undefined,
 
-          categoryDetails:
-            dto.categoryDetails !==
-            undefined
-              ? dto.categoryDetails
-                  ?.trim() ||
+          gradeDetails:
+            dto.gradeDetails !== undefined
+              ? dto.gradeDetails?.trim() ||
                 null
               : undefined,
 
+          minSalary:
+            dto.minSalary !== undefined
+              ? dto.minSalary
+              : undefined,
+
+          maxSalary:
+            dto.maxSalary !== undefined
+              ? dto.maxSalary
+              : undefined,
+
           isActive:
-            dto.isActive !==
-            undefined
+            dto.isActive !== undefined
               ? this.toDbActive(
                   dto.isActive,
                 )
@@ -379,17 +457,19 @@ private toDbActive(
       );
 
       await qr.commitTransaction();
-
-      return this.findById(
-        categoryId,
-      );
     } catch (error) {
-      await qr.rollbackTransaction();
+      if (qr.isTransactionActive) {
+        await qr.rollbackTransaction();
+      }
 
       throw error;
     } finally {
       await qr.release();
     }
+
+    return this.findById(
+      gradeId,
+    );
   }
 
   // ============================================================
@@ -397,22 +477,22 @@ private toDbActive(
   // ============================================================
 
   async remove(
-    categoryId: string,
+    gradeId: string,
     user: ICurrentUser,
   ): Promise<void> {
     const existing =
-      await this.categoriesRepository.findById(
-        categoryId,
+      await this.gradesRepository.findById(
+        gradeId,
       );
 
     if (!existing) {
       throw new HttpException(
         {
           code:
-            CATEGORY_ERROR_CODES.CATEGORY_NOT_FOUND,
+            GRADE_ERROR_CODES.GRADE_NOT_FOUND,
 
           message:
-            `Category [${categoryId}] was not found.`,
+            `Grade [${gradeId}] was not found.`,
         },
         HttpStatus.NOT_FOUND,
       );
@@ -426,15 +506,17 @@ private toDbActive(
     await qr.startTransaction();
 
     try {
-      await this.categoriesRepository.softDelete(
-        categoryId,
+      await this.gradesRepository.softDelete(
+        gradeId,
         user.userId,
         qr,
       );
 
       await qr.commitTransaction();
     } catch (error) {
-      await qr.rollbackTransaction();
+      if (qr.isTransactionActive) {
+        await qr.rollbackTransaction();
+      }
 
       throw error;
     } finally {

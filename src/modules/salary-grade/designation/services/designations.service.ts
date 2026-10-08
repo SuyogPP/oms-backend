@@ -14,33 +14,33 @@ import type {
 } from '../../../auth/interfaces/current-user.interface';
 
 import {
-  CreateCategoryDto,
-} from '../dto/create-category.dto';
+  CreateDesignationDto,
+} from '../dto/create-designation.dto';
 
 import {
-  UpdateCategoryDto,
-} from '../dto/update-category.dto';
+  UpdateDesignationDto,
+} from '../dto/update-designation.dto';
 
 import {
-  CategoryEntity,
-} from '../entities/category.entity';
+  DesignationEntity,
+} from '../entities/designation.entity';
 
 import {
-  ICategory,
-} from '../interfaces/category.interface';
+  IDesignation,
+} from '../interfaces/designation.interface';
 
 import {
-  CATEGORY_ERROR_CODES,
-} from '../categories.constants';
+  DESIGNATION_ERROR_CODES,
+} from '../designations.constants';
 
 import {
-  CategoriesRepository,
-} from '../repositories/categories.repository';
+  DesignationsRepository,
+} from '../repositories/designations.repository';
 
 @Injectable()
-export class CategoriesService {
+export class DesignationsService {
   constructor(
-    private readonly categoriesRepository: CategoriesRepository,
+    private readonly designationsRepository: DesignationsRepository,
     private readonly dataSource: DataSource,
   ) {}
 
@@ -50,7 +50,7 @@ export class CategoriesService {
 
   /**
    * Convert DB NVARCHAR is_active value
-   * into a proper boolean for the API.
+   * into a boolean for the API.
    */
   private toBoolean(
     value: string | null,
@@ -62,34 +62,36 @@ export class CategoriesService {
     return value.toLowerCase() === 'true';
   }
 
-/**
- * Convert API boolean into the value stored
- * inside masters.tbl_Grade_Category.is_active.
- */
-private toDbActive(
-  value: boolean,
-): string {
-  return value
-    ? 'True'
-    : 'False';
-}
+  /**
+   * Convert API boolean into the value
+   * stored in the DB.
+   */
+  private toDbActive(
+    value: boolean,
+  ): string {
+    return value
+      ? 'True'
+      : 'False';
+  }
 
   /**
-   * Convert raw database row into the
-   * response entity returned to frontend.
+   * Convert raw DB row into API entity.
    */
   private toEntity(
-    row: ICategory,
-  ): CategoryEntity {
+    row: IDesignation,
+  ): DesignationEntity {
     return {
-      categoryId:
-        row.categoryId,
+      designationId:
+        row.designationId,
 
-      categoryCode:
-        row.categoryCode,
+      designationCode:
+        row.designationCode,
 
-      categoryDetails:
-        row.categoryDetails,
+      designationName:
+        row.designationName,
+
+      designationSummary:
+        row.designationSummary,
 
       isActive:
         this.toBoolean(
@@ -118,21 +120,21 @@ private toDbActive(
   // ============================================================
 
   async findById(
-    categoryId: string,
-  ): Promise<CategoryEntity> {
+    designationId: string,
+  ): Promise<DesignationEntity> {
     const row =
-      await this.categoriesRepository.findById(
-        categoryId,
+      await this.designationsRepository.findById(
+        designationId,
       );
 
     if (!row) {
       throw new HttpException(
         {
           code:
-            CATEGORY_ERROR_CODES.CATEGORY_NOT_FOUND,
+            DESIGNATION_ERROR_CODES.DESIGNATION_NOT_FOUND,
 
           message:
-            `Category [${categoryId}] was not found.`,
+            `Designation [${designationId}] was not found.`,
         },
         HttpStatus.NOT_FOUND,
       );
@@ -159,7 +161,7 @@ private toDbActive(
       rows,
       total,
     } =
-      await this.categoriesRepository.findAll(
+      await this.designationsRepository.findAll(
         {
           search:
             options.search?.trim(),
@@ -201,25 +203,28 @@ private toDbActive(
   // ============================================================
 
   async create(
-    dto: CreateCategoryDto,
+    dto: CreateDesignationDto,
     user: ICurrentUser,
-  ): Promise<CategoryEntity> {
-    const categoryCode =
-      dto.categoryCode.trim();
+  ): Promise<DesignationEntity> {
+    const designationCode =
+      dto.designationCode.trim();
+
+    const designationName =
+      dto.designationName.trim();
 
     const existing =
-      await this.categoriesRepository.findByCode(
-        categoryCode,
+      await this.designationsRepository.findByCode(
+        designationCode,
       );
 
     if (existing) {
       throw new HttpException(
         {
           code:
-            CATEGORY_ERROR_CODES.CATEGORY_CODE_DUPLICATE,
+            DESIGNATION_ERROR_CODES.DESIGNATION_CODE_DUPLICATE,
 
           message:
-            `A category with code [${categoryCode}] already exists.`,
+            `A designation with code [${designationCode}] already exists.`,
         },
         HttpStatus.CONFLICT,
       );
@@ -234,14 +239,16 @@ private toDbActive(
 
     try {
       const newId =
-        await this.categoriesRepository.create(
+        await this.designationsRepository.create(
           {
-            categoryCode,
+            designationCode,
 
-            categoryDetails:
-              dto.categoryDetails !==
+            designationName,
+
+            designationSummary:
+              dto.designationSummary !==
               undefined
-                ? dto.categoryDetails
+                ? dto.designationSummary
                     ?.trim() ||
                   null
                 : null,
@@ -277,61 +284,61 @@ private toDbActive(
   // ============================================================
 
   async update(
-    categoryId: string,
-    dto: UpdateCategoryDto,
+    designationId: string,
+    dto: UpdateDesignationDto,
     user: ICurrentUser,
-  ): Promise<CategoryEntity> {
+  ): Promise<DesignationEntity> {
     const existing =
-      await this.categoriesRepository.findById(
-        categoryId,
+      await this.designationsRepository.findById(
+        designationId,
       );
 
     if (!existing) {
       throw new HttpException(
         {
           code:
-            CATEGORY_ERROR_CODES.CATEGORY_NOT_FOUND,
+            DESIGNATION_ERROR_CODES.DESIGNATION_NOT_FOUND,
 
           message:
-            `Category [${categoryId}] was not found.`,
+            `Designation [${designationId}] was not found.`,
         },
         HttpStatus.NOT_FOUND,
       );
     }
 
     /**
-     * If category code is being changed,
-     * check that another record does not
-     * already use that code.
+     * If the designation code is changing,
+     * verify another designation does not
+     * already use the new code.
      */
     if (
-      dto.categoryCode !==
+      dto.designationCode !==
       undefined
     ) {
       const newCode =
-        dto.categoryCode.trim();
+        dto.designationCode.trim();
 
       if (
         newCode.toLowerCase() !==
-        existing.categoryCode.toLowerCase()
+        existing.designationCode.toLowerCase()
       ) {
         const duplicate =
-          await this.categoriesRepository.findByCode(
+          await this.designationsRepository.findByCode(
             newCode,
           );
 
         if (
           duplicate &&
-          duplicate.categoryId !==
-            categoryId
+          duplicate.designationId !==
+            designationId
         ) {
           throw new HttpException(
             {
               code:
-                CATEGORY_ERROR_CODES.CATEGORY_CODE_DUPLICATE,
+                DESIGNATION_ERROR_CODES.DESIGNATION_CODE_DUPLICATE,
 
               message:
-                `A category with code [${newCode}] already exists.`,
+                `A designation with code [${newCode}] already exists.`,
             },
             HttpStatus.CONFLICT,
           );
@@ -347,19 +354,25 @@ private toDbActive(
     await qr.startTransaction();
 
     try {
-      await this.categoriesRepository.update(
-        categoryId,
+      await this.designationsRepository.update(
+        designationId,
         {
-          categoryCode:
-            dto.categoryCode !==
+          designationCode:
+            dto.designationCode !==
             undefined
-              ? dto.categoryCode.trim()
+              ? dto.designationCode.trim()
               : undefined,
 
-          categoryDetails:
-            dto.categoryDetails !==
+          designationName:
+            dto.designationName !==
             undefined
-              ? dto.categoryDetails
+              ? dto.designationName.trim()
+              : undefined,
+
+          designationSummary:
+            dto.designationSummary !==
+            undefined
+              ? dto.designationSummary
                   ?.trim() ||
                 null
               : undefined,
@@ -381,7 +394,7 @@ private toDbActive(
       await qr.commitTransaction();
 
       return this.findById(
-        categoryId,
+        designationId,
       );
     } catch (error) {
       await qr.rollbackTransaction();
@@ -397,22 +410,22 @@ private toDbActive(
   // ============================================================
 
   async remove(
-    categoryId: string,
+    designationId: string,
     user: ICurrentUser,
   ): Promise<void> {
     const existing =
-      await this.categoriesRepository.findById(
-        categoryId,
+      await this.designationsRepository.findById(
+        designationId,
       );
 
     if (!existing) {
       throw new HttpException(
         {
           code:
-            CATEGORY_ERROR_CODES.CATEGORY_NOT_FOUND,
+            DESIGNATION_ERROR_CODES.DESIGNATION_NOT_FOUND,
 
           message:
-            `Category [${categoryId}] was not found.`,
+            `Designation [${designationId}] was not found.`,
         },
         HttpStatus.NOT_FOUND,
       );
@@ -426,8 +439,8 @@ private toDbActive(
     await qr.startTransaction();
 
     try {
-      await this.categoriesRepository.softDelete(
-        categoryId,
+      await this.designationsRepository.softDelete(
+        designationId,
         user.userId,
         qr,
       );
