@@ -1,13 +1,16 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Optional, Logger } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { AUDIT_DB_CONNECTION } from '../../../database/database.constants';
 
 @Injectable()
 export class AuditRepository {
+  private readonly logger = new Logger(AuditRepository.name);
+
   constructor(
+    @Optional()
     @InjectDataSource(AUDIT_DB_CONNECTION)
-    private readonly dataSource: DataSource,
+    private readonly dataSource?: DataSource,
   ) {}
 
   async ensureDevice(data: {
@@ -18,6 +21,11 @@ export class AuditRepository {
     osName?: string | null;
     userAgentRaw?: string | null;
   }) {
+    if (!this.dataSource) {
+      this.logger.warn('[AuditRepository] Audit DB is disabled. Returning mock device ID.');
+      return 'mock-device-id';
+    }
+
     const existingDevice = await this.dataSource.query(
       `
             SELECT DeviceID
@@ -95,6 +103,7 @@ export class AuditRepository {
 
   async ensureSession(sessionId?: string | null): Promise<string | null> {
     if (!sessionId) return null;
+    if (!this.dataSource) return sessionId;
 
     try {
       const rows = await this.dataSource.query(
@@ -137,6 +146,11 @@ export class AuditRepository {
     isSuccess: boolean;
     failureReason?: string | null;
   }) {
+    if (!this.dataSource) {
+      this.logger.warn('[AuditRepository] Audit DB is disabled. Skipping auth api call log.');
+      return 'mock-api-call-id';
+    }
+
     const validSessionId = await this.ensureSession(data.sessionId);
 
     const result = await this.dataSource.query(
@@ -239,6 +253,11 @@ export class AuditRepository {
     changeReason?: string | null;
     isSystemChange?: boolean;
   }) {
+    if (!this.dataSource) {
+      this.logger.warn('[AuditRepository] Audit DB is disabled. Skipping auth change log.');
+      return;
+    }
+
     const validSessionId = await this.ensureSession(data.sessionId);
 
     await this.dataSource.query(

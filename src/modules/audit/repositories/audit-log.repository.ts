@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { AUDIT_DB_CONNECTION } from '../../../database/database.constants';
@@ -36,8 +36,9 @@ export class AuditLogRepository {
   private readonly logger = new Logger(AuditLogRepository.name);
 
   constructor(
+    @Optional()
     @InjectDataSource(AUDIT_DB_CONNECTION)
-    private readonly auditDataSource: DataSource,
+    private readonly auditDataSource?: DataSource,
   ) {}
 
   // ─── Writes ─────────────────────────────────────────────────────────────────
@@ -48,6 +49,11 @@ export class AuditLogRepository {
    * table_name, operation, source_app, performed_at.
    */
   async insert(dto: CreateAuditLogDto): Promise<string | null> {
+    if (!this.auditDataSource) {
+      this.logger.warn(`[AuditLogRepository] Audit DB is disabled. Skipping log for table="${dto.table_name}" op="${dto.operation}"`);
+      return null;
+    }
+
     try {
       const sql = `
         INSERT INTO [dbo].[tbl_Audit_Log]
@@ -144,6 +150,8 @@ export class AuditLogRepository {
    * Fetches a single audit log entry by its primary key.
    */
   async findById(auditId: string): Promise<AuditLog | null> {
+    if (!this.auditDataSource) return null;
+
     const rows = await this.auditDataSource.query<AuditLog[]>(
       `
       SELECT TOP 1
@@ -168,6 +176,8 @@ export class AuditLogRepository {
     recordIdText: string,
     limit = 100,
   ): Promise<AuditLog[]> {
+    if (!this.auditDataSource) return [];
+
     return this.auditDataSource.query<AuditLog[]>(
       `
       SELECT TOP (@0)
@@ -188,6 +198,8 @@ export class AuditLogRepository {
    * Fetches all audit logs associated with a transaction ID.
    */
   async findByTransaction(transactionId: string): Promise<AuditLog[]> {
+    if (!this.auditDataSource) return [];
+
     return this.auditDataSource.query<AuditLog[]>(
       `
       SELECT
@@ -208,6 +220,8 @@ export class AuditLogRepository {
    * Returns the N most recent audit logs globally (for admin dashboards).
    */
   async findRecent(limit = 50): Promise<AuditLog[]> {
+    if (!this.auditDataSource) return [];
+
     return this.auditDataSource.query<AuditLog[]>(
       `
       SELECT TOP (@0)
