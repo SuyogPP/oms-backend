@@ -49,21 +49,29 @@ const mssqlOptions = (encrypt: boolean) => ({
     }),
 
     // ─── Audit Database (DIEZ-AUDIT-DB) ───────────────────────────────────────
-    TypeOrmModule.forRootAsync({
-      name: AUDIT_DB_CONNECTION, // Named connection — injected as @InjectDataSource(AUDIT_DB_CONNECTION)
-      inject: [ConfigService],
-      useFactory: (config: ConfigService) => ({
-        type: 'mssql',
-        host: config.get<string>('auditDatabase.host'),
-        port: config.get<number>('auditDatabase.port'),
-        username: config.get<string>('auditDatabase.username'),
-        password: config.get<string>('auditDatabase.password'),
-        database: config.get<string>('auditDatabase.database'),
-        autoLoadEntities: false, // Audit DB has no TypeORM entities; raw SQL only
-        synchronize: false,
-        ...mssqlOptions(process.env.DB_ENCRYPT === 'true'),
-      }),
-    }),
+    // Temporarily disabled due to free allowance limit. Set ENABLE_AUDIT_DB=true to re-enable.
+    ...(process.env.ENABLE_AUDIT_DB === 'true'
+      ? [
+          TypeOrmModule.forRootAsync({
+            name: AUDIT_DB_CONNECTION, // Named connection — injected as @InjectDataSource(AUDIT_DB_CONNECTION)
+            inject: [ConfigService],
+            useFactory: (config: ConfigService) => ({
+              type: 'mssql',
+              host: config.get<string>('auditDatabase.host'),
+              port: config.get<number>('auditDatabase.port'),
+              username: config.get<string>('auditDatabase.username'),
+              password: config.get<string>('auditDatabase.password'),
+              database: config.get<string>('auditDatabase.database'),
+              autoLoadEntities: false, // Audit DB has no TypeORM entities; raw SQL only
+              synchronize: false,
+              ...mssqlOptions(
+                process.env.AUDIT_DB_ENCRYPT === 'true' ||
+                  process.env.DB_ENCRYPT === 'true',
+              ),
+            }),
+          }),
+        ]
+      : []),
   ],
 })
 export class DatabaseModule {}
